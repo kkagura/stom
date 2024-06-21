@@ -1,0 +1,18 @@
+{
+  "name": "@stom/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "build-type": "node scripts/build-type.js"
+  },
+  "dependencies": {
+    "@stom/geo": "workspace:*",
+    "@stom/shared": "workspace:*"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

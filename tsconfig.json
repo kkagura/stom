@@ -1,0 +1,37 @@
+{
+  "include": ["packages/*/src"],
+  "exclude": ["node_modules", "**/dist"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "dist",
+    "sourceMap": false,
+    "paths": {
+      "@stom/ui/vue": ["packages/ui/src/frameworks/vue/index.ts"],
+      "@stom/core": ["packages/core/src/index.ts"],
+      "@stom/geo": ["packages/geo/src/index.ts"],
+      "@stom/shared": ["packages/shared/src/index.ts"]
+    },
+
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "skipLibCheck": true,
+
+    "noUnusedLocals": false,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noImplicitReturns": false,
+    "strict": true,
+    "isolatedModules": true,
+
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "removeComments": false,
+    "jsx": "preserve",
+    "lib": ["esnext", "dom"]
+  }
+}

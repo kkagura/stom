@@ -1,0 +1,36 @@
+{
+  "name": "stom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm run -r dev",
+    "dev:play": "cd ./packages/playground && npm run dev",
+    "dev:ui": "cd ./packages/ui && npm run dev",
+    "dev:geo": "cd ./packages/geo && npm run dev",
+    "dev:core": "cd ./packages/core && npm run dev",
+    "dev:shared": "cd ./packages/shared && npm run dev",
+    "build:dts": "node scripts/types-definitions.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.47.0",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "chalk": "4.1.2",
+    "consola": "^3.2.3",
+    "eslint": "^9.5.0",
+    "fast-glob": "^3.3.2",
+    "prettier": "^3.3.2",
+    "rollup": "^4.18.0",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "ts-morph": "14.0.0",
+    "typescript": "5.1.6"
+  },
+  "dependencies": {
+    "vue": "3.3.4"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@stom/geo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "build-type": "node scripts/build-type.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
