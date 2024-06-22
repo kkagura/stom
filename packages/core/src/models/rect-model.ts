@@ -1,4 +1,4 @@
-import { IRect, Matrix, isPointInRoundRect } from '@stom/geo';
+import { IRect, Matrix, extendRect, isPointInRoundRect } from '@stom/geo';
 import { BorderAttr } from './attrs';
 import { Model } from './model';
 
@@ -28,10 +28,16 @@ export class RectModel extends Model<RectModelAttrs> {
     return Math.min(Math.min(this.rect.width, this.rect.height) / 2, this.attrs.roundGap ?? 0);
   }
 
+  getRenderRect(): IRect {
+    const extend = this.attrs.border?.width || 1;
+    const rect = this.getRect();
+    return extendRect(rect, extend);
+  }
+
   hitTest(x: number, y: number): boolean {
     const tf = new Matrix(...this.transform);
     const point = tf.applyInverse({ x, y });
-    return isPointInRoundRect(point, this.getViewRect(), this.getRoundGap());
+    return isPointInRoundRect(point, this.getRenderRect(), this.getRoundGap());
   }
 
   render(ctx: CanvasRenderingContext2D) {

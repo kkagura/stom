@@ -73,6 +73,17 @@ export class ViewportManager extends EventEmitter<Events> {
     };
   }
 
+  getViewRect(): IRect {
+    const viewRect = this.getViewport();
+    const zoom = this.getZoom();
+    return {
+      x: this.x,
+      y: this.y,
+      width: viewRect.width / zoom,
+      height: viewRect.height / zoom
+    };
+  }
+
   /**
    * 视图坐标转场景坐标
    * @param p 视图坐标

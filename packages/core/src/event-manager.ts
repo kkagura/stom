@@ -19,8 +19,8 @@ export class EventManager {
   handleMouseDown = (e: MouseEvent) => {
     this.mousedown = true;
     const zoom = this.editor.viewportManager.getZoom();
-    const els = this.editor.getElementsAt(e);
-    const isOnFloor = els.length === 0;
+    const el = this.editor.getElementAt(e);
+    const isOnFloor = !el;
     let startX = e.clientX,
       startY = e.clientY,
       lastX = startX,
@@ -33,9 +33,7 @@ export class EventManager {
       if (isOnFloor) {
         this.editor.viewportManager.move(offsetX / zoom, offsetY / zoom);
       } else {
-        els.forEach(el => {
-          el.move(offsetX / zoom, offsetY / zoom);
-        });
+        el.move(offsetX / zoom, offsetY / zoom);
       }
     };
     const onUp = (ev: MouseEvent) => {
@@ -54,14 +52,10 @@ export class EventManager {
       } else {
         action = {
           undo: () => {
-            els.forEach(m => {
-              m.move(-offsetX / zoom, -offsetY / zoom);
-            });
+            el.move(-offsetX / zoom, -offsetY / zoom);
           },
           redo: () => {
-            els.forEach(m => {
-              m.move(offsetX / zoom, offsetY / zoom);
-            });
+            el.move(offsetX / zoom, offsetY / zoom);
           }
         };
       }
@@ -107,5 +101,13 @@ export class EventManager {
 
   setCursorStyle(cursor: string) {
     this.editor.topCanvas.style.cursor = cursor;
+  }
+
+  dispose() {
+    this.editor.topCanvas.removeEventListener('mousedown', this.handleMouseDown);
+    this.editor.topCanvas.removeEventListener('mousemove', this.handleMouseMove);
+    this.editor.topCanvas.removeEventListener('mouseup', this.handleMouseUp);
+    this.editor.topCanvas.removeEventListener('mouseleave', this.handleMouseUp);
+    this.editor.topCanvas.removeEventListener('wheel', this.handleMouseWheel);
   }
 }

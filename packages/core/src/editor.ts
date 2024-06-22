@@ -1,4 +1,4 @@
-import { IRect } from '@stom/geo';
+import { IRect, isRectIntersect, mergeRects } from '@stom/geo';
 import { Box, BoxEvents } from './box';
 import { getDevicePixelRatio } from '@stom/shared';
 import { EventManager } from './event-manager';
@@ -15,16 +15,15 @@ export class Editor {
   viewportManager: ViewportManager;
   actionManager: ActionManager;
 
-  private dirty: boolean = true;
-  setDirty = () => {
-    this.dirty = true;
-  };
+  private dirtyList: Set<Model> = new Set();
+  private paintAll: boolean = true;
+
+  private frameRects: Map<string, IRect> = new Map();
 
   constructor(
     public container: HTMLElement,
     public box: Box
   ) {
-    const setDirty = this.setDirty;
     this.rootCanvas = document.createElement('canvas');
     this.rootCtx = this.rootCanvas.getContext('2d')!;
     Object.assign(this.rootCanvas.style, {
@@ -52,9 +51,15 @@ export class Editor {
     this.actionManager = new ActionManager();
 
     this.eventManager = new EventManager(this);
+
     this.viewportManager = new ViewportManager(this);
-    this.box.on(BoxEvents.change, setDirty);
-    this.viewportManager.on(ViewportEvents.change, setDirty);
+    this.viewportManager.on(ViewportEvents.change, () => {
+      this.paintAll = true;
+    });
+
+    this.box.on(BoxEvents.modelsChange, models => {
+      models.forEach(m => this.dirtyList.add(m));
+    });
 
     requestAnimationFrame(this.render);
   }
@@ -78,10 +83,13 @@ export class Editor {
   }
 
   render = () => {
-    if (this.dirty) {
+    if (this.paintAll) {
       this.fullRepaint();
+    } else if (this.dirtyList.size) {
+      this.partRepaint();
     }
-    this.dirty = false;
+    this.paintAll = false;
+    this.dirtyList.clear();
     requestAnimationFrame(this.render);
   };
 
@@ -94,6 +102,18 @@ export class Editor {
       }
     });
     return results;
+  }
+
+  getElementAt(e: MouseEvent): Model | null {
+    const { x, y } = this.viewportManager.getScenePoint({ x: e.clientX, y: e.clientY });
+    let res: Model | null = null;
+    this.box.reverseEach(m => {
+      if (m.hitTest(x, y)) {
+        res = m;
+        return true;
+      }
+    });
+    return res;
   }
 
   fullRepaint() {
@@ -112,7 +132,82 @@ export class Editor {
 
     this.box.each(m => {
       m.render(ctx);
+      const renderRect = m.getRenderRect();
+      this.frameRects.set(m.id, renderRect);
     });
+    ctx.restore();
+  }
+
+  findDirtyRect(): {
+    rect: IRect;
+    models: Set<Model>;
+  } {
+    if (this.dirtyList.size === 0)
+      return {
+        rect: { x: 0, y: 0, width: 0, height: 0 },
+        models: new Set()
+      };
+    const viewRect = this.viewportManager.getViewRect();
+    const modelSet = new Set<Model>(this.dirtyList);
+    const modelList = this.box.getModelList();
+    const renderRects = [...modelSet].reduce((acc, model) => {
+      acc.push(model.getRenderRect());
+      const lastRenderRect = this.frameRects.get(model.id);
+      if (lastRenderRect) {
+        acc.push(lastRenderRect);
+      }
+      return acc;
+    }, [] as IRect[]);
+    const dirtyRect = mergeRects(...renderRects);
+    for (let i = 0; i < modelList.length; i++) {
+      const m = modelList[i];
+      if (modelSet.has(m)) continue;
+      const renderRect = m.getRenderRect();
+      if (!isRectIntersect(renderRect, viewRect)) continue;
+      if (isRectIntersect(renderRect, dirtyRect)) {
+        modelSet.add(m);
+        i = 0;
+      }
+    }
+    return {
+      rect: dirtyRect,
+      models: modelSet
+    };
+  }
+
+  partRepaint() {
+    const { rect, models } = this.findDirtyRect();
+    if (!models.size) return;
+
+    const ctx = this.topCtx;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const viewport = this.viewportManager.getViewport();
+
+    const dpr = getDevicePixelRatio();
+    const zoom = this.viewportManager.getZoom();
+    const dx = -viewport.x;
+    const dy = -viewport.y;
+    ctx.scale(dpr * zoom, dpr * zoom);
+    ctx.translate(dx, dy);
+
+    ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
+
+    this.box.each(m => {
+      if (models.has(m)) {
+        const renderRect = m.getRenderRect();
+        this.frameRects.set(m.id, { ...renderRect });
+        m.render(ctx);
+      }
+    });
+
+    // debug start
+    // ctx.beginPath();
+    // ctx.rect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
+    // ctx.strokeStyle = 'green';
+    // ctx.stroke();
+    // debug end
+
     ctx.restore();
   }
 }

@@ -1,17 +1,17 @@
-import { EventEmitter, warn } from '@stom/shared';
+import { EventEmitter, arrayRemove, warn } from '@stom/shared';
 import { Model, ModelEvents } from './models/model';
 import { Layer } from './layer';
 
 export enum BoxEvents {
   addModels = 'add-models',
   removeModels = 'remove-models',
-  change = 'change'
+  modelsChange = 'change'
 }
 
 interface Events {
   [BoxEvents.addModels]: (ms: Model[]) => void;
   [BoxEvents.removeModels]: (ms: Model[]) => void;
-  [BoxEvents.change]: () => void;
+  [BoxEvents.modelsChange]: (ms: Model[]) => void;
 }
 
 export class Box extends EventEmitter<Events> {
@@ -35,7 +35,6 @@ export class Box extends EventEmitter<Events> {
     if (this.layerMap.has(layer.name)) return;
     this.layerList.push(layer);
     this.layerMap.set(layer.name, layer);
-    this.emit(BoxEvents.change);
   }
 
   removeLayer(name) {
@@ -49,7 +48,7 @@ export class Box extends EventEmitter<Events> {
       this.modelMap.delete(model.id);
     });
     this.emit(BoxEvents.removeModels, layer.modelList);
-    this.emit(BoxEvents.change);
+    this.emit(BoxEvents.modelsChange, layer.modelList);
     layer.dispose();
   }
 
@@ -70,8 +69,10 @@ export class Box extends EventEmitter<Events> {
         model.setLayerId('default');
       }
       model.on(ModelEvents.change, () => {
-        this.emit(BoxEvents.change);
+        this.emit(BoxEvents.modelsChange, [model]);
       });
+      this.modelMap.set(model.id, model);
+      this.modelList.push(model);
       layer.addModel(model);
     });
   }
@@ -79,7 +80,7 @@ export class Box extends EventEmitter<Events> {
   addModel(model: Model) {
     this._addModels([model]);
     this.emit(BoxEvents.addModels, [model]);
-    this.emit(BoxEvents.change);
+    this.emit(BoxEvents.modelsChange, [model]);
   }
 
   private _removeModels(models: Model[]) {
@@ -89,21 +90,26 @@ export class Box extends EventEmitter<Events> {
       const layer = this.getLayer(layerId);
       if (!layer) return;
       layer.removeModel(model);
+      this.modelMap.delete(model.id);
+      arrayRemove(this.modelList, model);
     });
   }
 
   removeModel(model: Model) {
     this._removeModels([model]);
     this.emit(BoxEvents.removeModels, [model]);
-    this.emit(BoxEvents.change);
+    this.emit(BoxEvents.modelsChange, [model]);
   }
 
   each(cb: (model: Model, layer: Layer) => void | boolean) {
-    this.layerList.forEach(layer => {
-      layer.modelList.forEach(model => {
-        cb(model, layer);
-      });
-    });
+    for (let i = 0; i <= this.layerList.length - 1; i++) {
+      const layer = this.layerList[i];
+      for (let j = 0; j <= layer.modelList.length - 1; j++) {
+        const model = layer.modelList[j];
+        const res = cb(model, layer);
+        if (res === true) return;
+      }
+    }
   }
 
   reverseEach(cb: (model: Model, layer: Layer) => void | boolean) {
@@ -115,6 +121,10 @@ export class Box extends EventEmitter<Events> {
         if (res === true) return;
       }
     }
+  }
+
+  getModelList() {
+    return this.modelList;
   }
 
   dispose() {
