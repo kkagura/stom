@@ -60,6 +60,9 @@ export class Editor {
     this.box.on(BoxEvents.modelsChange, models => {
       models.forEach(m => this.dirtyList.add(m));
     });
+    this.box.on(BoxEvents.removeModels, models => {
+      models.forEach(m => this.frameRects.delete(m.id));
+    });
 
     requestAnimationFrame(this.render);
   }
@@ -131,9 +134,7 @@ export class Editor {
     ctx.translate(dx, dy);
 
     this.box.each(m => {
-      m.render(ctx);
-      const renderRect = m.getRenderRect();
-      this.frameRects.set(m.id, renderRect);
+      this.paintModel(m, ctx);
     });
     ctx.restore();
   }
@@ -195,9 +196,7 @@ export class Editor {
 
     this.box.each(m => {
       if (models.has(m)) {
-        const renderRect = m.getRenderRect();
-        this.frameRects.set(m.id, { ...renderRect });
-        m.render(ctx);
+        this.paintModel(m, ctx);
       }
     });
 
@@ -209,5 +208,15 @@ export class Editor {
     // debug end
 
     ctx.restore();
+  }
+
+  paintModel(model: Model, ctx: CanvasRenderingContext2D) {
+    if (this.box.has(model)) {
+      const renderRect = model.getRenderRect();
+      this.frameRects.set(model.id, { ...renderRect });
+      model.render(ctx);
+    } else {
+      this.frameRects.delete(model.id);
+    }
   }
 }

@@ -123,6 +123,10 @@ export class Box extends EventEmitter<Events> {
     }
   }
 
+  has(m: Model) {
+    return this.modelMap.has(m.id);
+  }
+
   getModelList() {
     return this.modelList;
   }
