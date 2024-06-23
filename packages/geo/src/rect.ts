@@ -64,3 +64,12 @@ export const extendRect = (rect: IRect, extend: number) => {
     height: rect.height + extend * 2
   };
 };
+
+export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
+  return {
+    x: Math.min(point1.x, point2.x),
+    y: Math.min(point1.y, point2.y),
+    width: Math.abs(point1.x - point2.x),
+    height: Math.abs(point1.y - point2.y)
+  };
+};

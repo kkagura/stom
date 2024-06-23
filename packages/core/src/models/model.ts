@@ -1,12 +1,15 @@
 import { IMatrixArr, IRect } from '@stom/geo';
 import { EventEmitter, genId } from '@stom/shared';
+import { Editor } from '../editor';
 
 export enum ModelEvents {
-  change = 'change'
+  change = 'change',
+  renderRectChange = 'renderRectChange'
 }
 
 interface Events {
   [ModelEvents.change]: (m: Model) => void;
+  [ModelEvents.renderRectChange]: (m: Model) => void;
 }
 
 export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events> {
@@ -20,37 +23,41 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   transform: IMatrixArr = [1, 0, 0, 1, 0, 0];
 
-  private isHover = false;
-
-  private isSelected = false;
-
   private layerId: string = '';
 
   constructor(public id: string = genId()) {
     super();
   }
 
-  triggerChange() {
+  /**
+   * 触发改变
+   * 1: 包围盒属性变化
+   * @param type
+   */
+  triggerChange(type: number) {
+    if (type === 1) {
+      this.emit(ModelEvents.renderRectChange, this);
+    }
     this.emit(ModelEvents.change, this);
   }
 
   setSize(w: number, h: number) {
     this.rect.width = w;
     this.rect.height = h;
-    this.triggerChange();
+    this.triggerChange(1);
   }
 
   setPosition(x: number, y: number) {
     this.rect.x = x;
     this.rect.y = y;
-    this.triggerChange();
+    this.triggerChange(1);
   }
 
   move(x: number, y: number) {
     this.rect.x += x;
     this.rect.y += y;
     if (x !== 0 || y !== 0) {
-      this.triggerChange();
+      this.triggerChange(1);
     }
   }
 
@@ -74,25 +81,11 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return false;
   }
 
-  setIsHover(bool) {
-    this.isHover = bool;
-    this.triggerChange();
-  }
+  beforePaint(ctx: CanvasRenderingContext2D, editor: Editor) {}
 
-  getIsHover() {
-    return this.isHover;
-  }
+  abstract paint(ctx: CanvasRenderingContext2D): void;
 
-  setIsSelected(bool) {
-    this.isSelected = bool;
-    this.triggerChange();
-  }
-
-  getIsSelected() {
-    return this.isSelected;
-  }
-
-  abstract render(ctx: CanvasRenderingContext2D): void;
+  afterPaint(ctx: CanvasRenderingContext2D, editor: Editor) {}
 
   abstract dispose(): void;
 }

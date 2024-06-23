@@ -40,7 +40,7 @@ export class RectModel extends Model<RectModelAttrs> {
     return isPointInRoundRect(point, this.getRenderRect(), this.getRoundGap());
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  paint(ctx: CanvasRenderingContext2D) {
     const { attrs } = this;
     const { x, y, width, height } = this.rect;
     ctx.beginPath();

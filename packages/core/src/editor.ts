@@ -1,56 +1,54 @@
 import { IRect, isRectIntersect, mergeRects } from '@stom/geo';
 import { Box, BoxEvents } from './box';
-import { getDevicePixelRatio } from '@stom/shared';
+import { getDevicePixelRatio, setCanvasSize } from '@stom/shared';
 import { EventManager } from './event-manager';
 import { ViewportEvents, ViewportManager } from './viewport-manager';
 import { Model } from './models';
 import { ActionManager } from './action-manager';
+import { SelectionManager } from './selection-manager';
+
+export interface EditorPlugin {
+  paint(ctx: CanvasRenderingContext2D): void;
+}
 
 export class Editor {
   rootCanvas: HTMLCanvasElement;
-  topCanvas: HTMLCanvasElement;
   private rootCtx: CanvasRenderingContext2D;
+
+  mainCanvas: HTMLCanvasElement;
+  private mainCtx: CanvasRenderingContext2D;
+
+  topCanvas: HTMLCanvasElement;
   private topCtx: CanvasRenderingContext2D;
+
   eventManager: EventManager;
   viewportManager: ViewportManager;
   actionManager: ActionManager;
+  selectionManager: SelectionManager;
 
   private dirtyList: Set<Model> = new Set();
   private paintAll: boolean = true;
 
   private frameRects: Map<string, IRect> = new Map();
 
+  private plugins: EditorPlugin[] = [];
+
   constructor(
     public container: HTMLElement,
     public box: Box
   ) {
-    this.rootCanvas = document.createElement('canvas');
-    this.rootCtx = this.rootCanvas.getContext('2d')!;
-    Object.assign(this.rootCanvas.style, {
-      position: 'absolute',
-      left: '0px',
-      top: '0px',
-      width: '100%',
-      height: '100%'
-    });
-
-    this.topCanvas = document.createElement('canvas');
-    this.topCtx = this.topCanvas.getContext('2d')!;
-    Object.assign(this.topCanvas.style, {
-      position: 'absolute',
-      left: '0px',
-      top: '0px',
-      width: '100%',
-      height: '100%'
-    });
-
-    this.container.appendChild(this.rootCanvas);
-    this.container.appendChild(this.topCanvas);
+    [this.rootCanvas, this.rootCtx] = this.createCanvas();
+    [this.mainCanvas, this.mainCtx] = this.createCanvas();
+    [this.topCanvas, this.topCtx] = this.createCanvas();
     this.resize();
 
     this.actionManager = new ActionManager();
 
     this.eventManager = new EventManager(this);
+    this.installPlugin(this.eventManager);
+
+    this.selectionManager = new SelectionManager(this);
+    this.installPlugin(this.selectionManager);
 
     this.viewportManager = new ViewportManager(this);
     this.viewportManager.on(ViewportEvents.change, () => {
@@ -64,28 +62,35 @@ export class Editor {
       models.forEach(m => this.frameRects.delete(m.id));
     });
 
-    requestAnimationFrame(this.render);
+    requestAnimationFrame(this.repaint);
+  }
+
+  createCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    Object.assign(canvas.style, {
+      position: 'absolute',
+      left: '0px',
+      top: '0px',
+      width: '100%',
+      height: '100%'
+    });
+    this.container.appendChild(canvas);
+    return [canvas, ctx];
   }
 
   resize() {
     const { width, height } = this.container.getBoundingClientRect();
-    const dpr = getDevicePixelRatio();
-    this.rootCanvas.width = width * dpr;
-    this.rootCanvas.height = height * dpr;
-    Object.assign(this.rootCanvas.style, {
-      width: `${width}px`,
-      height: `${height}px`
-    });
-
-    this.topCanvas.width = width * dpr;
-    this.topCanvas.height = height * dpr;
-    Object.assign(this.topCanvas.style, {
-      width: `${width}px`,
-      height: `${height}px`
-    });
+    setCanvasSize(this.rootCanvas, width, height);
+    setCanvasSize(this.mainCanvas, width, height);
+    setCanvasSize(this.topCanvas, width, height);
   }
 
-  render = () => {
+  installPlugin(plugin: EditorPlugin) {
+    this.plugins.push(plugin);
+  }
+
+  repaint = () => {
     if (this.paintAll) {
       this.fullRepaint();
     } else if (this.dirtyList.size) {
@@ -93,7 +98,8 @@ export class Editor {
     }
     this.paintAll = false;
     this.dirtyList.clear();
-    requestAnimationFrame(this.render);
+    this.paintPlugin();
+    requestAnimationFrame(this.repaint);
   };
 
   getElementsAt(e: MouseEvent) {
@@ -120,11 +126,11 @@ export class Editor {
   }
 
   fullRepaint() {
-    const ctx = this.topCtx;
+    const ctx = this.mainCtx;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const viewport = this.viewportManager.getViewport();
-    ctx.clearRect(0, 0, this.topCanvas.width, this.topCanvas.height);
+    ctx.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
 
     const dpr = getDevicePixelRatio();
     const zoom = this.viewportManager.getZoom();
@@ -180,7 +186,7 @@ export class Editor {
     const { rect, models } = this.findDirtyRect();
     if (!models.size) return;
 
-    const ctx = this.topCtx;
+    const ctx = this.mainCtx;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const viewport = this.viewportManager.getViewport();
@@ -214,9 +220,28 @@ export class Editor {
     if (this.box.has(model)) {
       const renderRect = model.getRenderRect();
       this.frameRects.set(model.id, { ...renderRect });
-      model.render(ctx);
+      model.beforePaint(ctx, this);
+      model.paint(ctx);
+      model.afterPaint(ctx, this);
     } else {
       this.frameRects.delete(model.id);
     }
+  }
+
+  paintPlugin() {
+    const ctx = this.topCtx;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const viewport = this.viewportManager.getViewport();
+    ctx.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
+
+    const dpr = getDevicePixelRatio();
+    const zoom = this.viewportManager.getZoom();
+    const dx = -viewport.x;
+    const dy = -viewport.y;
+    ctx.scale(dpr * zoom, dpr * zoom);
+    ctx.translate(dx, dy);
+    this.plugins.forEach(p => p.paint(ctx));
+    ctx.restore();
   }
 }
