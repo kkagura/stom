@@ -1,6 +1,10 @@
-import { IRect, Matrix, extendRect, isPointInRoundRect } from '@stom/geo';
+import { IRect, Matrix, extendRect, isPointInRect, isPointInRoundRect } from '@stom/geo';
 import { BorderAttr } from './attrs';
-import { Model } from './model';
+import { Model, ModelEvents } from './model';
+import { ResizeControl, resizeControlTags } from './resize-control';
+import { Editor } from '../editor';
+import { genId } from '@stom/shared';
+import { Control } from './control';
 
 export interface RectModelAttrs {
   border: BorderAttr | null;
@@ -14,7 +18,7 @@ export class RectModel extends Model<RectModelAttrs> {
     border: null,
     fill: true,
     fillColor: '#000',
-    roundGap: 8
+    roundGap: 0
   };
 
   rect: IRect = {
@@ -24,20 +28,47 @@ export class RectModel extends Model<RectModelAttrs> {
     height: 100
   };
 
+  resizers: ResizeControl[];
+
+  constructor(public id: string = genId()) {
+    super();
+    this.resizers = resizeControlTags.map(tag => new ResizeControl(this, tag));
+  }
+
   private getRoundGap() {
     return Math.min(Math.min(this.rect.width, this.rect.height) / 2, this.attrs.roundGap ?? 0);
   }
 
   getRenderRect(): IRect {
-    const extend = this.attrs.border?.width || 1;
+    let extend = this.attrs.border?.width || 0;
+    const halfAttWidth = ResizeControl.SIZE / 2 + ResizeControl.BORDER_WIDTH;
+    extend += halfAttWidth;
     const rect = this.getRect();
     return extendRect(rect, extend);
   }
 
-  hitTest(x: number, y: number): boolean {
-    const tf = new Matrix(...this.transform);
-    const point = tf.applyInverse({ x, y });
-    return isPointInRoundRect(point, this.getRenderRect(), this.getRoundGap());
+  hitOnControl(x: number, y: number): Control | null {
+    const renderRect = this.getRenderRect();
+    if (this.getIsSelected()) {
+      if (!isPointInRect({ x, y }, renderRect)) {
+        return null;
+      }
+      return this.resizers.find(c => c.hitTest(x, y)) || null;
+    }
+    return null;
+  }
+
+  hitTest(x: number, y: number): boolean | Control {
+    if (this.getIsSelected()) {
+      const renderRect = this.getRenderRect();
+      if (!isPointInRect({ x, y }, renderRect)) {
+        return false;
+      }
+      const rect = this.getRect();
+      const resizer = this.resizers.find(el => el.hitTest(x - rect.x, y - rect.y));
+      if (resizer) return resizer;
+    }
+    return isPointInRoundRect({ x, y }, this.getRenderRect(), this.getRoundGap());
   }
 
   paint(ctx: CanvasRenderingContext2D) {
@@ -61,5 +92,15 @@ export class RectModel extends Model<RectModelAttrs> {
     }
   }
 
-  dispose() {}
+  afterPaint(ctx: CanvasRenderingContext2D, editor: Editor): void {
+    const rect = this.getRect();
+    if (this.getIsSelected()) {
+      ctx.save();
+      ctx.translate(rect.x, rect.y);
+      this.resizers.forEach(resizer => {
+        resizer.paint(ctx);
+      });
+      ctx.restore();
+    }
+  }
 }

@@ -1,7 +1,8 @@
 import { IRect, getRectByTwoPoint, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor, EditorPlugin } from './editor';
-import { Model } from './models';
+import { Model, ModelEvents } from './models';
+import { Control } from './models/control';
 
 export class EventManager implements EditorPlugin {
   private mousedown = false;
@@ -9,6 +10,16 @@ export class EventManager implements EditorPlugin {
    * 框选框
    */
   private selectionRect: IRect | null = null;
+
+  /**
+   * 当前鼠标下的元素
+   */
+  private mouseEl: Model | null = null;
+
+  /**
+   * 当前鼠标下元素的控制点
+   */
+  private mouseControl: Control | null = null;
 
   constructor(private editor: Editor) {
     this.setup();
@@ -26,19 +37,33 @@ export class EventManager implements EditorPlugin {
     this.mousedown = true;
     this.selectionRect = null;
     const selectionManager = this.editor.selectionManager;
+    const el = this.mouseEl;
     const zoom = this.editor.viewportManager.getZoom();
-    const el = this.editor.getElementAt(e);
+    // 反选
     if (e.shiftKey && el) {
       selectionManager.toggleSelection(el);
       return;
     }
-    const startPoint = this.editor.viewportManager.getScenePoint(
-      {
-        x: e.clientX,
-        y: e.clientY
-      },
-      zoom
-    );
+    if (el) {
+      if (this.mouseControl) {
+        // 如果当前点击的是控制点，由控制点自行处理交互
+        this.mouseControl.handleMousedown(e, this.editor);
+      } else {
+        // 否则执行拖拽元素的逻辑
+        this.handleMoveElement(e, el);
+      }
+    } else {
+      this.handleBoxSelection(e);
+    }
+  };
+
+  /**
+   * 选中元素并拖拽移动
+   * @param e
+   */
+  handleMoveElement(e: MouseEvent, el: Model) {
+    const selectionManager = this.editor.selectionManager;
+    const zoom = this.editor.viewportManager.getZoom();
     if (el && !selectionManager.isSelected(el)) {
       selectionManager.setSelection([el]);
     }
@@ -53,52 +78,78 @@ export class EventManager implements EditorPlugin {
       const offsetY = ev.clientY - lastY;
       lastX = ev.clientX;
       lastY = ev.clientY;
-      if (el) {
-        this.selectionRect = null;
-        // el.move(offsetX / zoom, offsetY / zoom);
-        selection.forEach(m => {
-          m.move(offsetX / zoom, offsetY / zoom);
-        });
-      } else {
-        const currentPoint = this.editor.viewportManager.getScenePoint({
-          x: ev.clientX,
-          y: ev.clientY
-        });
-        this.selectionRect = getRectByTwoPoint(startPoint, currentPoint);
-      }
+      this.selectionRect = null;
+      selection.forEach(m => {
+        m.move(offsetX / zoom, offsetY / zoom);
+      });
     };
     const onUp = (ev: MouseEvent) => {
       const offsetX = ev.clientX - startX;
       const offsetY = ev.clientY - startY;
       if (offsetX || offsetY) {
-        let action: Action;
-        if (el) {
-          action = {
-            undo: () => {
-              selection.forEach(el => {
-                el.move(-offsetX / zoom, -offsetY / zoom);
-              });
-            },
-            redo: () => {
-              selection.forEach(el => {
-                el.move(offsetX / zoom, offsetY / zoom);
-              });
-            }
-          };
-          this.editor.actionManager.push(action);
-        } else {
-          const rect = this.selectionRect!;
-          this.selectionRect = null;
-          const selection: Model[] = [];
-          this.editor.box.each(m => {
-            const renderRect = m.getRenderRect();
-            if (isRectIntersect(rect, renderRect)) {
-              selection.push(m);
-            }
-          });
-          selectionManager.setSelection(selection);
-        }
-      } else if (!el) {
+        let action: Action = {
+          undo: () => {
+            selection.forEach(el => {
+              el.move(-offsetX / zoom, -offsetY / zoom);
+            });
+          },
+          redo: () => {
+            selection.forEach(el => {
+              el.move(offsetX / zoom, offsetY / zoom);
+            });
+          }
+        };
+        this.editor.actionManager.push(action);
+      }
+
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mouseleave', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mouseleave', onUp);
+  }
+
+  /**
+   * 通过选择框多选
+   * @param e
+   */
+  handleBoxSelection(e: MouseEvent) {
+    const selectionManager = this.editor.selectionManager;
+    const zoom = this.editor.viewportManager.getZoom();
+    const startPoint = this.editor.viewportManager.getScenePoint(
+      {
+        x: e.clientX,
+        y: e.clientY
+      },
+      zoom
+    );
+    let startX = e.clientX,
+      startY = e.clientY;
+
+    const onMove = (ev: MouseEvent) => {
+      const currentPoint = this.editor.viewportManager.getScenePoint({
+        x: ev.clientX,
+        y: ev.clientY
+      });
+      this.selectionRect = getRectByTwoPoint(startPoint, currentPoint);
+    };
+    const onUp = (ev: MouseEvent) => {
+      const offsetX = ev.clientX - startX;
+      const offsetY = ev.clientY - startY;
+      if (offsetX || offsetY) {
+        const rect = this.selectionRect!;
+        this.selectionRect = null;
+        const selection: Model[] = [];
+        this.editor.box.each(m => {
+          const renderRect = m.getRenderRect();
+          if (isRectIntersect(rect, renderRect)) {
+            selection.push(m);
+          }
+        });
+        selectionManager.setSelection(selection);
+      } else {
         selectionManager.clearSelection();
       }
 
@@ -109,16 +160,26 @@ export class EventManager implements EditorPlugin {
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
     window.addEventListener('mouseleave', onUp);
-  };
+  }
 
   handleMouseMove = (e: MouseEvent) => {
     if (this.mousedown) return;
-    const els = this.editor.getElementsAt(e);
-    const m = els[0];
-    if (m) {
+    const result = this.editor.getElementAt(e) || null;
+    const model = (this.mouseEl = result?.model || null);
+    this.mouseControl = result?.control || null;
+    if (this.mouseControl) {
+      this.setCursorStyle(this.mouseControl.getCursor());
+    } else if (model) {
       this.setCursorStyle('move');
     } else {
       this.setCursorStyle('default');
+    }
+    if (model === this.mouseEl) return;
+    if (this.mouseEl) {
+      this.mouseEl.emit(ModelEvents.mouseOut, e);
+    }
+    if (this.mouseEl) {
+      this.mouseEl.emit(ModelEvents.mouseIn, e);
     }
   };
 
@@ -169,9 +230,10 @@ export class EventManager implements EditorPlugin {
     }
   }
 
-  /**
-   * 框选
-   */
+  isHovered(model: Model) {
+    return this.mouseEl === model;
+  }
+
   static SELECTION_STROKE_COLOR = '#0f8eff';
   static SELECTION_FILL_COLOR = '#0f8eff33';
 }

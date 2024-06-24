@@ -6,6 +6,7 @@ import { ViewportEvents, ViewportManager } from './viewport-manager';
 import { Model } from './models';
 import { ActionManager } from './action-manager';
 import { SelectionManager } from './selection-manager';
+import { Control } from './models/control';
 
 export interface EditorPlugin {
   paint(ctx: CanvasRenderingContext2D): void;
@@ -113,16 +114,24 @@ export class Editor {
     return results;
   }
 
-  getElementAt(e: MouseEvent): Model | null {
+  getElementAt(e: MouseEvent): {
+    model: Model;
+    control: Control | null;
+  } | null {
     const { x, y } = this.viewportManager.getScenePoint({ x: e.clientX, y: e.clientY });
-    let res: Model | null = null;
+    let model: Model | null = null;
+    let control: Control | null = null;
     this.box.reverseEach(m => {
-      if (m.hitTest(x, y)) {
-        res = m;
+      const hitResult = m.hitTest(x, y);
+      if (hitResult) {
+        model = m;
+        if (typeof hitResult !== 'boolean') {
+          control = hitResult;
+        }
         return true;
       }
     });
-    return res;
+    return model ? { model, control } : null;
   }
 
   fullRepaint() {

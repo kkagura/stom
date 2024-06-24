@@ -1,4 +1,10 @@
-import { IPoint, IRect } from './type';
+import { Matrix } from './matrix';
+import { IMatrixArr, IPoint, IRect } from './type';
+
+export const isPointInRect = (point: IPoint, rect: IRect, padding = 0) => {
+  rect = extendRect(rect, padding);
+  return point.x >= rect.x && point.y >= rect.y && point.x <= rect.width + rect.x && point.y <= rect.height + rect.y;
+};
 
 export const isPointInRoundRect = (point: IPoint, rect: IRect, cornerRadii: number, padding = 0) => {
   const x = rect.x - padding;

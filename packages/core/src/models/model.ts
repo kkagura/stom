@@ -1,15 +1,24 @@
 import { IMatrixArr, IRect } from '@stom/geo';
 import { EventEmitter, genId } from '@stom/shared';
 import { Editor } from '../editor';
+import { Control } from './control';
 
 export enum ModelEvents {
   change = 'change',
-  renderRectChange = 'renderRectChange'
+  renderRectChange = 'renderRectChange',
+  mouseIn = 'mouseIn',
+  mouseOut = 'mouseOut',
+  selected = 'selected',
+  unselected = 'unselected'
 }
 
 interface Events {
   [ModelEvents.change]: (m: Model) => void;
   [ModelEvents.renderRectChange]: (m: Model) => void;
+  [ModelEvents.mouseIn]: (e: MouseEvent) => void;
+  [ModelEvents.mouseOut]: (e: MouseEvent) => void;
+  [ModelEvents.selected]: () => void;
+  [ModelEvents.unselected]: () => void;
 }
 
 export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events> {
@@ -25,13 +34,35 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   private layerId: string = '';
 
+  private isHovered = false;
+  private isSelected = false;
+
   constructor(public id: string = genId()) {
     super();
+
+    this.on(ModelEvents.mouseIn, () => {
+      this.setIsHovered(true);
+    });
+    this.on(ModelEvents.mouseOut, () => {
+      this.setIsHovered(false);
+    });
+
+    this.on(ModelEvents.selected, () => {
+      this.setIsSelected(true);
+    });
+    this.on(ModelEvents.unselected, () => {
+      this.setIsSelected(false);
+    });
+
+    this.init();
   }
+
+  init() {}
 
   /**
    * 触发改变
    * 1: 包围盒属性变化
+   * 2: 交互属性变化（例如是否悬浮、是否选中）
    * @param type
    */
   triggerChange(type: number) {
@@ -41,22 +72,40 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.emit(ModelEvents.change, this);
   }
 
+  getMinWidth() {
+    return 20;
+  }
+
+  getMinHeight() {
+    return 20;
+  }
+
   setSize(w: number, h: number) {
-    this.rect.width = w;
-    this.rect.height = h;
-    this.triggerChange(1);
+    w = Math.max(w, this.getMinWidth());
+    h = Math.max(h, this.getMinHeight());
+    let changed = false;
+    if (w !== this.rect.width) {
+      this.rect.width = w;
+      changed = true;
+    }
+    if (h !== this.rect.height) {
+      this.rect.height = h;
+      changed = true;
+    }
+    changed && this.triggerChange(1);
   }
 
   setPosition(x: number, y: number) {
+    let changed = x !== this.rect.x || y !== this.rect.y;
     this.rect.x = x;
     this.rect.y = y;
-    this.triggerChange(1);
+    changed && this.triggerChange(1);
   }
 
-  move(x: number, y: number) {
-    this.rect.x += x;
-    this.rect.y += y;
-    if (x !== 0 || y !== 0) {
+  move(offsetX: number, offsetY: number) {
+    this.rect.x += offsetX;
+    this.rect.y += offsetY;
+    if (offsetX !== 0 || offsetY !== 0) {
       this.triggerChange(1);
     }
   }
@@ -77,7 +126,11 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.layerId = id;
   }
 
-  hitTest(x: number, y: number): boolean {
+  getTransform() {
+    return this.transform;
+  }
+
+  hitTest(x: number, y: number): boolean | Control {
     return false;
   }
 
@@ -87,5 +140,29 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   afterPaint(ctx: CanvasRenderingContext2D, editor: Editor) {}
 
-  abstract dispose(): void;
+  getIsHovered() {
+    return this.isHovered;
+  }
+
+  setIsHovered(isHovered: boolean) {
+    if (this.isHovered === isHovered) return;
+    this.isHovered = isHovered;
+    this.triggerChange(2);
+  }
+
+  getIsSelected() {
+    return this.isSelected;
+  }
+
+  setIsSelected(isSelected: boolean) {
+    if (this.isSelected === isSelected) return;
+    this.isSelected = isSelected;
+    this.triggerChange(2);
+  }
+
+  dispose() {
+    this.clear();
+    this.isSelected = false;
+    this.isHovered = false;
+  }
 }

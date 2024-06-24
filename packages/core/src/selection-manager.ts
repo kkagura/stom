@@ -27,7 +27,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     super();
     editor.box.on(BoxEvents.removeModels, models => {
       models.forEach(model => {
-        if (this.selection.includes(model)) {
+        if (this.isSelected(model)) {
           this.removeSelection(model);
         }
       });
@@ -37,11 +37,13 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
 
   private _addSelection(model: Model) {
     model.on(ModelEvents.renderRectChange, this.caculateContainRect);
+    model.emit(ModelEvents.selected);
     this.selection.push(model);
   }
 
   private _removeSelection(model: Model) {
     model.off(ModelEvents.renderRectChange, this.caculateContainRect);
+    model.emit(ModelEvents.unselected);
     arrayRemove(this.selection, model);
   }
 
