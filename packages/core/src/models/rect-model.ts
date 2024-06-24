@@ -103,4 +103,11 @@ export class RectModel extends Model<RectModelAttrs> {
       ctx.restore();
     }
   }
+
+  dispose() {
+    this.resizers.forEach(resizer => {
+      resizer.dispose();
+    });
+    super.dispose();
+  }
 }

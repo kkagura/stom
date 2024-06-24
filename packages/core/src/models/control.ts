@@ -1,8 +1,25 @@
 import { IRect } from '@stom/geo';
 import { Model } from './model';
 import { Editor } from '../editor';
+import { EventEmitter } from '@stom/shared';
 
-export abstract class Control {
+export enum ControlEvents {
+  change = 'change',
+  mouseIn = 'mouseIn',
+  mouseOut = 'mouseOut',
+  mouseDown = 'mouseDown',
+  mouseUp = 'mouseUp'
+}
+
+interface Events {
+  [ControlEvents.change]: () => void;
+  [ControlEvents.mouseIn]: (e: MouseEvent) => void;
+  [ControlEvents.mouseOut]: (e: MouseEvent) => void;
+  [ControlEvents.mouseDown]: (e: MouseEvent) => void;
+  [ControlEvents.mouseUp]: (e: MouseEvent) => void;
+}
+
+export abstract class Control<T extends Record<string | symbol, any> = Events> extends EventEmitter<T> {
   rect: IRect = {
     x: 0,
     y: 0,
@@ -14,6 +31,7 @@ export abstract class Control {
     private parent: Model,
     private tag: string
   ) {
+    super();
     this.init();
   }
 
@@ -54,4 +72,8 @@ export abstract class Control {
   }
 
   abstract paint(ctx: CanvasRenderingContext2D): void;
+
+  dispose() {
+    this.clear();
+  }
 }

@@ -1,5 +1,5 @@
 import { IRect, isPointInRect } from '@stom/geo';
-import { Control } from './control';
+import { Control, ControlEvents } from './control';
 import { Model, ModelEvents } from './model';
 import { Action } from '../action-manager';
 import { Editor } from '../editor';
@@ -18,11 +18,25 @@ export enum ResizeTag {
 export const resizeControlTags = Object.values(ResizeTag);
 
 export class ResizeControl extends Control {
+  private isHovered = false;
   init() {
     this.setSize(ResizeControl.SIZE, ResizeControl.SIZE);
     this.updatePosition();
+
     this.getParent().on(ModelEvents.renderRectChange, () => {
       this.updatePosition();
+    });
+
+    this.on(ControlEvents.change, () => {
+      this.getParent().emit(ModelEvents.change, this.getParent());
+    });
+
+    this.on(ControlEvents.mouseIn, () => {
+      this.setIsHovered(true);
+    });
+
+    this.on(ControlEvents.mouseOut, () => {
+      this.setIsHovered(false);
     });
   }
 
@@ -49,11 +63,20 @@ export class ResizeControl extends Control {
     }
   }
 
+  getIsHovered() {
+    return this.isHovered;
+  }
+
+  setIsHovered(isHovered: boolean) {
+    if (isHovered === this.isHovered) return;
+    this.isHovered = isHovered;
+    this.emit(ControlEvents.change);
+  }
   paint(ctx: CanvasRenderingContext2D): void {
     const rect = this.getRect();
     ctx.beginPath();
     ctx.rect(rect.x, rect.y, rect.width, rect.height);
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = ctx.fillStyle = this.isHovered ? ResizeControl.BORDER_COLOR : '#fff';
     ctx.fill();
     ctx.strokeStyle = ResizeControl.BORDER_COLOR;
     ctx.lineWidth = 1;
@@ -65,6 +88,7 @@ export class ResizeControl extends Control {
   }
 
   handleMousedown(e: MouseEvent, editor: Editor) {
+    this.emit(ControlEvents.mouseDown, e);
     const zoom = editor.viewportManager.getZoom();
     const startX = e.clientX,
       startY = e.clientY;
@@ -148,7 +172,10 @@ export class ResizeControl extends Control {
         }
       }
     };
-    const onUp = (ev: MouseEvent) => {
+    const onUp = (e: MouseEvent) => {
+      this.emit(ControlEvents.mouseUp, e);
+      // 修改isMoving之后需要手动触发一下父元素的重绘
+      parent.emit(ModelEvents.change, parent);
       const newRect = { ...parent.getRect() };
       const action: Action = {
         undo() {

@@ -2,7 +2,7 @@ import { IRect, getRectByTwoPoint, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor, EditorPlugin } from './editor';
 import { Model, ModelEvents } from './models';
-import { Control } from './models/control';
+import { Control, ControlEvents } from './models/control';
 
 export class EventManager implements EditorPlugin {
   private mousedown = false;
@@ -165,8 +165,10 @@ export class EventManager implements EditorPlugin {
   handleMouseMove = (e: MouseEvent) => {
     if (this.mousedown) return;
     const result = this.editor.getElementAt(e) || null;
+    const oldModel = this.mouseEl;
+    const oldControl = this.mouseControl;
     const model = (this.mouseEl = result?.model || null);
-    this.mouseControl = result?.control || null;
+    const control = (this.mouseControl = result?.control || null);
     if (this.mouseControl) {
       this.setCursorStyle(this.mouseControl.getCursor());
     } else if (model) {
@@ -174,12 +176,23 @@ export class EventManager implements EditorPlugin {
     } else {
       this.setCursorStyle('default');
     }
-    if (model === this.mouseEl) return;
-    if (this.mouseEl) {
-      this.mouseEl.emit(ModelEvents.mouseOut, e);
+
+    if (model !== oldModel) {
+      if (oldModel) {
+        oldModel.emit(ModelEvents.mouseOut, e);
+      }
+      if (model) {
+        model.emit(ModelEvents.mouseIn, e);
+      }
     }
-    if (this.mouseEl) {
-      this.mouseEl.emit(ModelEvents.mouseIn, e);
+
+    if (control !== oldControl) {
+      if (oldControl) {
+        oldControl.emit(ControlEvents.mouseOut, e);
+      }
+      if (control) {
+        control.emit(ControlEvents.mouseIn, e);
+      }
     }
   };
 
