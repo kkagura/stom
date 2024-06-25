@@ -1,6 +1,7 @@
 import { EventEmitter, arrayRemove, warn } from '@stom/shared';
 import { Model, ModelEvents } from './models/model';
 import { Layer } from './layer';
+import { CommonEvents } from './models/common-events';
 
 export enum BoxEvents {
   addModels = 'add-models',
@@ -68,7 +69,7 @@ export class Box extends EventEmitter<Events> {
         layer = this.getDefaultLayer();
         model.setLayerId('default');
       }
-      model.on(ModelEvents.change, () => {
+      model.on(CommonEvents.change, () => {
         this.emit(BoxEvents.modelsChange, [model]);
       });
       this.modelMap.set(model.id, model);

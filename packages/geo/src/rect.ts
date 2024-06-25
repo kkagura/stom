@@ -1,5 +1,6 @@
 import { Matrix } from './matrix';
-import { IMatrixArr, IPoint, IRect } from './type';
+import { getDistance } from './point';
+import { IMatrixArr, IPoint, IRect, ISize } from './type';
 
 export const isPointInRect = (point: IPoint, rect: IRect, padding = 0) => {
   rect = extendRect(rect, padding);
@@ -77,5 +78,168 @@ export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
     y: Math.min(point1.y, point2.y),
     width: Math.abs(point1.x - point2.x),
     height: Math.abs(point1.y - point2.y)
+  };
+};
+
+export enum ResizeDirs {
+  n = 'n',
+  s = 's',
+  e = 'e',
+  w = 'w',
+  nw = 'nw',
+  ne = 'ne',
+  sw = 'sw',
+  se = 'se'
+}
+
+export interface ITransformRect {
+  width: number;
+  height: number;
+  transform: IMatrixArr;
+}
+
+interface ResizeRectUtil {
+  getLocalOrigin(width: number, height: number): IPoint;
+  getNewSize(
+    newLocalPt: IPoint,
+    localOrigin: IPoint,
+    rect: { width: number; height: number }
+  ): {
+    width: number;
+    height: number;
+  };
+}
+
+const resizeRectUtils: Record<ResizeDirs, ResizeRectUtil> = {
+  [ResizeDirs.n]: {
+    getLocalOrigin: (width, height) => ({ x: width / 2, y: height }),
+    getNewSize: (newLocalPt, localOrigin, rect) => ({
+      width: rect.width,
+      height: localOrigin.y - newLocalPt.y
+    })
+  },
+  [ResizeDirs.e]: {
+    getLocalOrigin: (_width, height) => ({ x: 0, y: height / 2 }),
+    getNewSize: (newLocalPt, localOrigin, rect) => ({
+      width: newLocalPt.x - localOrigin.x,
+      height: rect.height
+    })
+  },
+  [ResizeDirs.s]: {
+    getLocalOrigin: width => ({ x: width / 2, y: 0 }),
+    getNewSize: (newLocalPt, localOrigin, rect) => ({
+      width: rect.width,
+      height: newLocalPt.y - localOrigin.y
+    })
+  },
+  [ResizeDirs.w]: {
+    getLocalOrigin: (width, height) => ({ x: width, y: height / 2 }),
+    getNewSize: (newLocalPt, localOrigin, rect) => ({
+      width: localOrigin.x - newLocalPt.x,
+      height: rect.height
+    })
+  },
+  [ResizeDirs.nw]: {
+    getLocalOrigin: (width, height) => {
+      return { x: width, y: height };
+    },
+    getNewSize: (newLocalPt, localOrigin) => {
+      return {
+        width: localOrigin.x - newLocalPt.x,
+        height: localOrigin.y - newLocalPt.y
+      };
+    }
+  },
+  [ResizeDirs.ne]: {
+    getLocalOrigin: (_width, height) => ({ x: 0, y: height }),
+    getNewSize: (newLocalPt, localOrigin) => ({
+      width: newLocalPt.x - localOrigin.x,
+      height: localOrigin.y - newLocalPt.y
+    })
+  },
+  [ResizeDirs.sw]: {
+    getLocalOrigin: (width: number) => ({ x: width, y: 0 }),
+    getNewSize: (newLocalPt: IPoint, localOrigin: IPoint) => ({
+      width: localOrigin.x - newLocalPt.x,
+      height: newLocalPt.y - localOrigin.y
+    })
+  },
+  [ResizeDirs.se]: {
+    getLocalOrigin: () => ({ x: 0, y: 0 }),
+    getNewSize: (newLocalPt, localOrigin) => ({
+      width: newLocalPt.x - localOrigin.x,
+      height: newLocalPt.y - localOrigin.y
+    })
+  }
+};
+
+export const resizeRect = (dir: ResizeDirs, newGlobalPt: IPoint, rect: ITransformRect): ITransformRect => {
+  const resizeOp = resizeRectUtils[dir];
+
+  const transform = new Matrix(...rect.transform);
+  const newRect = {
+    width: 0,
+    height: 0,
+    transform: transform.clone()
+  };
+
+  const newLocalPt = transform.applyInverse(newGlobalPt);
+  const localOrigin = resizeOp.getLocalOrigin(rect.width, rect.height);
+  const size = resizeOp.getNewSize(newLocalPt, localOrigin, rect);
+  const scaleTf = new Matrix();
+  scaleTf.scale(size.width / rect.width, size.height / rect.height);
+  newRect.width = rect.width;
+  newRect.height = rect.height;
+
+  newRect.transform = newRect.transform.append(scaleTf);
+
+  const newGlobalOrigin = newRect.transform.apply(resizeOp.getLocalOrigin(newRect.width, newRect.height));
+  const globalOrigin = transform.apply(localOrigin);
+
+  const offset = {
+    x: globalOrigin.x - newGlobalOrigin.x,
+    y: globalOrigin.y - newGlobalOrigin.y
+  };
+  newRect.transform.prepend(new Matrix().translate(offset.x, offset.y));
+  const scaleX = Math.sign(size.width) || 1;
+  const scaleY = Math.sign(size.height) || 1;
+  const flipFixedTf = new Matrix()
+    .translate(-newRect.width / 2, -newRect.height / 2)
+    .scale(scaleX, scaleY)
+    .translate(newRect.width / 2, newRect.height / 2);
+  newRect.transform.append(flipFixedTf);
+  return {
+    width: newRect.width,
+    height: newRect.height,
+    transform: newRect.transform.getArray()
+  };
+};
+
+export const getTransformedSize = (rect: ITransformRect): ISize => {
+  const tf = new Matrix(rect.transform[0], rect.transform[1], rect.transform[2], rect.transform[3], 0, 0);
+  const rightTop = tf.apply({ x: rect.width, y: 0 });
+  const leftBottom = tf.apply({ x: 0, y: rect.height });
+  const zero = { x: 0, y: 0 };
+  return {
+    width: getDistance(rightTop, zero),
+    height: getDistance(leftBottom, zero)
+  };
+};
+
+/**
+ * 重新计算 width、height 和 transform
+ * 确保 transform 后的 size 和 transform 前的 size 相同
+ */
+export const recomputeTransformRect = (rect: ITransformRect): ITransformRect => {
+  const newSize = getTransformedSize(rect);
+  const scaleX = newSize.width ? rect.width / newSize.width : 1;
+  const scaleY = newSize.height ? rect.height / newSize.height : 1;
+  const scaleMatrix = new Matrix().scale(scaleX, scaleY);
+
+  const tf = new Matrix(...rect.transform).append(scaleMatrix);
+  return {
+    width: newSize.width,
+    height: newSize.height,
+    transform: tf.getArray()
   };
 };

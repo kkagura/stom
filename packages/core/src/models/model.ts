@@ -2,10 +2,9 @@ import { IMatrixArr, IRect } from '@stom/geo';
 import { EventEmitter, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
+import { CommonEvents } from './common-events';
 
 export enum ModelEvents {
-  change = 'change',
-  renderRectChange = 'renderRectChange',
   mouseIn = 'mouseIn',
   mouseOut = 'mouseOut',
   selected = 'selected',
@@ -13,8 +12,8 @@ export enum ModelEvents {
 }
 
 interface Events {
-  [ModelEvents.change]: (m: Model) => void;
-  [ModelEvents.renderRectChange]: (m: Model) => void;
+  [CommonEvents.change]: () => void;
+  [CommonEvents.rectChange]: (m: Model) => void;
   [ModelEvents.mouseIn]: (e: MouseEvent) => void;
   [ModelEvents.mouseOut]: (e: MouseEvent) => void;
   [ModelEvents.selected]: () => void;
@@ -67,17 +66,17 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
    */
   triggerChange(type: number) {
     if (type === 1) {
-      this.emit(ModelEvents.renderRectChange, this);
+      this.emit(CommonEvents.rectChange, this);
     }
-    this.emit(ModelEvents.change, this);
+    this.emit(CommonEvents.change);
   }
 
   getMinWidth() {
-    return 20;
+    return 0;
   }
 
   getMinHeight() {
-    return 20;
+    return 0;
   }
 
   setSize(w: number, h: number) {
@@ -93,6 +92,20 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       changed = true;
     }
     changed && this.triggerChange(1);
+  }
+
+  changeSize(dw: number, dh: number) {
+    const oldW = this.rect.width;
+    const oldH = this.rect.height;
+    const w = oldW + dw;
+    const h = oldH + dh;
+    this.setSize(w, h);
+    const newW = this.rect.width;
+    const newH = this.rect.height;
+    return {
+      dx: newW - oldW,
+      dy: newH - oldH
+    };
   }
 
   setPosition(x: number, y: number) {
@@ -126,8 +139,23 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.layerId = id;
   }
 
-  getTransform() {
-    return this.transform;
+  getTransform(): IMatrixArr {
+    return [...this.transform];
+  }
+
+  setTransform(transform: IMatrixArr) {
+    this.transform = [...transform];
+  }
+
+  getWordTransform(): IMatrixArr {
+    const [a, b, c, d] = this.transform;
+    return [a, b, c, d, this.rect.x, this.rect.y];
+  }
+
+  setWordTransform(transform: IMatrixArr) {
+    const [a, b, c, d, dx, dy] = transform;
+    this.transform = [a, b, c, d, 0, 0];
+    this.setPosition(dx, dy);
   }
 
   hitTest(x: number, y: number): boolean | Control {

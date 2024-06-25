@@ -34,25 +34,24 @@ export class EventManager implements EditorPlugin {
   }
 
   handleMouseDown = (e: MouseEvent) => {
+    console.log(this.mouseControl);
     this.mousedown = true;
     this.selectionRect = null;
     const selectionManager = this.editor.selectionManager;
     const el = this.mouseEl;
-    const zoom = this.editor.viewportManager.getZoom();
     // 反选
     if (e.shiftKey && el) {
       selectionManager.toggleSelection(el);
       return;
     }
-    if (el) {
-      if (this.mouseControl) {
-        // 如果当前点击的是控制点，由控制点自行处理交互
-        this.mouseControl.handleMousedown(e, this.editor);
-      } else {
-        // 否则执行拖拽元素的逻辑
-        this.handleMoveElement(e, el);
-      }
+    if (this.mouseControl) {
+      // 如果当前点击的是控制点，由控制点自行处理交互
+      this.mouseControl.handleMousedown(e, this.editor);
+    } else if (el) {
+      // 否则执行拖拽元素的逻辑
+      this.handleMoveElement(e, el);
     } else {
+      // 鼠标下是空白时，执行框选逻辑
       this.handleBoxSelection(e);
     }
   };
@@ -164,34 +163,41 @@ export class EventManager implements EditorPlugin {
 
   handleMouseMove = (e: MouseEvent) => {
     if (this.mousedown) return;
-    const result = this.editor.getElementAt(e) || null;
+    const point = this.editor.viewportManager.getScenePoint({ x: e.clientX, y: e.clientY });
+    const resizeControl = this.editor.selectionManager.getControlAt(point);
     const oldModel = this.mouseEl;
     const oldControl = this.mouseControl;
-    const model = (this.mouseEl = result?.model || null);
-    const control = (this.mouseControl = result?.control || null);
+    if (resizeControl) {
+      this.mouseControl = resizeControl;
+      this.mouseEl = null;
+    } else {
+      const result = this.editor.getElementAt(e) || null;
+      this.mouseEl = result?.model || null;
+      this.mouseControl = result?.control || null;
+    }
     if (this.mouseControl) {
       this.setCursorStyle(this.mouseControl.getCursor());
-    } else if (model) {
+    } else if (this.mouseEl) {
       this.setCursorStyle('move');
     } else {
       this.setCursorStyle('default');
     }
 
-    if (model !== oldModel) {
+    if (this.mouseEl !== oldModel) {
       if (oldModel) {
         oldModel.emit(ModelEvents.mouseOut, e);
       }
-      if (model) {
-        model.emit(ModelEvents.mouseIn, e);
+      if (this.mouseEl) {
+        this.mouseEl.emit(ModelEvents.mouseIn, e);
       }
     }
 
-    if (control !== oldControl) {
+    if (this.mouseControl !== oldControl) {
       if (oldControl) {
         oldControl.emit(ControlEvents.mouseOut, e);
       }
-      if (control) {
-        control.emit(ControlEvents.mouseIn, e);
+      if (this.mouseControl) {
+        this.mouseControl.emit(ControlEvents.mouseIn, e);
       }
     }
   };
