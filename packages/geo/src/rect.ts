@@ -1,6 +1,6 @@
 import { Matrix } from './matrix';
 import { getDistance } from './point';
-import { IMatrixArr, IPoint, IRect, ISize } from './type';
+import { IBox, IMatrixArr, IPoint, IRect, ISize } from './type';
 
 export const isPointInRect = (point: IPoint, rect: IRect, padding = 0) => {
   rect = extendRect(rect, padding);
@@ -241,5 +241,35 @@ export const recomputeTransformRect = (rect: ITransformRect): ITransformRect => 
     width: newSize.width,
     height: newSize.height,
     transform: tf.getArray()
+  };
+};
+
+/**
+ * Convert a rectangle to an array of vertices
+ */
+export const rectToVertices = (rect: IRect, tf?: IMatrixArr): IPoint[] => {
+  const { x, y, width, height } = rect;
+  let pts = [
+    { x, y },
+    { x: x + width, y },
+    { x: x + width, y: y + height },
+    { x, y: y + height }
+  ];
+  if (tf) {
+    const matrix = new Matrix(...tf);
+    pts = pts.map(point => {
+      const pt = matrix.apply(point);
+      return { x: pt.x, y: pt.y };
+    });
+  }
+  return pts;
+};
+
+export const boxToRect = (box: IBox): IRect => {
+  return {
+    x: box.minX,
+    y: box.minY,
+    width: box.maxX - box.minX,
+    height: box.maxY - box.minY
   };
 };

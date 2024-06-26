@@ -27,3 +27,10 @@ export interface IRect extends IPoint, ISize {}
  *
  */
 export type IMatrixArr = [a: number, b: number, c: number, d: number, dx: number, dy: number];
+
+export interface IBox {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}

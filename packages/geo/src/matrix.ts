@@ -379,3 +379,10 @@ export const invertMatrix = (tf: IMatrixArr): IMatrixArr => {
 
   return [d1 / n, -b1 / n, -c1 / n, a1 / n, (c1 * tf[5] - d1 * tx1) / n, -(a1 * tf[5] - b1 * tx1) / n];
 };
+
+export const applyMatrix = (tf: IMatrixArr, pt: IPoint): IPoint => {
+  return {
+    x: pt.x * tf[0] + pt.y * tf[2] + tf[4],
+    y: pt.x * tf[1] + pt.y * tf[3] + tf[5]
+  };
+};

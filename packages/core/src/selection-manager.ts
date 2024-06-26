@@ -2,7 +2,7 @@ import { EventEmitter, arrayRemove } from '@stom/shared';
 import { Model, ModelEvents } from './models';
 import { Editor, EditorPlugin } from './editor';
 import { BoxEvents } from './box';
-import { IPoint, IRect, ResizeDirs, extendRect, isPointInRect, mergeRects } from '@stom/geo';
+import { IPoint, IRect, ResizeDirs, boxToRect, extendRect, isPointInRect, mergeBoxes, mergeRects } from '@stom/geo';
 import { CommonEvents } from './models/common-events';
 import { ResizeControl } from './models/resize-control';
 
@@ -111,6 +111,14 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     }
     this.emit(CommonEvents.rectChange);
   };
+
+  getBoundingRect(): IRect {
+    if (this.selection.length) {
+      const bboxes = this.selection.map(el => el.getBbox());
+      return boxToRect(mergeBoxes(bboxes));
+    }
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
 
   getSelectionList() {
     return this.selection;

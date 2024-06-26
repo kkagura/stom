@@ -64,23 +64,28 @@ export class ResizeControl extends Control<SelectionManager> {
     const originTransformMap = new Map<string, IMatrixArr>();
     const originRectMap = new Map<string, IRect>();
     selectionList.forEach(el => {
-      originTransformMap.set(el.id, el.getWordTransform());
+      originTransformMap.set(el.id, el.getWorldTransform());
       originRectMap.set(el.id, { ...el.getRect() });
     });
-    const { x, y, width, height } = selectionManager.getRect();
+    const { x, y, width, height } = selectionManager.getBoundingRect();
     const startSelectedBoxTf = new Matrix().translate(x, y);
     let lastPoint = { x: e.clientX, y: e.clientY };
-    // todo 偏移问题待解决
     const onMove = (ev: MouseEvent) => {
       const currPoint = { x: ev.clientX, y: ev.clientY };
       if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
       const gloalPt = editor.viewportManager.getScenePoint(currPoint);
       lastPoint = currPoint;
-      const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, { width, height, transform: startSelectedBoxTf.getArray() });
+      const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, {
+        width,
+        height,
+        transform: startSelectedBoxTf.getArray()
+      });
       const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
+
+      const arr = prependedTransform.getArray();
       selectionList.forEach(el => {
         const originWorldTf = originTransformMap.get(el.id)!;
-        const newWorldTf = multiplyMatrix(prependedTransform.getArray(), originWorldTf);
+        const newWorldTf = multiplyMatrix(arr, originWorldTf);
         const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
         const { width, height } = originRectMap.get(el.id)!;
         const newAttrs = recomputeTransformRect({
@@ -89,7 +94,7 @@ export class ResizeControl extends Control<SelectionManager> {
           transform: newLocalTf
         });
         el.setSize(newAttrs.width, newAttrs.height);
-        el.setWordTransform(newAttrs.transform);
+        el.setWorldTransform(newAttrs.transform);
       });
     };
     const onUp = () => {

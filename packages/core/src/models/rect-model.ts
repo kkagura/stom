@@ -21,8 +21,8 @@ export class RectModel extends Model<RectModelAttrs> {
   };
 
   rect: IRect = {
-    x: 50,
-    y: 50,
+    x: 0,
+    y: 0,
     width: 100,
     height: 100
   };

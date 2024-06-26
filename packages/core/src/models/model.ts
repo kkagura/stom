@@ -1,4 +1,4 @@
-import { IMatrixArr, IRect } from '@stom/geo';
+import { IMatrixArr, IRect, ISize, calcRectBbox } from '@stom/geo';
 import { EventEmitter, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
@@ -79,6 +79,10 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return 0;
   }
 
+  getSize(): ISize {
+    return { width: this.rect.width, height: this.rect.height };
+  }
+
   setSize(w: number, h: number) {
     w = Math.max(w, this.getMinWidth());
     h = Math.max(h, this.getMinHeight());
@@ -147,12 +151,12 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.transform = [...transform];
   }
 
-  getWordTransform(): IMatrixArr {
+  getWorldTransform(): IMatrixArr {
     const [a, b, c, d] = this.transform;
     return [a, b, c, d, this.rect.x, this.rect.y];
   }
 
-  setWordTransform(transform: IMatrixArr) {
+  setWorldTransform(transform: IMatrixArr) {
     const [a, b, c, d, dx, dy] = transform;
     this.transform = [a, b, c, d, 0, 0];
     this.setPosition(dx, dy);
@@ -192,5 +196,12 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.clear();
     this.isSelected = false;
     this.isHovered = false;
+  }
+
+  getBbox() {
+    return calcRectBbox({
+      ...this.getSize(),
+      transform: this.getWorldTransform()
+    });
   }
 }
