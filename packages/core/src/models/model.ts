@@ -124,7 +124,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   }
 
   getRect(): IRect {
-    return this.rect;
+    return { ...this.rect };
   }
 
   getRenderRect(): IRect {

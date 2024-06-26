@@ -34,7 +34,6 @@ export class EventManager implements EditorPlugin {
   }
 
   handleMouseDown = (e: MouseEvent) => {
-    console.log(this.mouseControl);
     this.mousedown = true;
     this.selectionRect = null;
     const selectionManager = this.editor.selectionManager;
@@ -48,7 +47,7 @@ export class EventManager implements EditorPlugin {
       // 如果当前点击的是控制点，由控制点自行处理交互
       this.mouseControl.handleMousedown(e, this.editor);
     } else if (el) {
-      // 否则执行拖拽元素的逻辑
+      // 如果当前点击的是元素，执行拖拽元素的逻辑
       this.handleMoveElement(e, el);
     } else {
       // 鼠标下是空白时，执行框选逻辑

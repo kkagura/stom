@@ -69,8 +69,13 @@ export class ResizeControl extends Control<SelectionManager> {
     });
     const { x, y, width, height } = selectionManager.getRect();
     const startSelectedBoxTf = new Matrix().translate(x, y);
+    let lastPoint = { x: e.clientX, y: e.clientY };
+    // todo 偏移问题待解决
     const onMove = (ev: MouseEvent) => {
-      const gloalPt = editor.viewportManager.getScenePoint({ x: ev.clientX, y: ev.clientY });
+      const currPoint = { x: ev.clientX, y: ev.clientY };
+      if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
+      const gloalPt = editor.viewportManager.getScenePoint(currPoint);
+      lastPoint = currPoint;
       const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, { width, height, transform: startSelectedBoxTf.getArray() });
       const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
       selectionList.forEach(el => {
