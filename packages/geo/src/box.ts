@@ -26,7 +26,7 @@ export const getPointsBbox = (points: IPoint[]): IBox => {
 /**
  * calculate AABB
  */
-export const calcRectBbox = (transformRect: ITransformRect, paddingBeforeTransform?: number): Readonly<IBox> => {
+export const calcRectBbox = (transformRect: ITransformRect, paddingBeforeTransform?: number): IBox => {
   let x = 0;
   let y = 0;
   let width = transformRect.width;

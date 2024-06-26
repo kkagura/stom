@@ -37,7 +37,7 @@ export class RectModel extends Model<RectModelAttrs> {
 
   getRenderRect(): IRect {
     const extend = this.attrs.border?.width || 1;
-    const rect = this.getRect();
+    const rect = this.getBRect();
     return extendRect(rect, extend);
   }
 
@@ -47,16 +47,16 @@ export class RectModel extends Model<RectModelAttrs> {
 
   paint(ctx: CanvasRenderingContext2D) {
     const { attrs } = this;
-    const { x, y, width, height } = this.rect;
+    const { width, height } = this.rect;
     ctx.save();
-    const transform = this.getTransform();
+    const transform = this.getWorldTransform();
     ctx.transform(...transform);
     ctx.beginPath();
     const roundGap = this.getRoundGap();
     if (roundGap) {
-      ctx.roundRect(x, y, width, height, roundGap);
+      ctx.roundRect(0, 0, width, height, roundGap);
     } else {
-      ctx.rect(x, y, width, height);
+      ctx.rect(0, 0, width, height);
     }
     if (attrs.fill) {
       ctx.fillStyle = attrs.fillColor;

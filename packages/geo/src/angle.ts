@@ -1,4 +1,5 @@
-import { IPoint } from './type';
+import { Matrix } from './matrix';
+import { IMatrixArr, IPoint } from './type';
 
 /**
  * get sweep angle from vector a to vector b
@@ -21,4 +22,13 @@ export const getSweepAngle = (a: IPoint, b: IPoint) => {
   }
 
   return theta;
+};
+
+/**
+ * get angle of transform matrix
+ */
+export const getTransformAngle = (transform: IMatrixArr, angleBase = { x: 0, y: -1 }) => {
+  const tf = new Matrix(transform[0], transform[1], transform[2], transform[3], 0, 0);
+  const angleVec = tf.apply(angleBase);
+  return getSweepAngle(angleBase, angleVec);
 };

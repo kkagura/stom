@@ -97,9 +97,10 @@ export class Editor {
     } else if (this.dirtyList.size) {
       this.partRepaint();
     }
+    // todo: 优化性能
+    this.paintPlugin();
     this.paintAll = false;
     this.dirtyList.clear();
-    this.paintPlugin();
     requestAnimationFrame(this.repaint);
   };
 

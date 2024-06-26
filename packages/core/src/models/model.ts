@@ -1,4 +1,4 @@
-import { IMatrixArr, IRect, ISize, calcRectBbox } from '@stom/geo';
+import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle } from '@stom/geo';
 import { EventEmitter, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
@@ -198,10 +198,26 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.isHovered = false;
   }
 
-  getBbox() {
+  getBbox(): IBox {
     return calcRectBbox({
       ...this.getSize(),
       transform: this.getWorldTransform()
     });
+  }
+
+  getBRect(): IRect {
+    return boxToRect(this.getBbox());
+  }
+
+  getRotate() {
+    return getTransformAngle(this.getWorldTransform());
+  }
+
+  setRotate(dRotation: number, originWorldTf: IMatrixArr, center: IPoint) {
+    const rotateMatrix = new Matrix().translate(-center.x, -center.y).rotate(dRotation).translate(center.x, center.y);
+
+    const newWoldTf = rotateMatrix.append(new Matrix(...originWorldTf)).getArray();
+
+    this.setWorldTransform(newWoldTf);
   }
 }

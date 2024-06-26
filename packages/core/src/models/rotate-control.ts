@@ -1,22 +1,88 @@
+import { IMatrixArr, IRect, Matrix, getSweepAngle, isPointInRect } from '@stom/geo';
 import { Control, ControlEvents } from './control';
+import { Editor } from '../editor';
+import { SelectionManager } from '../selection-manager';
+import { useDragEvent } from '@stom/shared';
 
-export class RotateControl extends Control {
+export class RotateControl extends Control<SelectionManager> {
   init() {
     this.setSize(RotateControl.SIZE, RotateControl.SIZE);
   }
+
   updatePosition(): void {
     const { width, height } = this.getHost().getRect();
     this.setPosition(width, -RotateControl.SIZE);
   }
+
+  handleMousedown(e: MouseEvent, editor: Editor): void {
+    this.emit(ControlEvents.mouseDown, e);
+    const selectionManager = this.getHost();
+    const selectionList = selectionManager.getSelectionList();
+    const originTransformMap = new Map<string, IMatrixArr>();
+    const originRectMap = new Map<string, IRect>();
+    selectionList.forEach(el => {
+      originTransformMap.set(el.id, el.getWorldTransform());
+      originRectMap.set(el.id, { ...el.getRect() });
+    });
+    const { x, y, width, height } = selectionManager.getBoundingRect();
+    const selectionBoxCenter = {
+      x: x + width / 2,
+      y: y + height / 2
+    };
+    const mousePoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
+    const startRotation = getSweepAngle(
+      { x: 0, y: -1 },
+      {
+        x: mousePoint.x - selectionBoxCenter.x,
+        y: mousePoint.y - selectionBoxCenter.y
+      }
+    );
+
+    selectionManager.togglePauseUpdateRect(true);
+
+    useDragEvent({
+      onDragMove: e => {
+        const lastPoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
+        const { x: cxInSelectedElementsBBox, y: cyInSelectedElementsBBox } = selectionBoxCenter;
+
+        const lastMouseRotation = getSweepAngle(
+          { x: 0, y: -1 },
+          {
+            x: lastPoint.x - cxInSelectedElementsBBox,
+            y: lastPoint.y - cyInSelectedElementsBBox
+          }
+        );
+        const dRotation = lastMouseRotation - startRotation;
+
+        selectionList.forEach(el => {
+          el.setRotate(dRotation, originTransformMap.get(el.id)!, {
+            x: cxInSelectedElementsBBox,
+            y: cyInSelectedElementsBBox
+          });
+        });
+
+        selectionManager.setRotate(dRotation);
+      },
+      onDragEnd(e) {
+        // todo: actionManager
+        selectionManager.setRotate(0);
+        selectionManager.togglePauseUpdateRect(false);
+        selectionManager.caculateContainRect();
+      }
+    });
+  }
+
   paint(ctx: CanvasRenderingContext2D): void {
     // https://demo.qunee.com/svg2canvas/
+    const isActive = this.getIsHovered();
+    const fillColor = isActive ? RotateControl.ACTIVE_FILL_STYLE : RotateControl.FILL_STYLE;
     ctx.save();
     ctx.translate(this.rect.x, this.rect.y);
     ctx.strokeStyle = 'rgba(0,0,0,0)';
     ctx.miterLimit = 4;
     ctx.scale(0.015625, 0.015625);
     ctx.save();
-    ctx.fillStyle = '#333333';
+    ctx.fillStyle = fillColor;
     ctx.beginPath();
     ctx.moveTo(793.6, 993.28);
     ctx.bezierCurveTo(784.384, 993.28, 775.168, 989.696, 768, 983.04);
@@ -46,7 +112,7 @@ export class RotateControl extends Control {
     ctx.stroke();
     ctx.restore();
     ctx.save();
-    ctx.fillStyle = '#333333';
+    ctx.fillStyle = fillColor;
     ctx.beginPath();
     ctx.moveTo(793.6, 993.28);
     ctx.bezierCurveTo(773.6320000000001, 993.28, 757.76, 977.408, 757.76, 957.4399999999999);
@@ -64,7 +130,10 @@ export class RotateControl extends Control {
     ctx.stroke();
     ctx.restore();
     ctx.restore();
+    // ctx.strokeRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
   }
 
   static SIZE = 16;
+  static FILL_STYLE = '#333';
+  static ACTIVE_FILL_STYLE = '#0f8eff';
 }

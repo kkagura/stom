@@ -4,6 +4,7 @@ import { Action } from '../action-manager';
 import { Editor } from '../editor';
 import { CommonEvents } from './common-events';
 import { SelectionManager } from '../selection-manager';
+import { useDragEvent } from '@stom/shared';
 
 export class ResizeControl extends Control<SelectionManager> {
   constructor(host: SelectionManager, tag: ResizeDirs) {
@@ -70,41 +71,39 @@ export class ResizeControl extends Control<SelectionManager> {
     const { x, y, width, height } = selectionManager.getBoundingRect();
     const startSelectedBoxTf = new Matrix().translate(x, y);
     let lastPoint = { x: e.clientX, y: e.clientY };
-    const onMove = (ev: MouseEvent) => {
-      const currPoint = { x: ev.clientX, y: ev.clientY };
-      if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
-      const gloalPt = editor.viewportManager.getScenePoint(currPoint);
-      lastPoint = currPoint;
-      const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, {
-        width,
-        height,
-        transform: startSelectedBoxTf.getArray()
-      });
-      const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
 
-      const arr = prependedTransform.getArray();
-      selectionList.forEach(el => {
-        const originWorldTf = originTransformMap.get(el.id)!;
-        const newWorldTf = multiplyMatrix(arr, originWorldTf);
-        const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
-        const { width, height } = originRectMap.get(el.id)!;
-        const newAttrs = recomputeTransformRect({
+    useDragEvent({
+      onDragMove: ev => {
+        const currPoint = { x: ev.clientX, y: ev.clientY };
+        if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
+        const gloalPt = editor.viewportManager.getScenePoint(currPoint);
+        lastPoint = currPoint;
+        const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, {
           width,
           height,
-          transform: newLocalTf
+          transform: startSelectedBoxTf.getArray()
         });
-        el.setSize(newAttrs.width, newAttrs.height);
-        el.setWorldTransform(newAttrs.transform);
-      });
-    };
-    const onUp = () => {
-      // todo: actionManager
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
+        const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
 
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+        const arr = prependedTransform.getArray();
+        selectionList.forEach(el => {
+          const originWorldTf = originTransformMap.get(el.id)!;
+          const newWorldTf = multiplyMatrix(arr, originWorldTf);
+          const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
+          const { width, height } = originRectMap.get(el.id)!;
+          const newAttrs = recomputeTransformRect({
+            width,
+            height,
+            transform: newLocalTf
+          });
+          el.setSize(newAttrs.width, newAttrs.height);
+          el.setWorldTransform(newAttrs.transform);
+        });
+      },
+      onDragEnd: ev => {
+        // todo: actionManager
+      }
+    });
   }
 
   handleMousedown11(e: MouseEvent, editor: Editor) {

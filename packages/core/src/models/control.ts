@@ -1,4 +1,4 @@
-import { IRect } from '@stom/geo';
+import { IRect, isPointInRect } from '@stom/geo';
 import { Model, ModelEvents } from './model';
 import { Editor } from '../editor';
 import { EventEmitter } from '@stom/shared';
@@ -106,8 +106,11 @@ export abstract class Control<Host extends ControlHost = ControlHost> extends Ev
 
   handleMousedown(e: MouseEvent, editor: Editor) {}
 
-  hitTest(x: number, y: number) {
-    return false;
+  hitTest(x: number, y: number): boolean {
+    const rect = this.getHost().getRect();
+    x -= rect.x;
+    y -= rect.y;
+    return isPointInRect({ x, y }, this.getRect());
   }
 
   getCursor() {

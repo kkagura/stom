@@ -2,9 +2,10 @@ import { EventEmitter, arrayRemove } from '@stom/shared';
 import { Model, ModelEvents } from './models';
 import { Editor, EditorPlugin } from './editor';
 import { BoxEvents } from './box';
-import { IPoint, IRect, ResizeDirs, boxToRect, extendRect, isPointInRect, mergeBoxes, mergeRects } from '@stom/geo';
+import { IMatrixArr, IPoint, IRect, Matrix, ResizeDirs, boxToRect, extendRect, isPointInRect, mergeBoxes, mergeRects } from '@stom/geo';
 import { CommonEvents } from './models/common-events';
 import { ResizeControl } from './models/resize-control';
+import { RotateControl } from './models/rotate-control';
 
 export enum SelectionEvents {
   setSelection = 'setSelection',
@@ -26,6 +27,9 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
   private selection: Model[] = [];
   private containRect: IRect | null = null;
   private resizers: ResizeControl[] = [];
+  private rotator: RotateControl = new RotateControl(this);
+  private pauseUpdateRect: boolean = false;
+  private rotate: number = 0;
   constructor(private editor: Editor) {
     super();
     editor.box.on(BoxEvents.removeModels, models => {
@@ -101,7 +105,12 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     return this.selection.includes(model);
   }
 
+  togglePauseUpdateRect(bool: boolean) {
+    this.pauseUpdateRect = bool;
+  }
+
   caculateContainRect = () => {
+    if (this.pauseUpdateRect) return;
     if (this.selection.length) {
       const rects = this.selection.map(m => m.getRenderRect());
       const box = mergeRects(...rects);
@@ -157,22 +166,32 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     return 100;
   }
 
+  setRotate(dRotation: number) {
+    this.rotate = dRotation;
+  }
+
   paint(ctx: CanvasRenderingContext2D): void {
     if (this.containRect) {
+      ctx.save();
+      const { width, height, x, y } = this.containRect;
+      if (this.rotate) {
+        ctx.translate(x + width / 2, y + height / 2);
+        ctx.rotate(this.rotate);
+        ctx.translate(-(x + width / 2), -(y + height / 2));
+      }
       ctx.beginPath();
-      const { x, y, width, height } = this.containRect;
       ctx.roundRect(x, y, width, height, 2);
       ctx.strokeStyle = SelectionManager.SELECTION_STROKE_COLOR;
       ctx.lineWidth = 2;
       ctx.setLineDash(SelectionManager.SELECTION_LINE_DASH);
       ctx.stroke();
-
-      ctx.save();
       ctx.translate(x, y);
       this.resizers.forEach(resizer => {
         resizer.updatePosition();
         resizer.paint(ctx);
       });
+      this.rotator.updatePosition();
+      this.rotator.paint(ctx);
       ctx.restore();
     }
   }
@@ -180,10 +199,11 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
   getControlAt(point: IPoint) {
     if (!this.containRect) return;
     const rect = this.containRect;
-    const halfAttWidth = ResizeControl.SIZE / 2 + ResizeControl.BORDER_WIDTH;
+    const halfAttWidth = RotateControl.SIZE + ResizeControl.BORDER_WIDTH;
     if (isPointInRect(point, rect, halfAttWidth)) {
       const resizer = this.resizers.find(r => r.hitTest(point.x, point.y));
-      return resizer || null;
+      if (resizer) return resizer;
+      if (this.rotator.hitTest(point.x, point.y)) return this.rotator;
     }
     return null;
   }
