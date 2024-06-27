@@ -176,7 +176,7 @@ export class Editor {
       }
       return acc;
     }, [] as IRect[]);
-    const dirtyRect = mergeRects(...renderRects);
+    let dirtyRect = mergeRects(...renderRects);
     for (let i = 0; i < modelList.length; i++) {
       const m = modelList[i];
       if (modelSet.has(m)) continue;
@@ -184,7 +184,8 @@ export class Editor {
       if (!isRectIntersect(renderRect, viewRect)) continue;
       if (isRectIntersect(renderRect, dirtyRect)) {
         modelSet.add(m);
-        i = 0;
+        dirtyRect = mergeRects(renderRect, dirtyRect);
+        i = -1;
       }
     }
     return {
