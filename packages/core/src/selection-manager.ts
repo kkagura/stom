@@ -112,9 +112,8 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
   caculateContainRect = () => {
     if (this.pauseUpdateRect) return;
     if (this.selection.length) {
-      const rects = this.selection.map(m => m.getRenderRect());
-      const box = mergeRects(...rects);
-      this.containRect = extendRect(box, 10);
+      const rect = this.getBoundingRect();
+      this.containRect = extendRect(rect, SelectionManager.SELECTION_PADDING);
     } else {
       this.containRect = null;
     }
@@ -137,33 +136,12 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     return this.containRect!;
   }
 
-  onMoveStart() {}
-
-  onMoveEnd() {}
-
   setPosition(x: number, y: number): void {}
 
   move(dx: number, dy: number): void {
     this.selection.forEach(el => {
       el.move(dx, dy);
     });
-  }
-
-  setSize(w: number, h: number): void {}
-
-  changeSize(dw: number, dh: number) {
-    return {
-      dx: 0,
-      dy: 0
-    };
-  }
-
-  getMinWidth(): number {
-    return 100;
-  }
-
-  getMinHeight(): number {
-    return 100;
   }
 
   setRotate(dRotation: number) {
@@ -210,4 +188,5 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
 
   static SELECTION_STROKE_COLOR = '#0f8eff';
   static SELECTION_LINE_DASH = [5, 5];
+  static SELECTION_PADDING = 10;
 }

@@ -115,22 +115,12 @@ export class EventManager implements EditorPlugin {
    */
   handleBoxSelection(e: MouseEvent) {
     const selectionManager = this.editor.selectionManager;
-    const zoom = this.editor.viewportManager.getZoom();
-    const startPoint = this.editor.viewportManager.getScenePoint(
-      {
-        x: e.clientX,
-        y: e.clientY
-      },
-      zoom
-    );
+    const startPoint = this.editor.viewportManager.getCursorScenePoint(e);
     let startX = e.clientX,
       startY = e.clientY;
 
     const onMove = (ev: MouseEvent) => {
-      const currentPoint = this.editor.viewportManager.getScenePoint({
-        x: ev.clientX,
-        y: ev.clientY
-      });
+      const currentPoint = this.editor.viewportManager.getCursorScenePoint(ev);
       this.selectionRect = getRectByTwoPoint(startPoint, currentPoint);
     };
     const onUp = (ev: MouseEvent) => {
@@ -162,7 +152,7 @@ export class EventManager implements EditorPlugin {
 
   handleMouseMove = (e: MouseEvent) => {
     if (this.mousedown) return;
-    const point = this.editor.viewportManager.getScenePoint({ x: e.clientX, y: e.clientY });
+    const point = this.editor.viewportManager.getCursorScenePoint(e);
     const resizeControl = this.editor.selectionManager.getControlAt(point);
     const oldModel = this.mouseEl;
     const oldControl = this.mouseControl;

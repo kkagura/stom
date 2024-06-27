@@ -1,6 +1,9 @@
 <template>
   <div class="page">
-    <Editor></Editor>
+    <div class="toolbar-container"></div>
+    <div class="main-content">
+      <Editor></Editor>
+    </div>
   </div>
 </template>
 
@@ -8,10 +11,19 @@
 import { ref } from 'vue';
 import { Editor } from '@stom/ui/vue';
 </script>
-<style>
+<style lang="postcss">
 .page {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  .toolbar-container {
+    height: 50px;
+  }
+  .main-content {
+    flex: 1;
+    overflow: hidden;
+  }
 }
 </style>

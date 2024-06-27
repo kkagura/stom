@@ -84,14 +84,23 @@ export class ViewportManager extends EventEmitter<Events> {
     };
   }
 
+  getCursorViewPoint(e: MouseEvent) {
+    return { x: e.offsetX, y: e.offsetY };
+  }
+
+  getCursorScenePoint(e: MouseEvent) {
+    const viewPoint = this.getCursorViewPoint(e);
+    return this.getScenePoint(viewPoint);
+  }
+
   /**
    * 视图坐标转场景坐标
    * @param p 视图坐标
    * @param zoom
    * @returns
    */
-  getScenePoint(p: IPoint, zoom = this.zoom): IPoint {
-    const { x, y } = p;
+  getScenePoint(viewPt: IPoint, zoom = this.zoom): IPoint {
+    const { x, y } = viewPt;
     const { x: scrollX, y: scrollY } = this.getViewport();
     return {
       x: scrollX + x / zoom,

@@ -98,20 +98,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     changed && this.triggerChange(1);
   }
 
-  changeSize(dw: number, dh: number) {
-    const oldW = this.rect.width;
-    const oldH = this.rect.height;
-    const w = oldW + dw;
-    const h = oldH + dh;
-    this.setSize(w, h);
-    const newW = this.rect.width;
-    const newH = this.rect.height;
-    return {
-      dx: newW - oldW,
-      dy: newH - oldH
-    };
-  }
-
   setPosition(x: number, y: number) {
     let changed = x !== this.rect.x || y !== this.rect.y;
     this.rect.x = x;

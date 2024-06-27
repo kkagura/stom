@@ -10,6 +10,7 @@ export class ResizeControl extends Control<SelectionManager> {
   constructor(host: SelectionManager, tag: ResizeDirs) {
     super(host, tag);
   }
+
   init() {
     this.setSize(ResizeControl.SIZE, ResizeControl.SIZE);
   }
@@ -66,29 +67,34 @@ export class ResizeControl extends Control<SelectionManager> {
     const originRectMap = new Map<string, IRect>();
     selectionList.forEach(el => {
       originTransformMap.set(el.id, el.getWorldTransform());
-      originRectMap.set(el.id, { ...el.getRect() });
+      originRectMap.set(el.id, el.getRect());
     });
-    const { x, y, width, height } = selectionManager.getBoundingRect();
+    let { x, y, width, height } = selectionManager.getBoundingRect();
     const startSelectedBoxTf = new Matrix().translate(x, y);
-    let lastPoint = { x: e.clientX, y: e.clientY };
+    let lastPoint = { x: e.offsetX, y: e.offsetY };
 
     useDragEvent({
       onDragMove: ev => {
-        const currPoint = { x: ev.clientX, y: ev.clientY };
+        const currPoint = { x: ev.offsetX, y: ev.offsetY };
         if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
-        const gloalPt = editor.viewportManager.getScenePoint(currPoint);
+        const gloalPt = editor.viewportManager.getCursorScenePoint(ev);
         lastPoint = currPoint;
-        const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, {
-          width,
-          height,
-          transform: startSelectedBoxTf.getArray()
-        });
+        const transformRect = resizeRect(
+          this.getTag() as ResizeDirs,
+          gloalPt,
+          {
+            width,
+            height,
+            transform: startSelectedBoxTf.getArray()
+          },
+          SelectionManager.SELECTION_PADDING
+        );
         const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
 
-        const arr = prependedTransform.getArray();
+        const prependedTransformArr = prependedTransform.getArray();
         selectionList.forEach(el => {
           const originWorldTf = originTransformMap.get(el.id)!;
-          const newWorldTf = multiplyMatrix(arr, originWorldTf);
+          const newWorldTf = multiplyMatrix(prependedTransformArr, originWorldTf);
           const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
           const { width, height } = originRectMap.get(el.id)!;
           const newAttrs = recomputeTransformRect({
@@ -104,110 +110,6 @@ export class ResizeControl extends Control<SelectionManager> {
         // todo: actionManager
       }
     });
-  }
-
-  handleMousedown11(e: MouseEvent, editor: Editor) {
-    this.emit(ControlEvents.mouseDown, e);
-    const zoom = editor.viewportManager.getZoom();
-    const startX = e.clientX,
-      startY = e.clientY;
-    let lastX = startX,
-      lastY = startY;
-    const host = this.getHost();
-    const tag = this.getTag();
-    const oldRect = { ...host.getRect() };
-    const onMove = (ev: MouseEvent) => {
-      // const cx = ev.clientX,
-      //   cy = ev.clientY;
-      // const dx = (cx - lastX) / zoom,
-      //   dy = (cy - lastY) / zoom;
-      // lastX = cx;
-      // lastY = cy;
-      // const { x, y, width, height } = host.getRect();
-      // const minW = host.getMinWidth();
-      // const minH = host.getMinHeight();
-      // switch (tag) {
-      //   case ResizeDirs.tl: {
-      //     const newW = Math.max(minW, width - dx);
-      //     const newH = Math.max(minH, height - dy);
-      //     const offsetX = newW - width;
-      //     const offsetY = newH - height;
-      //     parent.setPosition(x - offsetX, y - offsetY);
-      //     parent.setSize(newW, newH);
-      //     break;
-      //   }
-      //   case ResizeDirs.tr: {
-      //     const newW = Math.max(minW, width + dx);
-      //     const newH = Math.max(minH, height - dy);
-      //     const offsetY = newH - height;
-      //     parent.setPosition(x, y - offsetY);
-      //     parent.setSize(newW, newH);
-      //     break;
-      //   }
-      //   case ResizeDirs.t: {
-      //     const newH = Math.max(minH, height - dy);
-      //     const offsetY = newH - height;
-      //     parent.setPosition(x, y - offsetY);
-      //     parent.setSize(width, newH);
-      //     break;
-      //   }
-      //   case ResizeDirs.l: {
-      //     const newW = Math.max(minW, width - dx);
-      //     const offsetX = newW - width;
-      //     parent.setPosition(x - offsetX, y);
-      //     parent.setSize(newW, height);
-      //     break;
-      //   }
-      //   case ResizeDirs.r: {
-      //     const newW = Math.max(minW, width + dx);
-      //     parent.setSize(newW, height);
-      //     break;
-      //   }
-      //   case ResizeDirs.bl: {
-      //     const newW = Math.max(minW, width - dx);
-      //     const newH = Math.max(minH, height + dy);
-      //     const offsetX = newW - width;
-      //     parent.setPosition(x - offsetX, y);
-      //     parent.setSize(newW, newH);
-      //     break;
-      //   }
-      //   case ResizeDirs.b: {
-      //     const newH = Math.max(minH, height + dy);
-      //     parent.setSize(width, newH);
-      //     break;
-      //   }
-      //   case ResizeDirs.br: {
-      //     const newW = Math.max(minW, width + dx);
-      //     const newH = Math.max(minH, height + dy);
-      //     parent.setSize(newW, newH);
-      //     break;
-      //   }
-      // }
-    };
-    const onUp = (e: MouseEvent) => {
-      this.emit(ControlEvents.mouseUp, e);
-      // 修改isMoving之后需要手动触发一下父元素的重绘
-      host.emit(CommonEvents.change);
-      const newRect = { ...host.getRect() };
-      const action: Action = {
-        undo() {
-          host.setPosition(oldRect.x, oldRect.y);
-          host.setSize(oldRect.width, oldRect.height);
-        },
-        redo() {
-          host.setPosition(newRect.x, newRect.y);
-          host.setSize(newRect.width, newRect.height);
-        }
-      };
-      editor.actionManager.push(action);
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      window.removeEventListener('mouseleave', onUp);
-    };
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('mouseleave', onUp);
   }
 
   getCursor() {

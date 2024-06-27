@@ -103,7 +103,8 @@ interface ResizeRectUtil {
   getNewSize(
     newLocalPt: IPoint,
     localOrigin: IPoint,
-    rect: { width: number; height: number }
+    rect: { width: number; height: number },
+    p?: number
   ): {
     width: number;
     height: number;
@@ -113,29 +114,29 @@ interface ResizeRectUtil {
 const resizeRectUtils: Record<ResizeDirs, ResizeRectUtil> = {
   [ResizeDirs.n]: {
     getLocalOrigin: (width, height) => ({ x: width / 2, y: height }),
-    getNewSize: (newLocalPt, localOrigin, rect) => ({
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => ({
       width: rect.width,
-      height: localOrigin.y - newLocalPt.y
+      height: localOrigin.y - newLocalPt.y - p
     })
   },
   [ResizeDirs.e]: {
     getLocalOrigin: (_width, height) => ({ x: 0, y: height / 2 }),
-    getNewSize: (newLocalPt, localOrigin, rect) => ({
-      width: newLocalPt.x - localOrigin.x,
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => ({
+      width: newLocalPt.x - localOrigin.x - p,
       height: rect.height
     })
   },
   [ResizeDirs.s]: {
     getLocalOrigin: width => ({ x: width / 2, y: 0 }),
-    getNewSize: (newLocalPt, localOrigin, rect) => ({
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => ({
       width: rect.width,
-      height: newLocalPt.y - localOrigin.y
+      height: newLocalPt.y - localOrigin.y - p
     })
   },
   [ResizeDirs.w]: {
     getLocalOrigin: (width, height) => ({ x: width, y: height / 2 }),
-    getNewSize: (newLocalPt, localOrigin, rect) => ({
-      width: localOrigin.x - newLocalPt.x,
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => ({
+      width: localOrigin.x - newLocalPt.x - p,
       height: rect.height
     })
   },
@@ -143,37 +144,37 @@ const resizeRectUtils: Record<ResizeDirs, ResizeRectUtil> = {
     getLocalOrigin: (width, height) => {
       return { x: width, y: height };
     },
-    getNewSize: (newLocalPt, localOrigin) => {
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => {
       return {
-        width: localOrigin.x - newLocalPt.x,
-        height: localOrigin.y - newLocalPt.y
+        width: localOrigin.x - newLocalPt.x - p,
+        height: localOrigin.y - newLocalPt.y - p
       };
     }
   },
   [ResizeDirs.ne]: {
     getLocalOrigin: (_width, height) => ({ x: 0, y: height }),
-    getNewSize: (newLocalPt, localOrigin) => ({
-      width: newLocalPt.x - localOrigin.x,
-      height: localOrigin.y - newLocalPt.y
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => ({
+      width: newLocalPt.x - localOrigin.x - p,
+      height: localOrigin.y - newLocalPt.y - p
     })
   },
   [ResizeDirs.sw]: {
     getLocalOrigin: (width: number) => ({ x: width, y: 0 }),
-    getNewSize: (newLocalPt: IPoint, localOrigin: IPoint) => ({
-      width: localOrigin.x - newLocalPt.x,
-      height: newLocalPt.y - localOrigin.y
+    getNewSize: (newLocalPt: IPoint, localOrigin: IPoint, rect, p = 0) => ({
+      width: localOrigin.x - newLocalPt.x - p,
+      height: newLocalPt.y - localOrigin.y - p
     })
   },
   [ResizeDirs.se]: {
     getLocalOrigin: () => ({ x: 0, y: 0 }),
-    getNewSize: (newLocalPt, localOrigin) => ({
-      width: newLocalPt.x - localOrigin.x,
-      height: newLocalPt.y - localOrigin.y
+    getNewSize: (newLocalPt, localOrigin, rect, p = 0) => ({
+      width: newLocalPt.x - localOrigin.x - p,
+      height: newLocalPt.y - localOrigin.y - p
     })
   }
 };
 
-export const resizeRect = (dir: ResizeDirs, newGlobalPt: IPoint, rect: ITransformRect): ITransformRect => {
+export const resizeRect = (dir: ResizeDirs, newGlobalPt: IPoint, rect: ITransformRect, padding: number = 0): ITransformRect => {
   const resizeOp = resizeRectUtils[dir];
 
   const transform = new Matrix(...rect.transform);
@@ -185,7 +186,7 @@ export const resizeRect = (dir: ResizeDirs, newGlobalPt: IPoint, rect: ITransfor
 
   const newLocalPt = transform.applyInverse(newGlobalPt);
   const localOrigin = resizeOp.getLocalOrigin(rect.width, rect.height);
-  const size = resizeOp.getNewSize(newLocalPt, localOrigin, rect);
+  const size = resizeOp.getNewSize(newLocalPt, localOrigin, rect, padding);
   const scaleTf = new Matrix();
   scaleTf.scale(size.width / rect.width, size.height / rect.height);
   newRect.width = rect.width;

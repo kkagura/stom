@@ -26,13 +26,7 @@ interface ControlHost
     [CommonEvents.change](): void;
     [k: string]: any;
   }> {
-  setPosition(x: number, y: number): void;
-  setSize(dw: number, dh: number): void;
-  move(dx: number, dy: number): void;
-  changeSize(dw: number, dh: number): { dx: number; dy: number };
   getRect(): IRect;
-  getMinWidth(): number;
-  getMinHeight(): number;
 }
 
 export abstract class Control<Host extends ControlHost = ControlHost> extends EventEmitter<Events> {

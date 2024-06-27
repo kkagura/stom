@@ -38,6 +38,7 @@ export class Editor {
     public container: HTMLElement,
     public box: Box
   ) {
+    container.style.position = 'relative';
     [this.rootCanvas, this.rootCtx] = this.createCanvas();
     [this.mainCanvas, this.mainCtx] = this.createCanvas();
     [this.topCanvas, this.topCtx] = this.createCanvas();
@@ -105,7 +106,7 @@ export class Editor {
   };
 
   getElementsAt(e: MouseEvent) {
-    const { x, y } = this.viewportManager.getScenePoint({ x: e.clientX, y: e.clientY });
+    const { x, y } = this.viewportManager.getCursorScenePoint(e);
     const results: Model[] = [];
     this.box.reverseEach(m => {
       if (m.hitTest(x, y)) {
@@ -119,7 +120,7 @@ export class Editor {
     model: Model;
     control: Control | null;
   } | null {
-    const { x, y } = this.viewportManager.getScenePoint({ x: e.clientX, y: e.clientY });
+    const { x, y } = this.viewportManager.getCursorScenePoint(e);
     let model: Model | null = null;
     let control: Control | null = null;
     this.box.reverseEach(m => {
