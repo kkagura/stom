@@ -4,6 +4,7 @@ import { Model, ModelEvents } from './model';
 import { Editor } from '../editor';
 import { genId } from '@stom/shared';
 import { Control } from './control';
+import { LinkControl } from './link-control';
 
 export interface RectModelAttrs {
   border: BorderAttr | null;
@@ -27,8 +28,17 @@ export class RectModel extends Model<RectModelAttrs> {
     height: 100
   };
 
+  linkControls: LinkControl[] = [];
+
   constructor(public id: string = genId()) {
     super();
+    // 由于不同的形状可能有不同的连线端口，所以LinkControl的tag不能定义枚举
+    this.linkControls = [
+      new LinkControl(this, 'top'),
+      new LinkControl(this, 'right'),
+      new LinkControl(this, 'bottom'),
+      new LinkControl(this, 'left')
+    ];
   }
 
   private getRoundGap() {
@@ -36,12 +46,21 @@ export class RectModel extends Model<RectModelAttrs> {
   }
 
   getRenderRect(): IRect {
-    const extend = this.attrs.border?.width || 1;
+    let extend = this.attrs.border?.width || 1;
     const rect = this.getBRect();
+    extend = Math.max(extend, LinkControl.SIZE / 2 + LinkControl.BORDER_WIDTH);
     return extendRect(rect, extend);
   }
 
   hitTest(x: number, y: number): boolean | Control {
+    if (this.getIsHovered()) {
+      const renderRect = this.getRenderRect();
+      if (!isPointInRect({ x, y }, renderRect)) {
+        return false;
+      }
+      const linkControl = this.linkControls.find(el => el.hitTest(x, y));
+      if (linkControl) return linkControl;
+    }
     return isPointInRoundRect({ x, y }, this.getRenderRect(), this.getRoundGap());
   }
 
@@ -67,6 +86,12 @@ export class RectModel extends Model<RectModelAttrs> {
       ctx.lineWidth = attrs.border.width;
       ctx.stroke();
     }
+    if (this.getIsHovered()) {
+      this.linkControls.forEach(control => {
+        this.updateLinkControlPosition(control);
+        control.paint(ctx);
+      });
+    }
     ctx.restore();
   }
 
@@ -74,5 +99,24 @@ export class RectModel extends Model<RectModelAttrs> {
 
   dispose() {
     super.dispose();
+  }
+
+  updateLinkControlPosition(control: LinkControl) {
+    const rect = this.getBRect();
+    const { width, height } = rect;
+    const tag = control.getTag();
+    switch (tag) {
+      case 'top':
+        control.setCenterPosition(width / 2, 0);
+        break;
+      case 'right':
+        control.setCenterPosition(width, height / 2);
+        break;
+      case 'bottom':
+        control.setCenterPosition(width / 2, height);
+        break;
+      case 'left':
+        control.setCenterPosition(0, height / 2);
+    }
   }
 }

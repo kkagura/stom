@@ -1,4 +1,8 @@
 export enum CommonEvents {
   rectChange = 'rectChange',
-  change = 'change'
+  change = 'change',
+  mouseIn = 'mouseIn',
+  mouseOut = 'mouseOut',
+  mouseDown = 'mouseDown',
+  mouseUp = 'mouseUp'
 }

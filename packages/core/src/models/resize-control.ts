@@ -1,5 +1,5 @@
 import { IMatrixArr, IRect, Matrix, ResizeDirs, invertMatrix, isPointInRect, multiplyMatrix, recomputeTransformRect, resizeRect } from '@stom/geo';
-import { Control, ControlEvents } from './control';
+import { Control } from './control';
 import { Action } from '../action-manager';
 import { Editor } from '../editor';
 import { CommonEvents } from './common-events';
@@ -44,7 +44,7 @@ export class ResizeControl extends Control<SelectionManager> {
     const rect = this.getRect();
     ctx.beginPath();
     ctx.rect(rect.x, rect.y, rect.width, rect.height);
-    ctx.fillStyle = ctx.fillStyle = this.getIsHovered() ? ResizeControl.BORDER_COLOR : '#fff';
+    ctx.fillStyle = ctx.fillStyle = this.getIsHovered() || this.getIsActive() ? ResizeControl.BORDER_COLOR : '#fff';
     ctx.fill();
     ctx.setLineDash([]);
     ctx.strokeStyle = ResizeControl.BORDER_COLOR;
@@ -60,7 +60,6 @@ export class ResizeControl extends Control<SelectionManager> {
   }
 
   handleMousedown(e: MouseEvent, editor: Editor) {
-    this.emit(ControlEvents.mouseDown, e);
     const selectionManager = this.getHost();
     const selectionList = selectionManager.getSelectionList();
     const originTransformMap = new Map<string, IMatrixArr>();
@@ -74,6 +73,9 @@ export class ResizeControl extends Control<SelectionManager> {
     let lastPoint = { x: e.offsetX, y: e.offsetY };
 
     useDragEvent({
+      onDragStart: () => {
+        this.setIsActive(true);
+      },
       onDragMove: ev => {
         const currPoint = { x: ev.offsetX, y: ev.offsetY };
         if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
@@ -107,6 +109,7 @@ export class ResizeControl extends Control<SelectionManager> {
         });
       },
       onDragEnd: ev => {
+        this.setIsActive(false);
         // todo: actionManager
       }
     });

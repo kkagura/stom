@@ -1,5 +1,5 @@
 import { IMatrixArr, IRect, Matrix, getSweepAngle, isPointInRect } from '@stom/geo';
-import { Control, ControlEvents } from './control';
+import { Control } from './control';
 import { Editor } from '../editor';
 import { SelectionManager } from '../selection-manager';
 import { useDragEvent } from '@stom/shared';
@@ -15,7 +15,6 @@ export class RotateControl extends Control<SelectionManager> {
   }
 
   handleMousedown(e: MouseEvent, editor: Editor): void {
-    this.emit(ControlEvents.mouseDown, e);
     const selectionManager = this.getHost();
     const selectionList = selectionManager.getSelectionList();
     const originTransformMap = new Map<string, IMatrixArr>();
@@ -41,6 +40,9 @@ export class RotateControl extends Control<SelectionManager> {
     selectionManager.togglePauseUpdateRect(true);
 
     useDragEvent({
+      onDragStart: () => {
+        this.setIsActive(true);
+      },
       onDragMove: e => {
         const lastPoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
         const { x: cxInSelectedElementsBBox, y: cyInSelectedElementsBBox } = selectionBoxCenter;
@@ -65,6 +67,7 @@ export class RotateControl extends Control<SelectionManager> {
       },
       onDragEnd(e) {
         // todo: actionManager
+        this.setIsActive(false);
         selectionManager.setRotate(0);
         selectionManager.togglePauseUpdateRect(false);
         selectionManager.caculateContainRect();
@@ -74,7 +77,7 @@ export class RotateControl extends Control<SelectionManager> {
 
   paint(ctx: CanvasRenderingContext2D): void {
     // https://demo.qunee.com/svg2canvas/
-    const isActive = this.getIsHovered();
+    const isActive = this.getIsHovered() || this.getIsActive();
     const fillColor = isActive ? RotateControl.ACTIVE_FILL_STYLE : RotateControl.FILL_STYLE;
     ctx.save();
     ctx.translate(this.rect.x, this.rect.y);

@@ -16,7 +16,7 @@ export const useDragEvent = (options: DragEventOptions) => {
   };
 
   const onUp = (e: MouseEvent) => {
-    options.onDragEnd?.(e);
+    started && options.onDragEnd?.(e);
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);
     window.removeEventListener('mouseleave', onUp);

@@ -13,7 +13,7 @@ export enum ModelEvents {
 
 interface Events {
   [CommonEvents.change]: () => void;
-  [CommonEvents.rectChange]: (m: Model) => void;
+  [CommonEvents.rectChange]: () => void;
   [ModelEvents.mouseIn]: (e: MouseEvent) => void;
   [ModelEvents.mouseOut]: (e: MouseEvent) => void;
   [ModelEvents.selected]: () => void;
@@ -38,7 +38,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   constructor(public id: string = genId()) {
     super();
-
     this.on(ModelEvents.mouseIn, () => {
       this.setIsHovered(true);
     });
@@ -66,7 +65,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
    */
   triggerChange(type: number) {
     if (type === 1) {
-      this.emit(CommonEvents.rectChange, this);
+      this.emit(CommonEvents.rectChange);
     }
     this.emit(CommonEvents.change);
   }

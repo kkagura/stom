@@ -1,23 +1,15 @@
-import { IRect, isPointInRect } from '@stom/geo';
+import { IPoint, IRect, isPointInRect } from '@stom/geo';
 import { Model, ModelEvents } from './model';
 import { Editor } from '../editor';
 import { EventEmitter } from '@stom/shared';
 import { CommonEvents } from './common-events';
 
-export enum ControlEvents {
-  change = 'change',
-  mouseIn = 'mouseIn',
-  mouseOut = 'mouseOut',
-  mouseDown = 'mouseDown',
-  mouseUp = 'mouseUp'
-}
-
 interface Events {
-  [ControlEvents.change](): void;
-  [ControlEvents.mouseIn](e: MouseEvent): void;
-  [ControlEvents.mouseOut](e: MouseEvent): void;
-  [ControlEvents.mouseDown](e: MouseEvent): void;
-  [ControlEvents.mouseUp](e: MouseEvent): void;
+  [CommonEvents.change](): void;
+  [CommonEvents.mouseIn](e: MouseEvent): void;
+  [CommonEvents.mouseOut](e: MouseEvent): void;
+  [CommonEvents.mouseDown](e: MouseEvent): void;
+  [CommonEvents.mouseUp](e: MouseEvent): void;
 }
 
 interface ControlHost
@@ -39,21 +31,23 @@ export abstract class Control<Host extends ControlHost = ControlHost> extends Ev
 
   private isHovered = false;
 
+  private isActive = false;
+
   constructor(
     private host: Host,
     private tag: string = ''
   ) {
     super();
 
-    this.on(ControlEvents.change, () => {
+    this.on(CommonEvents.change, () => {
       this.getHost().emit(CommonEvents.change);
     });
 
-    this.on(ControlEvents.mouseIn, () => {
+    this.on(CommonEvents.mouseIn, () => {
       this.setIsHovered(true);
     });
 
-    this.on(ControlEvents.mouseOut, () => {
+    this.on(CommonEvents.mouseOut, () => {
       this.setIsHovered(false);
     });
 
@@ -71,7 +65,17 @@ export abstract class Control<Host extends ControlHost = ControlHost> extends Ev
   setIsHovered(isHovered: boolean) {
     if (isHovered === this.isHovered) return;
     this.isHovered = isHovered;
-    this.emit(ControlEvents.change);
+    this.emit(CommonEvents.change);
+  }
+
+  getIsActive() {
+    return this.isActive;
+  }
+
+  setIsActive(isActive: boolean) {
+    if (isActive === this.isActive) return;
+    this.isActive = isActive;
+    this.emit(CommonEvents.change);
   }
 
   getHost() {
@@ -92,6 +96,40 @@ export abstract class Control<Host extends ControlHost = ControlHost> extends Ev
     if (x === this.rect.x && y === this.rect.y) return;
     this.rect.x = x;
     this.rect.y = y;
+  }
+
+  getCenterPosition(): IPoint {
+    return {
+      x: this.rect.x + this.rect.width / 2,
+      y: this.rect.y + this.rect.height / 2
+    };
+  }
+
+  setCenterPosition(centerX: number, centerY: number) {
+    const { x, y, width, height } = this.rect;
+    const newX = centerX - width / 2;
+    const newY = centerY - height / 2;
+    if (newX === x && newY === y) return;
+    this.rect.x = newX;
+    this.rect.y = newY;
+  }
+
+  getScenePosition(): IPoint {
+    const host = this.getHost();
+    const { x, y } = host.getRect();
+    return {
+      x: x + this.rect.x,
+      y: y + this.rect.y
+    };
+  }
+
+  getSceneCenterPosition(): IPoint {
+    const host = this.getHost();
+    const { x, y } = host.getRect();
+    return {
+      x: x + this.rect.x + this.rect.width / 2,
+      y: y + this.rect.y + this.rect.height / 2
+    };
   }
 
   getRect() {

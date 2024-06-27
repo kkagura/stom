@@ -1,8 +1,9 @@
-import { IRect, getRectByTwoPoint, isRectIntersect } from '@stom/geo';
+import { IRect, getRectByPoints, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor, EditorPlugin } from './editor';
 import { Model, ModelEvents } from './models';
-import { Control, ControlEvents } from './models/control';
+import { Control } from './models/control';
+import { CommonEvents } from './models/common-events';
 
 export class EventManager implements EditorPlugin {
   private mousedown = false;
@@ -45,6 +46,7 @@ export class EventManager implements EditorPlugin {
     }
     if (this.mouseControl) {
       // 如果当前点击的是控制点，由控制点自行处理交互
+      this.mouseControl.emit(CommonEvents.mouseDown, e);
       this.mouseControl.handleMousedown(e, this.editor);
     } else if (el) {
       // 如果当前点击的是元素，执行拖拽元素的逻辑
@@ -121,7 +123,7 @@ export class EventManager implements EditorPlugin {
 
     const onMove = (ev: MouseEvent) => {
       const currentPoint = this.editor.viewportManager.getCursorScenePoint(ev);
-      this.selectionRect = getRectByTwoPoint(startPoint, currentPoint);
+      this.selectionRect = getRectByPoints(startPoint, currentPoint);
     };
     const onUp = (ev: MouseEvent) => {
       const offsetX = ev.clientX - startX;
@@ -151,7 +153,7 @@ export class EventManager implements EditorPlugin {
   }
 
   handleMouseMove = (e: MouseEvent) => {
-    if (this.mousedown) return;
+    // if (this.mousedown) return;
     const point = this.editor.viewportManager.getCursorScenePoint(e);
     const resizeControl = this.editor.selectionManager.getControlAt(point);
     const oldModel = this.mouseEl;
@@ -183,10 +185,10 @@ export class EventManager implements EditorPlugin {
 
     if (this.mouseControl !== oldControl) {
       if (oldControl) {
-        oldControl.emit(ControlEvents.mouseOut, e);
+        oldControl.emit(CommonEvents.mouseOut, e);
       }
       if (this.mouseControl) {
-        this.mouseControl.emit(ControlEvents.mouseIn, e);
+        this.mouseControl.emit(CommonEvents.mouseIn, e);
       }
     }
   };

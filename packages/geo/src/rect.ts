@@ -72,12 +72,17 @@ export const extendRect = (rect: IRect, extend: number) => {
   };
 };
 
-export const getRectByTwoPoint = (point1: IPoint, point2: IPoint): IRect => {
+export const getRectByPoints = (p1: IPoint, p2: IPoint, ...points: IPoint[]): IRect => {
+  points = [p1, p2, ...points];
+  const minX = Math.min(...points.map(p => p.x));
+  const minY = Math.min(...points.map(p => p.y));
+  const maxX = Math.max(...points.map(p => p.x));
+  const maxY = Math.max(...points.map(p => p.y));
   return {
-    x: Math.min(point1.x, point2.x),
-    y: Math.min(point1.y, point2.y),
-    width: Math.abs(point1.x - point2.x),
-    height: Math.abs(point1.y - point2.y)
+    x: minX,
+    y: minY,
+    width: Math.abs(maxX - minX),
+    height: Math.abs(maxY - minY)
   };
 };
 
