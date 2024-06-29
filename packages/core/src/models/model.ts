@@ -3,6 +3,7 @@ import { EventEmitter, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { CommonEvents } from './common-events';
+import { LinkModelEvents } from './link-model';
 
 export enum ModelEvents {
   mouseIn = 'mouseIn',
@@ -18,6 +19,7 @@ interface Events {
   [ModelEvents.mouseOut]: (e: MouseEvent) => void;
   [ModelEvents.selected]: () => void;
   [ModelEvents.unselected]: () => void;
+  [LinkModelEvents.PORT_CHANGE]: () => void;
 }
 
 export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events> {

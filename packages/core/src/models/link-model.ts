@@ -1,7 +1,12 @@
-import { IPoint, IRect, extendRect, getRectByPoints } from '@stom/geo';
-import { Model } from './model';
+import { IPoint, IRect, LinkDirections, createRoute, extendRect, getRectByPoints } from '@stom/geo';
+import { Model, ModelEvents } from './model';
 import { genId } from '@stom/shared';
 import { LinkControl } from './link-control';
+import { CommonEvents } from './common-events';
+
+export enum LinkModelEvents {
+  PORT_CHANGE = 'port-change'
+}
 interface LinkModelAttrs {
   lineColor: string;
   lineWidth: number;
@@ -19,7 +24,9 @@ export class LinkModel extends Model<LinkModelAttrs> {
     lineDash: []
   };
 
-  private points: IPoint[] = [];
+  private controlPoints: IPoint[] = [];
+  // 寻路时所有的路径点，用来debug
+  private mapPoints: IPoint[] = [];
 
   constructor(
     private start: LinkControl,
@@ -27,7 +34,28 @@ export class LinkModel extends Model<LinkModelAttrs> {
     public id: string = genId()
   ) {
     super(id);
+    start.getHost().on(CommonEvents.rectChange, this.findPathPoints);
   }
+
+  findPathPoints = () => {
+    const startHost = this.start.getHost();
+    const start = {
+      rect: startHost.getRect(),
+      point: this.start.getSceneCenterPosition(),
+      dir: this.start.getTag() as LinkDirections
+    };
+
+    const end = {
+      rect: this.end instanceof LinkControl ? this.end.getHost().getRect() : null,
+      point: this.end instanceof LinkControl ? this.end.getSceneCenterPosition() : this.end,
+      dir: this.end instanceof LinkControl ? (this.end.getTag() as LinkDirections) : null
+    };
+
+    const { mapPoints, controlPoints } = createRoute(start, end, 20);
+    this.mapPoints = mapPoints;
+    this.controlPoints = controlPoints;
+    this.triggerChange(1);
+  };
 
   getStartPoint() {
     return this.start.getSceneCenterPosition();
@@ -41,20 +69,30 @@ export class LinkModel extends Model<LinkModelAttrs> {
   }
 
   setEnd(end: LinkControl | IPoint) {
+    if (this.end === end) return;
+    if (this.end instanceof LinkControl) {
+      this.end.getHost().off(CommonEvents.rectChange, this.findPathPoints);
+    }
     this.end = end;
+    if (end instanceof LinkControl) {
+      end.getHost().on(CommonEvents.rectChange, this.findPathPoints);
+    }
+    this.findPathPoints();
     this.triggerChange(-1);
   }
 
   getAllPoints() {
     const p1 = this.getStartPoint();
     const p2 = this.getEndPoint();
-    return [p1, ...this.points, p2];
+    return [p1, ...this.controlPoints, p2];
   }
 
   getRect() {
     const p1 = this.getStartPoint();
     const p2 = this.getEndPoint();
-    return getRectByPoints(p1, p2, ...this.points);
+    // return getRectByPoints(p1, p2, ...this.controlPoints);
+    // debug
+    return getRectByPoints(p1, p2, ...this.controlPoints, ...this.mapPoints);
   }
 
   getRenderRect(): IRect {
@@ -75,6 +113,14 @@ export class LinkModel extends Model<LinkModelAttrs> {
     ctx.setLineDash(attrs.lineDash);
     ctx.stroke();
     ctx.beginPath();
+
+    // debug
+    this.mapPoints.forEach(p => {
+      ctx.moveTo(p.x, p.y);
+      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'green';
+      ctx.fill();
+    });
 
     // const rect = this.getRect();
     // ctx.rect(rect.x, rect.y, rect.width, rect.height);

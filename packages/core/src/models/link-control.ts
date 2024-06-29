@@ -3,9 +3,10 @@ import { Model } from '.';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { LinkModel } from './link-model';
+import { LinkDirections } from '@stom/geo';
 
 export class LinkControl extends Control<Model> {
-  constructor(host: Model, tag: string) {
+  constructor(host: Model, tag: LinkDirections) {
     super(host, tag);
   }
 
