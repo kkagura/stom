@@ -3,6 +3,7 @@ import { Model } from '.';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { LinkModel } from './link-model';
+import { IPoint, getDiretion } from '@stom/geo';
 
 export class LinkControl extends Control<Model> {
   constructor(host: Model, tag: string) {
@@ -17,25 +18,37 @@ export class LinkControl extends Control<Model> {
     let linkModel: LinkModel | null = null;
     const host = this.getHost();
     const layerId = host.getLayerId();
-    useDragEvent({
-      onDragMove: e => {
-        const endPoint = editor.viewportManager.getCursorScenePoint(e);
-        if (!linkModel) {
-          linkModel = new LinkModel(this, endPoint);
-          linkModel.setLayerId(layerId);
-          editor.box.addModel(linkModel);
-        } else {
-          linkModel.setEnd(endPoint);
+    useDragEvent(
+      {
+        onDragMove: (e, movement) => {
+          const res = editor.getElementAt(e);
+          let end: IPoint | LinkControl;
+          if (res && res.control && res.control instanceof LinkControl && res.control !== this) {
+            end = res.control;
+          } else {
+            end = editor.viewportManager.getCursorScenePoint(e);
+          }
+
+          if (!linkModel) {
+            linkModel = new LinkModel(this, end);
+            linkModel.setLayerId(layerId);
+            editor.box.addModel(linkModel);
+          } else {
+            linkModel.setEndDirection(getDiretion(movement));
+            linkModel.setEnd(end);
+          }
+        },
+        onDragEnd: e => {
+          // todo: ActionManager
+          if (!linkModel) return;
+          const res = editor.getElementAt(e);
+          if (res && res.control && res.control instanceof LinkControl) {
+            linkModel.setEnd(res.control);
+          }
         }
       },
-      onDragEnd(e) {
-        if (!linkModel) return;
-        const res = editor.getElementAt(e);
-        if (res && res.control && res.control instanceof LinkControl) {
-          linkModel.setEnd(res.control);
-        }
-      }
-    });
+      e
+    );
   }
 
   paint(ctx: CanvasRenderingContext2D): void {

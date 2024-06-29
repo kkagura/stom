@@ -1,18 +1,22 @@
 export interface DragEventOptions {
   onDragStart?: (e: MouseEvent) => void;
-  onDragMove?: (e: MouseEvent) => void;
+  onDragMove?: (e: MouseEvent, movement: [dx: number, dy: number]) => void;
   onDragEnd?: (e: MouseEvent) => void;
 }
 
-export const useDragEvent = (options: DragEventOptions) => {
+export const useDragEvent = (options: DragEventOptions, e: MouseEvent) => {
   let started = false;
+  let startX = e.pageX,
+    startY = e.pageY;
 
   const onMove = (e: MouseEvent) => {
+    const dx = e.pageX - startX,
+      dy = e.pageY - startY;
     if (!started) {
       started = true;
       options.onDragStart?.(e);
     }
-    options.onDragMove?.(e);
+    options.onDragMove?.(e, [dx, dy]);
   };
 
   const onUp = (e: MouseEvent) => {

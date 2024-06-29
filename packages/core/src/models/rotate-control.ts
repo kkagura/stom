@@ -39,40 +39,43 @@ export class RotateControl extends Control<SelectionManager> {
 
     selectionManager.togglePauseUpdateRect(true);
 
-    useDragEvent({
-      onDragStart: () => {
-        this.setIsActive(true);
-      },
-      onDragMove: e => {
-        const lastPoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
-        const { x: cxInSelectedElementsBBox, y: cyInSelectedElementsBBox } = selectionBoxCenter;
+    useDragEvent(
+      {
+        onDragStart: () => {
+          this.setIsActive(true);
+        },
+        onDragMove: e => {
+          const lastPoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
+          const { x: cxInSelectedElementsBBox, y: cyInSelectedElementsBBox } = selectionBoxCenter;
 
-        const lastMouseRotation = getSweepAngle(
-          { x: 0, y: -1 },
-          {
-            x: lastPoint.x - cxInSelectedElementsBBox,
-            y: lastPoint.y - cyInSelectedElementsBBox
-          }
-        );
-        const dRotation = lastMouseRotation - startRotation;
+          const lastMouseRotation = getSweepAngle(
+            { x: 0, y: -1 },
+            {
+              x: lastPoint.x - cxInSelectedElementsBBox,
+              y: lastPoint.y - cyInSelectedElementsBBox
+            }
+          );
+          const dRotation = lastMouseRotation - startRotation;
 
-        selectionList.forEach(el => {
-          el.setRotate(dRotation, originTransformMap.get(el.id)!, {
-            x: cxInSelectedElementsBBox,
-            y: cyInSelectedElementsBBox
+          selectionList.forEach(el => {
+            el.setRotate(dRotation, originTransformMap.get(el.id)!, {
+              x: cxInSelectedElementsBBox,
+              y: cyInSelectedElementsBBox
+            });
           });
-        });
 
-        selectionManager.setRotate(dRotation);
+          selectionManager.setRotate(dRotation);
+        },
+        onDragEnd: e => {
+          // todo: actionManager
+          this.setIsActive(false);
+          selectionManager.setRotate(0);
+          selectionManager.togglePauseUpdateRect(false);
+          selectionManager.caculateContainRect();
+        }
       },
-      onDragEnd(e) {
-        // todo: actionManager
-        this.setIsActive(false);
-        selectionManager.setRotate(0);
-        selectionManager.togglePauseUpdateRect(false);
-        selectionManager.caculateContainRect();
-      }
-    });
+      e
+    );
   }
 
   paint(ctx: CanvasRenderingContext2D): void {

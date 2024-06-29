@@ -23,6 +23,8 @@ export class EventEmitter<T extends Record<string | symbol, any>> {
       const filtered = this.eventMap.get(eventName)!.filter(item => item !== listener);
       if (!filtered.length) {
         this.eventMap.delete(eventName);
+      } else {
+        this.eventMap.set(eventName, filtered);
       }
     }
     return this;
