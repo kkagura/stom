@@ -102,7 +102,7 @@ export class RectModel extends Model<RectModelAttrs> {
   }
 
   updateLinkControlPosition(control: LinkControl) {
-    const rect = this.getBRect();
+    const rect = this.getRect();
     const { width, height } = rect;
     const tag = control.getTag();
     switch (tag) {
