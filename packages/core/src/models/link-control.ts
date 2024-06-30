@@ -64,6 +64,9 @@ export class LinkControl extends Control<Model> {
     if (this.getIsHovered() || this.getIsActive()) {
       ctx.fillStyle = LinkControl.FILL_COLOR;
       ctx.fill();
+    } else {
+      ctx.fillStyle = '#fff';
+      ctx.fill();
     }
     ctx.strokeStyle = LinkControl.BORDER_COLOR;
     ctx.lineWidth = LinkControl.BORDER_WIDTH;

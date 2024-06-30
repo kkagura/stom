@@ -15,9 +15,9 @@ export interface RectModelAttrs {
 
 export class RectModel extends Model<RectModelAttrs> {
   attrs: RectModelAttrs = {
-    border: { width: 2, color: 'green', style: 'solid' },
+    border: { width: 2, color: '#000', style: 'solid' },
     fill: true,
-    fillColor: '#000',
+    fillColor: '#fff',
     roundGap: 0
   };
 
