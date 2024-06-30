@@ -72,47 +72,50 @@ export class ResizeControl extends Control<SelectionManager> {
     const startSelectedBoxTf = new Matrix().translate(x, y);
     let lastPoint = { x: e.offsetX, y: e.offsetY };
 
-    useDragEvent({
-      onDragStart: () => {
-        this.setIsActive(true);
-      },
-      onDragMove: ev => {
-        const currPoint = { x: ev.offsetX, y: ev.offsetY };
-        if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
-        const gloalPt = editor.viewportManager.getCursorScenePoint(ev);
-        lastPoint = currPoint;
-        const transformRect = resizeRect(
-          this.getTag() as ResizeDirs,
-          gloalPt,
-          {
-            width,
-            height,
-            transform: startSelectedBoxTf.getArray()
-          },
-          SelectionManager.SELECTION_PADDING
-        );
-        const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
+    useDragEvent(
+      {
+        onDragStart: () => {
+          this.setIsActive(true);
+        },
+        onDragMove: ev => {
+          const currPoint = { x: ev.offsetX, y: ev.offsetY };
+          if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
+          const gloalPt = editor.viewportManager.getCursorScenePoint(ev);
+          lastPoint = currPoint;
+          const transformRect = resizeRect(
+            this.getTag() as ResizeDirs,
+            gloalPt,
+            {
+              width,
+              height,
+              transform: startSelectedBoxTf.getArray()
+            },
+            SelectionManager.SELECTION_PADDING
+          );
+          const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
 
-        const prependedTransformArr = prependedTransform.getArray();
-        selectionList.forEach(el => {
-          const originWorldTf = originTransformMap.get(el.id)!;
-          const newWorldTf = multiplyMatrix(prependedTransformArr, originWorldTf);
-          const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
-          const { width, height } = originRectMap.get(el.id)!;
-          const newAttrs = recomputeTransformRect({
-            width,
-            height,
-            transform: newLocalTf
+          const prependedTransformArr = prependedTransform.getArray();
+          selectionList.forEach(el => {
+            const originWorldTf = originTransformMap.get(el.id)!;
+            const newWorldTf = multiplyMatrix(prependedTransformArr, originWorldTf);
+            const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
+            const { width, height } = originRectMap.get(el.id)!;
+            const newAttrs = recomputeTransformRect({
+              width,
+              height,
+              transform: newLocalTf
+            });
+            el.setSize(newAttrs.width, newAttrs.height);
+            el.setWorldTransform(newAttrs.transform);
           });
-          el.setSize(newAttrs.width, newAttrs.height);
-          el.setWorldTransform(newAttrs.transform);
-        });
+        },
+        onDragEnd: ev => {
+          this.setIsActive(false);
+          // todo: actionManager
+        }
       },
-      onDragEnd: ev => {
-        this.setIsActive(false);
-        // todo: actionManager
-      }
-    });
+      e
+    );
   }
 
   getCursor() {

@@ -152,6 +152,11 @@ export const checkCanFollowWaypoint = (
    */
 
   for (let i = base, j = base; i >= limits[0] && j <= limits[1]; i--, j++) {
+    const coord1 = getCoord(i);
+    const coord2 = getCoord(i + 1);
+    const coord3 = getCoord(j);
+    const coord4 = getCoord(j - 1);
+    if (!grid.isValid(coord1) || !grid.isValid(coord2) || !grid.isValid(coord3) || !grid.isValid(coord4)) return false;
     if (
       !canThrough(grid.getRealPoint(getCoord(i)), grid.getRealPoint(getCoord(i + 1))) ||
       !canThrough(grid.getRealPoint(getCoord(j)), grid.getRealPoint(getCoord(j - 1)))

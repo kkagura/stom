@@ -35,6 +35,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   private isHovered = false;
   private isSelected = false;
+  private activeControl: Control | null = null;
 
   constructor(public id: string = genId()) {
     super();
@@ -174,6 +175,16 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   setIsSelected(isSelected: boolean) {
     if (this.isSelected === isSelected) return;
     this.isSelected = isSelected;
+    this.triggerChange(2);
+  }
+
+  getActiveControl() {
+    return this.activeControl;
+  }
+
+  setActiveControl(activeControl: Control) {
+    if (activeControl === this.activeControl) return;
+    this.activeControl = activeControl;
     this.triggerChange(2);
   }
 

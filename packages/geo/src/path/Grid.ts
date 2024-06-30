@@ -82,7 +82,7 @@ class Grid {
     return this.costs[point[0]][point[1]];
   }
 
-  private isValid(p: number[]) {
+  isValid(p: number[]) {
     const row = this.grid.length;
     const col = this.grid[0].length;
 

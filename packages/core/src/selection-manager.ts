@@ -6,6 +6,7 @@ import { IMatrixArr, IPoint, IRect, Matrix, ResizeDirs, boxToRect, extendRect, i
 import { CommonEvents } from './models/common-events';
 import { ResizeControl } from './models/resize-control';
 import { RotateControl } from './models/rotate-control';
+import { Control } from './models/control';
 
 export enum SelectionEvents {
   setSelection = 'setSelection',
@@ -30,6 +31,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
   private rotator: RotateControl = new RotateControl(this);
   private pauseUpdateRect: boolean = false;
   private rotate: number = 0;
+  private activeControl: Control | null = null;
   constructor(private editor: Editor) {
     super();
     editor.box.on(BoxEvents.removeModels, models => {
@@ -184,6 +186,16 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
       if (this.rotator.hitTest(point.x, point.y)) return this.rotator;
     }
     return null;
+  }
+
+  getActiveControl() {
+    return this.activeControl;
+  }
+
+  setActiveControl(activeControl: Control) {
+    if (activeControl === this.activeControl) return;
+    this.activeControl = activeControl;
+    this.emit(CommonEvents.change);
   }
 
   static SELECTION_STROKE_COLOR = '#0f8eff';

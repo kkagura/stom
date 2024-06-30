@@ -19,6 +19,9 @@ interface ControlHost
     [k: string]: any;
   }> {
   getRect(): IRect;
+
+  getActiveControl(): Control | null;
+  setActiveControl(control: Control | null): void;
 }
 
 export abstract class Control<Host extends ControlHost = ControlHost> extends EventEmitter<Events> {
@@ -75,6 +78,7 @@ export abstract class Control<Host extends ControlHost = ControlHost> extends Ev
   setIsActive(isActive: boolean) {
     if (isActive === this.isActive) return;
     this.isActive = isActive;
+    this.getHost().setActiveControl(isActive ? this : null);
     this.emit(CommonEvents.change);
   }
 

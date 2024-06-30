@@ -86,7 +86,8 @@ export class RectModel extends Model<RectModelAttrs> {
       ctx.lineWidth = attrs.border.width;
       ctx.stroke();
     }
-    if (this.getIsHovered()) {
+    const control = this.getActiveControl();
+    if (this.getIsHovered() || control instanceof LinkControl) {
       this.linkControls.forEach(control => {
         this.updateLinkControlPosition(control);
         control.paint(ctx);

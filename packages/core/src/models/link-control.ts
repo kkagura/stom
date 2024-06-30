@@ -20,6 +20,9 @@ export class LinkControl extends Control<Model> {
     const layerId = host.getLayerId();
     useDragEvent(
       {
+        onDragStart: e => {
+          this.setIsActive(true);
+        },
         onDragMove: (e, movement) => {
           const res = editor.getElementAt(e);
           let end: IPoint | LinkControl;
@@ -40,6 +43,7 @@ export class LinkControl extends Control<Model> {
         },
         onDragEnd: e => {
           // todo: ActionManager
+          this.setIsActive(false);
           if (!linkModel) return;
           const res = editor.getElementAt(e);
           if (res && res.control && res.control instanceof LinkControl) {
@@ -57,7 +61,7 @@ export class LinkControl extends Control<Model> {
     const centerY = rect.y + rect.height / 2;
     ctx.beginPath();
     ctx.arc(centerX, centerY, LinkControl.SIZE / 2, 0, Math.PI * 2);
-    if (this.getIsHovered()) {
+    if (this.getIsHovered() || this.getIsActive()) {
       ctx.fillStyle = LinkControl.FILL_COLOR;
       ctx.fill();
     }
