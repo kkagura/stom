@@ -200,5 +200,5 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
 
   static SELECTION_STROKE_COLOR = '#0f8eff';
   static SELECTION_LINE_DASH = [5, 5];
-  static SELECTION_PADDING = 10;
+  static SELECTION_PADDING = 0;
 }

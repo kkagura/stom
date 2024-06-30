@@ -1,4 +1,4 @@
-import { IPoint, IRect, Direction, extendRect, getRectByPoints, createPath } from '@stom/geo';
+import { IPoint, IRect, Direction, extendRect, getRectByPoints, createPath, IMatrixArr } from '@stom/geo';
 import { Model, ModelEvents } from './model';
 import { genId } from '@stom/shared';
 import { LinkControl } from './link-control';
@@ -122,6 +122,19 @@ export class LinkModel extends Model<LinkModelAttrs> {
     return extendRect(rect, extend);
   }
 
+  getSize() {
+    const { width, height } = this.getRect();
+    return {
+      width,
+      height
+    };
+  }
+
+  getWorldTransform(): IMatrixArr {
+    const { x, y } = this.getRect();
+    return [1, 0, 0, 1, x, y];
+  }
+
   paint(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     this.getAllPoints().forEach((p, i) => {
@@ -136,6 +149,10 @@ export class LinkModel extends Model<LinkModelAttrs> {
     ctx.beginPath();
 
     // debug
+
+    // const renderRect = this.getRenderRect();
+    // ctx.fillStyle = 'green';
+    // ctx.fillRect(renderRect.x, renderRect.y, renderRect.width, renderRect.height);
     // this.mapPoints.forEach(p => {
     //   ctx.moveTo(p.x, p.y);
     //   ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
