@@ -39,6 +39,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
       direction: this.start.getTag() as Direction
     };
 
+    // todo circular dependencies
     const endOrign = this.end instanceof LinkControl ? this.end.getSceneCenterPosition() : this.end;
 
     const end = {

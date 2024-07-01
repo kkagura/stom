@@ -15,6 +15,7 @@
     "vue-tsc": "^2.0.6"
   },
   "dependencies": {
+    "@stom/core": "workspace:*",
     "@stom/ui": "workspace:*"
   }
 }

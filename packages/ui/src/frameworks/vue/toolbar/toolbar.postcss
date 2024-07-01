@@ -1,0 +1,30 @@
+.st-toolbar {
+  height: 42px;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 1px solid #dfe2e5;
+  border-bottom: 1px solid #dfe2e5;
+  align-items: center;
+  padding-left: 14px;
+  .st-toolbar__button {
+    width: 26px;
+    height: 26px;
+    margin-right: 2px;
+    box-sizing: border-box;
+    padding: 4px;
+    transition: all 0.2s ease;
+    border-radius: 2px;
+    font-size: 16px;
+    &.is-disabled {
+      cursor: not-allowed;
+      opacity: .4;
+    }
+    &:not(.is-disabled) {
+      cursor: pointer;
+      &:hover {
+        background-color: #eaecee;
+      }
+    }
+  }
+}

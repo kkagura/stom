@@ -19,9 +19,9 @@ export default [
     plugins: [
       // 配置插件
       clear({ targets: ['dist'], watch: false }),
+      vue(),
       resolve(),
       commonjs(),
-      vue(),
       esbuild({
         exclude: [],
         sourceMap: false,

@@ -90,6 +90,7 @@ export class ResizeControl extends Control<SelectionManager> {
               height,
               transform: startSelectedBoxTf.getArray()
             },
+            // todo circular dependencies
             SelectionManager.SELECTION_PADDING
           );
           const prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());

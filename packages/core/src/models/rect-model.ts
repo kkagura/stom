@@ -53,6 +53,7 @@ export class RectModel extends Model<RectModelAttrs> {
   }
 
   hitTest(x: number, y: number): boolean | Control {
+    // todo 考虑transform
     if (this.getIsHovered()) {
       const renderRect = this.getRenderRect();
       if (!isPointInRect({ x, y }, renderRect)) {
