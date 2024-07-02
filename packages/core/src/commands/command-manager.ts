@@ -29,4 +29,26 @@ export class CommandManager {
     }
     return false;
   }
+
+  setCommandList(commandList: Command[]) {
+    this.commandList.forEach(command => {
+      command.dispose();
+    });
+
+    this.commandList = commandList;
+
+    commandList.forEach(command => {
+      this.commandMap.set(command.getName(), command);
+    });
+  }
+
+  getCommandList() {
+    return this.commandList;
+  }
+
+  dispose() {
+    this.commandList.forEach(command => {
+      command.dispose();
+    });
+  }
 }

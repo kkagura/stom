@@ -10,8 +10,8 @@
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { Undo, Redo } from '../icons';
 import Icon from '../components/icon/Icon.vue';
-import { PropType, ref } from 'vue';
-import { Command, CommandName } from '@stom/core';
+import { PropType, onBeforeUnmount, ref } from 'vue';
+import { Command, CommandName, CommonEvents } from '@stom/core';
 const bem = useNamespace('toolbar');
 
 const props = defineProps({
@@ -26,13 +26,21 @@ const iconMap: Record<CommandName, any> = {
   [CommandName.REDO]: Redo
 };
 
-const isEnable = ref(!props.command.isEnable());
-
 const currentComponent = iconMap[props.command.getName()];
+const isEnable = ref(props.command.isEnable());
 
 const handleClick = () => {
-  if (props.command.isEnable()) {
+  if (isEnable.value) {
     props.command.execute();
   }
 };
+
+const onChange = () => {
+  isEnable.value = props.command.isEnable();
+};
+
+props.command.on(CommonEvents.change, onChange);
+onBeforeUnmount(() => {
+  props.command.off(CommonEvents.change, onChange);
+});
 </script>

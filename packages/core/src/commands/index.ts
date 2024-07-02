@@ -2,7 +2,8 @@ export * from './command-manager';
 export * from './command';
 import { Editor } from '../editor';
 import { Command } from './command';
-import { UndoCommond } from './undo-command';
+import { UndoCommand } from './undo-command';
+import { RndoCommand } from './redo-command';
 
 /**
  * 为了tree-shaking考虑，默认的command需要自己在外部调用然后再传入UI组件中
@@ -10,7 +11,7 @@ import { UndoCommond } from './undo-command';
  * @returns
  */
 export function getDefaultCommands(editor: Editor): Command[] {
-  return [new UndoCommond(editor)];
+  return [new UndoCommand(editor), new RndoCommand(editor)];
 }
 
-export { UndoCommond };
+export { UndoCommand };

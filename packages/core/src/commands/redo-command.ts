@@ -3,7 +3,7 @@ import { CommonEvents } from '../models';
 import { Command } from './command';
 import { CommandName } from './command-manager';
 
-export class UndoCommand extends Command {
+export class RndoCommand extends Command {
   constructor(editor: Editor) {
     super(editor);
     editor.actionManager.on(CommonEvents.change, () => {
@@ -12,16 +12,16 @@ export class UndoCommand extends Command {
   }
 
   isEnable(): boolean {
-    return this.editor.actionManager.undoable();
+    return this.editor.actionManager.redoable();
   }
 
   execute() {
-    this.editor.actionManager.undo();
+    this.editor.actionManager.redo();
   }
 
   getName() {
-    return UndoCommand.name;
+    return RndoCommand.name;
   }
 
-  static name: CommandName = CommandName.UNDO;
+  static name: CommandName = CommandName.REDO;
 }

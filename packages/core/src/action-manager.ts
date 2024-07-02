@@ -1,3 +1,6 @@
+import { EventEmitter } from '@stom/shared';
+import { CommonEvents } from './models/common-events';
+
 export interface Action {
   undo(): void;
   redo(): void;
@@ -5,16 +8,22 @@ export interface Action {
 
 type ActionRecord = Action | Action[];
 
-export class ActionManager {
+interface Events {
+  [CommonEvents.change](): void;
+}
+
+export class ActionManager extends EventEmitter<Events> {
   //  操作栈
   list: ActionRecord[] = [];
   //  需要被合并的操作
   batch: Action[] | null = null;
   //  当前指针
-  cursor: number = 0;
+  cursor: number = -1;
   //  是否正在操作（正在操作的时候不进行记录）
   isOperating: boolean = false;
-  constructor(private limit: number = ActionManager.MAX) {}
+  constructor(private limit: number = ActionManager.MAX) {
+    super();
+  }
   /**
    * 入栈
    * @param op
@@ -40,10 +49,12 @@ export class ActionManager {
     }
     this.list.push(op);
     this.cursor = this.list.length - 1;
+    this.emit(CommonEvents.change);
   }
   //  清空操作栈
   clear() {
     this.list = [];
+    this.emit(CommonEvents.change);
   }
   //  当前是否可以undo
   undoable() {
@@ -76,6 +87,7 @@ export class ActionManager {
     } finally {
       this.isOperating = false;
     }
+    this.emit(CommonEvents.change);
   }
   redo() {
     if (!this.redoable()) {
@@ -95,6 +107,7 @@ export class ActionManager {
     } finally {
       this.isOperating = false;
     }
+    this.emit(CommonEvents.change);
   }
   //  开始批量记录
   startBatch() {
@@ -111,5 +124,5 @@ export class ActionManager {
     }
   }
 
-  static MAX: number = 10;
+  static MAX: number = 50;
 }
