@@ -67,10 +67,13 @@ const handleMousedown = async (e: MouseEvent, category: string) => {
       onDragEnd(e) {
         moveContext.visible = false;
         const editor = store.getEditor();
-        const target = e.target as HTMLElement;
-        if (findParentDom(target, parent => parent === editor.container)) {
+        const { x, y, width, height } = editor.container.getBoundingClientRect();
+        if (e.pageX >= x && e.pageY >= y && e.pageX <= x + width && e.pageY <= y + height) {
           const instance = store.getModelManager().getInstance(category);
-          const pos = editor.viewportManager.getCursorScenePoint(e);
+          const pos = editor.viewportManager.getScenePoint({
+            x: e.pageX - x,
+            y: e.pageY - y
+          });
           instance.setCenterPosition(pos.x, pos.y);
           editor.addModel(instance);
         }
