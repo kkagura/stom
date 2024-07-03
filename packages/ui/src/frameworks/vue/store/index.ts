@@ -12,6 +12,8 @@ export interface StomStore {
 
   register(groups: ModelGroup[]): void;
 
+  getModelManager(): ModelManager;
+
   ready(): Promise<Editor>;
 }
 
@@ -39,6 +41,10 @@ export function createStomStore(): StomStore {
         throw new Error('editor is not init');
       }
       return state.editor;
+    },
+
+    getModelManager() {
+      return state.modelManager;
     },
 
     register(groups: ModelGroup[]) {

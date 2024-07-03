@@ -170,4 +170,23 @@ export class LinkModel extends Model<LinkModelAttrs> {
   getCategory() {
     return LinkModel.CATEGORY;
   }
+
+  getStart() {
+    return this.start;
+  }
+
+  getStartHost() {
+    return this.start.getHost();
+  }
+
+  getEnd() {
+    return this.end;
+  }
+
+  getEndHost() {
+    if ('getHost' in this.end) {
+      return this.end.getHost();
+    }
+    return null;
+  }
 }

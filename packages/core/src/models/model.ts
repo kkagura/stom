@@ -100,10 +100,16 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   }
 
   setPosition(x: number, y: number) {
-    let changed = x !== this.rect.x || y !== this.rect.y;
+    const rect = this.getRect();
+    let changed = x !== rect.x || y !== rect.y;
     this.rect.x = x;
     this.rect.y = y;
     changed && this.triggerChange(1);
+  }
+
+  setCenterPosition(x: number, y: number) {
+    const { width, height } = this.getRect();
+    this.setPosition(x - width / 2, y - height / 2);
   }
 
   move(offsetX: number, offsetY: number) {

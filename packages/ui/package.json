@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@stom/core": "workspace:*",
+    "@stom/shared": "workspace:*",
     "vue": "3.3.4"
   }
 }

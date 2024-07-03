@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ShallowRef, onMounted, ref } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
-import { Editor, Box, RectModel } from '@stom/core';
+import { Editor, Box } from '@stom/core';
 
 defineOptions({ name: 'Editor' });
 
@@ -16,11 +16,6 @@ const emit = defineEmits<{
 const bem = useNamespace('container');
 const editorRef = ref();
 const box = new Box();
-const rect1 = new RectModel();
-const rect2 = new RectModel();
-rect2.setPosition(400, 200);
-box.addModel(rect1);
-box.addModel(rect2);
 
 const editor: ShallowRef<Editor | undefined> = ref();
 

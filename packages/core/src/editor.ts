@@ -3,7 +3,7 @@ import { Box, BoxEvents } from './box';
 import { getDevicePixelRatio, setCanvasSize } from '@stom/shared';
 import { EventManager } from './event-manager';
 import { ViewportEvents, ViewportManager } from './viewport-manager';
-import { Model } from './models';
+import { LinkModel, Model } from './models';
 import { ActionManager } from './action-manager';
 import { SelectionManager } from './selection-manager';
 import { Control } from './models/control';
@@ -255,5 +255,48 @@ export class Editor {
     ctx.translate(dx, dy);
     this.plugins.forEach(p => p.paint(ctx));
     ctx.restore();
+  }
+
+  addModel(model: Model) {
+    this.box.addModel(model);
+
+    const action = {
+      undo: () => {
+        this.box.removeModel(model);
+      },
+      redo: () => {
+        this.box.addModel(model);
+      }
+    };
+
+    this.actionManager.push(action);
+  }
+
+  removeModel(model: Model) {
+    const relations: Set<Model> = new Set();
+    relations.add(model);
+
+    this.box.each(m => {
+      if (m instanceof LinkModel) {
+        const startHost = m.getStartHost();
+        const endHost = m.getEndHost();
+        if (startHost === model || endHost === model) {
+          relations.add(m);
+        }
+      }
+    });
+    const toBeRemoved = [...relations];
+    this.box.removeModels(toBeRemoved);
+
+    const action = {
+      undo: () => {
+        this.box.addModels(toBeRemoved);
+      },
+      redo: () => {
+        this.box.removeModels(toBeRemoved);
+      }
+    };
+
+    this.actionManager.push(action);
   }
 }

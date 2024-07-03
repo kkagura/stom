@@ -84,6 +84,12 @@ export class Box extends EventEmitter<Events> {
     this.emit(BoxEvents.modelsChange, [model]);
   }
 
+  addModels(models: Model[]) {
+    this._addModels(models);
+    this.emit(BoxEvents.addModels, models);
+    this.emit(BoxEvents.modelsChange, models);
+  }
+
   private _removeModels(models: Model[]) {
     models.forEach(model => {
       if (!this.modelMap.has(model.id)) return;
@@ -100,6 +106,12 @@ export class Box extends EventEmitter<Events> {
     this._removeModels([model]);
     this.emit(BoxEvents.removeModels, [model]);
     this.emit(BoxEvents.modelsChange, [model]);
+  }
+
+  removeModels(models: Model[]) {
+    this._removeModels(models);
+    this.emit(BoxEvents.removeModels, models);
+    this.emit(BoxEvents.modelsChange, models);
   }
 
   each(cb: (model: Model, layer: Layer) => void | boolean) {

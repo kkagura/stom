@@ -30,3 +30,14 @@ export const useDragEvent = (options: DragEventOptions, e: MouseEvent) => {
   window.addEventListener('mouseup', onUp);
   window.addEventListener('mouseleave', onUp);
 };
+
+export const findParentDom = (dom: HTMLElement, match: (el: HTMLElement) => boolean) => {
+  let parent = dom.parentElement;
+  while (parent) {
+    if (match(parent)) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return null;
+};

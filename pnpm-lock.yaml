@@ -78,6 +78,7 @@ importers:
   packages/ui:
     specifiers:
       '@stom/core': workspace:*
+      '@stom/shared': workspace:*
       '@vue/compiler-sfc': ^3.4.29
       camelcase: ^8.0.0
       fast-glob: ^3.3.2
@@ -92,6 +93,7 @@ importers:
       vue: 3.3.4
     dependencies:
       '@stom/core': link:../core
+      '@stom/shared': link:../shared
       vue: 3.3.4
     devDependencies:
       '@vue/compiler-sfc': 3.4.29
