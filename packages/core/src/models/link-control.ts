@@ -42,13 +42,24 @@ export class LinkControl extends Control<Model> {
           }
         },
         onDragEnd: e => {
-          // todo: ActionManager
           this.setIsActive(false);
           if (!linkModel) return;
           const res = editor.getElementAt(e);
           if (res && res.control && res.control instanceof LinkControl) {
             linkModel.setEnd(res.control);
           }
+
+          const action = {
+            undo() {
+              editor.box.removeModel(linkModel!);
+            },
+            redo() {
+              editor.box.addModel(linkModel!);
+              // todo: 考虑是否有更好的方式
+              linkModel?.reset();
+            }
+          };
+          editor.actionManager.push(action);
         }
       },
       e

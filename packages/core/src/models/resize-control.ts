@@ -61,7 +61,8 @@ export class ResizeControl extends Control<SelectionManager> {
 
   handleMousedown(e: MouseEvent, editor: Editor) {
     const selectionManager = this.getHost();
-    const selectionList = selectionManager.getSelectionList();
+    const selectionList = selectionManager.getSelectionList().filter(el => el.getResizeable());
+    if (selectionList.length === 0) return;
     const originTransformMap = new Map<string, IMatrixArr>();
     const originRectMap = new Map<string, IRect>();
     selectionList.forEach(el => {
@@ -71,6 +72,9 @@ export class ResizeControl extends Control<SelectionManager> {
     let { x, y, width, height } = selectionManager.getBoundingRect();
     const startSelectedBoxTf = new Matrix().translate(x, y);
     let lastPoint = { x: e.offsetX, y: e.offsetY };
+
+    const updatedTransformMap = new Map<string, IMatrixArr>();
+    const updatedRectMap = new Map<string, IRect>();
 
     useDragEvent(
       {
@@ -108,11 +112,31 @@ export class ResizeControl extends Control<SelectionManager> {
             });
             el.setSize(newAttrs.width, newAttrs.height);
             el.setWorldTransform(newAttrs.transform);
+            updatedTransformMap.set(el.id, el.getWorldTransform());
+            updatedRectMap.set(el.id, el.getRect());
           });
         },
         onDragEnd: ev => {
           this.setIsActive(false);
-          // todo: actionManager
+          const action = {
+            undo: () => {
+              selectionList.forEach(el => {
+                const { width, height } = originRectMap.get(el.id)!;
+                const originTransform = originTransformMap.get(el.id)!;
+                el.setSize(width, height);
+                el.setWorldTransform(originTransform);
+              });
+            },
+            redo: () => {
+              selectionList.forEach(el => {
+                const { width, height } = updatedRectMap.get(el.id)!;
+                const originTransform = updatedTransformMap.get(el.id)!;
+                el.setSize(width, height);
+                el.setWorldTransform(originTransform);
+              });
+            }
+          };
+          editor.actionManager.push(action);
         }
       },
       e

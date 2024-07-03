@@ -41,12 +41,12 @@ export class LinkModel extends Model<LinkModelAttrs> {
     };
 
     // todo circular dependencies
-    const endOrign = this.end instanceof LinkControl ? this.end.getSceneCenterPosition() : this.end;
+    const endOrign = 'paint' in this.end ? this.end.getSceneCenterPosition() : this.end;
 
     const end = {
-      rect: this.end instanceof LinkControl ? this.end.getHost().getRect() : undefined,
+      rect: 'paint' in this.end ? this.end.getHost().getRect() : undefined,
       origin: endOrign,
-      direction: this.end instanceof LinkControl ? (this.end.getTag() as Direction) : this.getEndDirection()
+      direction: 'paint' in this.end ? (this.end.getTag() as Direction) : this.getEndDirection()
     };
 
     const { mapPoints, controlPoints } = createPath(start, end, 20);
@@ -71,7 +71,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
   }
 
   getEndPoint() {
-    if (this.end instanceof LinkControl) {
+    if ('paint' in this.end) {
       return this.end.getSceneCenterPosition();
     }
     return this.end;
@@ -79,12 +79,12 @@ export class LinkModel extends Model<LinkModelAttrs> {
 
   setEnd(end: LinkControl | IPoint) {
     if (this.end === end) return;
-    if (this.end instanceof LinkControl) {
+    if ('paint' in this.end) {
       this.end.getHost().off(CommonEvents.rectChange, this.findPathPoints);
     }
 
     this.end = end;
-    if (end instanceof LinkControl) {
+    if ('paint' in end) {
       end.getHost().on(CommonEvents.rectChange, this.findPathPoints);
     }
     this.findPathPoints();
@@ -92,7 +92,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
   }
 
   setEndDirection(endDirection: Direction) {
-    if (this.end instanceof LinkControl) return;
+    if ('paint' in this.end) return;
     if (this._endDirection === endDirection) return;
     this._endDirection = endDirection;
     this.findPathPoints();
@@ -100,7 +100,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
   }
 
   getEndDirection() {
-    if (this.end instanceof LinkControl) return this.end.getTag() as Direction;
+    if ('paint' in this.end) return this.end.getTag() as Direction;
     return this._endDirection;
   }
 
@@ -188,5 +188,29 @@ export class LinkModel extends Model<LinkModelAttrs> {
       return this.end.getHost();
     }
     return null;
+  }
+
+  getMovable() {
+    return false;
+  }
+
+  getResizeable() {
+    return false;
+  }
+
+  getRotatable() {
+    return false;
+  }
+
+  dispose() {
+    super.dispose();
+    this.getStartHost().off(CommonEvents.rectChange, this.findPathPoints);
+    this.getEndHost()?.off(CommonEvents.rectChange, this.findPathPoints);
+  }
+
+  reset() {
+    super.reset();
+    this.getStartHost().on(CommonEvents.rectChange, this.findPathPoints);
+    this.getEndHost()?.on(CommonEvents.rectChange, this.findPathPoints);
   }
 }

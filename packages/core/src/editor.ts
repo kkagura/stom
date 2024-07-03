@@ -266,6 +266,7 @@ export class Editor {
       },
       redo: () => {
         this.box.addModel(model);
+        model.reset();
       }
     };
 
@@ -291,6 +292,7 @@ export class Editor {
     const action = {
       undo: () => {
         this.box.addModels(toBeRemoved);
+        toBeRemoved.forEach(el => el.reset());
       },
       redo: () => {
         this.box.removeModels(toBeRemoved);

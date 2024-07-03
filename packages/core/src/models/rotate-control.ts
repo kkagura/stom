@@ -16,7 +16,8 @@ export class RotateControl extends Control<SelectionManager> {
 
   handleMousedown(e: MouseEvent, editor: Editor): void {
     const selectionManager = this.getHost();
-    const selectionList = selectionManager.getSelectionList();
+    const selectionList = selectionManager.getSelectionList().filter(el => el.getRotatable());
+    if (selectionList.length === 0) return;
     const originTransformMap = new Map<string, IMatrixArr>();
     const originRectMap = new Map<string, IRect>();
     selectionList.forEach(el => {
@@ -38,6 +39,8 @@ export class RotateControl extends Control<SelectionManager> {
     );
 
     selectionManager.togglePauseUpdateRect(true);
+
+    const updatedTransformMap = new Map<string, IMatrixArr>();
 
     useDragEvent(
       {
@@ -62,6 +65,7 @@ export class RotateControl extends Control<SelectionManager> {
               x: cxInSelectedElementsBBox,
               y: cyInSelectedElementsBBox
             });
+            updatedTransformMap.set(el.id, el.getWorldTransform());
           });
 
           selectionManager.setRotate(dRotation);
@@ -72,6 +76,21 @@ export class RotateControl extends Control<SelectionManager> {
           selectionManager.setRotate(0);
           selectionManager.togglePauseUpdateRect(false);
           selectionManager.caculateContainRect();
+          const action = {
+            undo: () => {
+              selectionList.forEach(el => {
+                const originTransform = originTransformMap.get(el.id)!;
+                el.setWorldTransform(originTransform);
+              });
+            },
+            redo: () => {
+              selectionList.forEach(el => {
+                const originTransform = updatedTransformMap.get(el.id)!;
+                el.setWorldTransform(originTransform);
+              });
+            }
+          };
+          editor.actionManager.push(action);
         }
       },
       e

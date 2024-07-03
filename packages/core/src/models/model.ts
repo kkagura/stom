@@ -224,5 +224,17 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.setWorldTransform(newWoldTf);
   }
 
+  getMovable() {
+    return true;
+  }
+
+  getResizeable() {
+    return true;
+  }
+
+  getRotatable() {
+    return true;
+  }
+
   abstract getCategory(): string;
 }
