@@ -11,8 +11,8 @@
 
 <script setup lang="ts">
 import { ShallowRef, markRaw, ref, shallowRef } from 'vue';
-import { Editor, Toolbar, createStomStore } from '@stom/ui/vue';
-import { Command, getDefaultCommands, type Editor as IEditor } from '@stom/core';
+import { Editor, Toolbar, createStomStore, getDefaultCommands } from '@stom/ui/vue';
+import { Command, type Editor as IEditor } from '@stom/core';
 // todo: fix type
 // const defaultCommands = ref<Command[]>([]);
 const defaultCommands = shallowRef<any[]>([]);

@@ -1,13 +1,16 @@
-import { Editor } from '@stom/core';
+import { Editor, ModelManager } from '@stom/core';
 import { InjectionKey, inject, provide } from 'vue';
+import { ModelGroup } from '../library/library';
 
+interface State {
+  editor: Editor | null;
+  modelManager: ModelManager;
+}
 export interface StomStore {
-  state: {
-    editor: Editor | null;
-  };
-
   setEditor(editor: Editor): void;
   getEditor(): Editor;
+
+  register(groups: ModelGroup[]): void;
 
   ready(): Promise<Editor>;
 }
@@ -16,27 +19,40 @@ export const stomStoreInjectionKey: InjectionKey<StomStore> = Symbol();
 
 export function createStomStore(): StomStore {
   const promiseCb: Function[] = [];
+
+  const state: State = {
+    editor: null,
+    modelManager: new ModelManager()
+  };
+
   const store: StomStore = {
-    state: {
-      editor: null
-    },
     setEditor(editor: Editor) {
-      store.state.editor = editor;
+      state.editor = editor;
       promiseCb.forEach(resolve => {
         resolve(editor);
       });
       promiseCb.length = 0;
     },
+
     getEditor() {
-      if (!store.state.editor) {
+      if (!state.editor) {
         throw new Error('editor is not init');
       }
-      return store.state.editor;
+      return state.editor;
     },
+
+    register(groups: ModelGroup[]) {
+      groups.forEach(el => {
+        el.models.forEach(model => {
+          state.modelManager.register(model);
+        });
+      });
+    },
+
     ready() {
       return new Promise(resolve => {
-        if (store.state.editor) {
-          resolve(store.state.editor);
+        if (state.editor) {
+          resolve(state.editor);
         } else {
           promiseCb.push(resolve);
         }

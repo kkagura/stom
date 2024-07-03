@@ -16,6 +16,7 @@ interface LinkModelAttrs {
 }
 
 export class LinkModel extends Model<LinkModelAttrs> {
+  static CATEGORY = 'link';
   attrs: LinkModelAttrs = {
     lineColor: '#000',
     lineWidth: 2,
@@ -164,5 +165,9 @@ export class LinkModel extends Model<LinkModelAttrs> {
     // const rect = this.getRect();
     // ctx.rect(rect.x, rect.y, rect.width, rect.height);
     // ctx.stroke();
+  }
+
+  getCategory() {
+    return LinkModel.CATEGORY;
   }
 }

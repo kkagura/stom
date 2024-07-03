@@ -7,6 +7,8 @@ import { ShallowRef, onMounted, ref } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { Editor, Box, RectModel } from '@stom/core';
 
+defineOptions({ name: 'Editor' });
+
 const emit = defineEmits<{
   (e: 'ready', editor: Editor): void;
 }>();

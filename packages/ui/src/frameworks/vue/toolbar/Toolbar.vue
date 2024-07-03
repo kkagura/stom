@@ -11,6 +11,8 @@ import { Command, CommandManager, CommandName } from '@stom/core';
 import ToolbarButton from './ToolbarButton.vue';
 const bem = useNamespace('toolbar');
 
+defineOptions({ name: 'Toolbar' });
+
 defineProps({
   commands: {
     type: Array as PropType<Command[]>,

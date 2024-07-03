@@ -3,6 +3,7 @@ export * from './common-events';
 export * from './control';
 export * from './link-control';
 export * from './link-model';
+export * from './model-manager';
 export * from './model';
 export * from './rect-model';
 export * from './resize-control';

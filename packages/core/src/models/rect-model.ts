@@ -14,6 +14,7 @@ export interface RectModelAttrs {
 }
 
 export class RectModel extends Model<RectModelAttrs> {
+  static CATEGORY = 'rect';
   attrs: RectModelAttrs = {
     border: { width: 2, color: '#000', style: 'solid' },
     fill: true,
@@ -120,5 +121,9 @@ export class RectModel extends Model<RectModelAttrs> {
       case 'left':
         control.setCenterPosition(0, height / 2);
     }
+  }
+
+  getCategory(): string {
+    return RectModel.CATEGORY;
   }
 }

@@ -22,6 +22,7 @@ interface Events {
 
 export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events> {
   abstract attrs: Attrs;
+  static CATEGORY: string;
   rect: IRect = {
     x: 0,
     y: 0,
@@ -216,4 +217,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
     this.setWorldTransform(newWoldTf);
   }
+
+  abstract getCategory(): string;
 }
