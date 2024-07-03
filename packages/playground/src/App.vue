@@ -11,16 +11,16 @@
 
 <script setup lang="ts">
 import { ShallowRef, markRaw, ref, shallowRef } from 'vue';
-import { Editor, Toolbar } from '@stom/ui/vue';
+import { Editor, Toolbar, createStomStore } from '@stom/ui/vue';
 import { Command, getDefaultCommands, type Editor as IEditor } from '@stom/core';
 // todo: fix type
 // const defaultCommands = ref<Command[]>([]);
 const defaultCommands = shallowRef<any[]>([]);
 
-const editor: ShallowRef<IEditor | undefined> = ref();
+const store = createStomStore();
 
 const onReady = (e: IEditor) => {
-  editor.value = e;
+  store.setEditor(e);
   defaultCommands.value = markRaw(getDefaultCommands(e));
 };
 </script>
