@@ -123,7 +123,9 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
   };
 
   getBoundingRect(): IRect {
-    if (this.selection.length) {
+    if (this.selection.length === 1) {
+      return this.selection[0].getRect();
+    } else if (this.selection.length > 1) {
       const bboxes = this.selection.map(el => el.getBbox());
       return boxToRect(mergeBoxes(bboxes));
     }
@@ -150,22 +152,35 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     this.rotate = dRotation;
   }
 
+  getWorldTransform(): IMatrixArr {
+    if (this.selection.length === 1) {
+      return this.selection[0].getWorldTransform();
+    }
+    const { x, y } = this.containRect || { x: 0, y: 0 };
+    return [1, 0, 0, 1, x, y];
+  }
+
   paint(ctx: CanvasRenderingContext2D): void {
     if (this.containRect) {
       ctx.save();
-      const { width, height, x, y } = this.containRect;
-      if (this.rotate) {
-        ctx.translate(x + width / 2, y + height / 2);
-        ctx.rotate(this.rotate);
-        ctx.translate(-(x + width / 2), -(y + height / 2));
+      const { width, height } = this.containRect;
+      const transform = this.getWorldTransform();
+      ctx.transform(...transform);
+      if (this.selection.length > 1) {
+        // todo 考虑通过transform处理
+        if (this.rotate) {
+          ctx.translate(width / 2, height / 2);
+          ctx.rotate(this.rotate);
+          ctx.translate(-(width / 2), -(height / 2));
+        }
       }
       ctx.beginPath();
-      ctx.roundRect(x, y, width, height, 2);
+      ctx.roundRect(0, 0, width, height, 2);
       ctx.strokeStyle = SelectionManager.SELECTION_STROKE_COLOR;
       ctx.lineWidth = 2;
       ctx.setLineDash(SelectionManager.SELECTION_LINE_DASH);
       ctx.stroke();
-      ctx.translate(x, y);
+      ctx.translate(0, 0);
       this.resizers.forEach(resizer => {
         resizer.updatePosition();
         resizer.paint(ctx);

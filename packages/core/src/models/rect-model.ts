@@ -54,16 +54,20 @@ export class RectModel extends Model<RectModelAttrs> {
   }
 
   hitTest(x: number, y: number): boolean | Control {
-    // todo 考虑transform
+    // 先判断点是否在绘图区域内
+    if (!isPointInRect({ x, y }, this.getRenderRect())) {
+      return false;
+    }
+    // 再判断是否在控制点上
     if (this.getIsHovered()) {
-      const renderRect = this.getRenderRect();
-      if (!isPointInRect({ x, y }, renderRect)) {
-        return false;
-      }
       const linkControl = this.linkControls.find(el => el.hitTest(x, y));
       if (linkControl) return linkControl;
     }
-    return isPointInRoundRect({ x, y }, this.getRenderRect(), this.getRoundGap());
+
+    const tf = new Matrix(...this.getWorldTransform());
+    const point = tf.applyInverse({ x, y });
+    const { width, height } = this.getRect();
+    return isPointInRoundRect(point, { x: 0, y: 0, width, height }, this.getRoundGap());
   }
 
   paint(ctx: CanvasRenderingContext2D) {
