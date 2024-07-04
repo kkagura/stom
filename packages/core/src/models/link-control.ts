@@ -1,5 +1,5 @@
 import { useDragEvent } from '@stom/shared';
-import { Model } from '.';
+import { CommonEvents, Model } from '.';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { LinkModel } from './link-model';
@@ -8,7 +8,27 @@ import { IPoint, getDiretion } from '@stom/geo';
 export class LinkControl extends Control<Model> {
   constructor(host: Model, tag: string) {
     super(host, tag);
+    host.on(CommonEvents.rectChange, this.updatePosition);
   }
+
+  updatePosition = () => {
+    const rect = this.getHost().getRect();
+    const { width, height } = rect;
+    const tag = this.getTag();
+    switch (tag) {
+      case 'top':
+        this.setCenterPosition(width / 2, 0);
+        break;
+      case 'right':
+        this.setCenterPosition(width, height / 2);
+        break;
+      case 'bottom':
+        this.setCenterPosition(width / 2, height);
+        break;
+      case 'left':
+        this.setCenterPosition(0, height / 2);
+    }
+  };
 
   init() {
     this.setSize(LinkControl.SIZE, LinkControl.SIZE);

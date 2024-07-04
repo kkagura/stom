@@ -40,7 +40,6 @@ export class LinkModel extends Model<LinkModelAttrs> {
       direction: this.start.getTag() as Direction
     };
 
-    // todo circular dependencies
     const endOrign = 'paint' in this.end ? this.end.getSceneCenterPosition() : this.end;
 
     const end = {
@@ -139,7 +138,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
 
   paint(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
-    this.getAllPoints().forEach((p, i) => {
+    const points = this.getAllPoints();
+    points.forEach((p, i) => {
       ctx[i ? 'lineTo' : 'moveTo'](p.x, p.y);
     });
     const { attrs } = this;

@@ -95,7 +95,6 @@ export class RectModel extends Model<RectModelAttrs> {
     const control = this.getActiveControl();
     if (this.getIsHovered() || control instanceof LinkControl) {
       this.linkControls.forEach(control => {
-        this.updateLinkControlPosition(control);
         control.paint(ctx);
       });
     }
@@ -106,25 +105,6 @@ export class RectModel extends Model<RectModelAttrs> {
 
   dispose() {
     super.dispose();
-  }
-
-  updateLinkControlPosition(control: LinkControl) {
-    const rect = this.getRect();
-    const { width, height } = rect;
-    const tag = control.getTag();
-    switch (tag) {
-      case 'top':
-        control.setCenterPosition(width / 2, 0);
-        break;
-      case 'right':
-        control.setCenterPosition(width, height / 2);
-        break;
-      case 'bottom':
-        control.setCenterPosition(width / 2, height);
-        break;
-      case 'left':
-        control.setCenterPosition(0, height / 2);
-    }
   }
 
   getCategory(): string {
