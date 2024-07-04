@@ -1,15 +1,4 @@
-import {
-  IMatrixArr,
-  IPoint,
-  IRect,
-  Matrix,
-  ResizeDirs,
-  invertMatrix,
-  isPointInRect,
-  multiplyMatrix,
-  recomputeTransformRect,
-  resizeRect
-} from '@stom/geo';
+import { IMatrixArr, IRect, Matrix, ResizeDirs, invertMatrix, isPointInRect, multiplyMatrix, recomputeTransformRect, resizeRect } from '@stom/geo';
 import { Control } from './control';
 import { Action } from '../action-manager';
 import { Editor } from '../editor';
@@ -51,6 +40,10 @@ export class ResizeControl extends Control<SelectionManager> {
     }
   }
 
+  hitTest(x: number, y: number): boolean {
+    return super.hitTest(x, y);
+  }
+
   paint(ctx: CanvasRenderingContext2D): void {
     const rect = this.getRect();
     ctx.beginPath();
@@ -73,8 +66,9 @@ export class ResizeControl extends Control<SelectionManager> {
       originTransformMap.set(el.id, el.getWorldTransform());
       originRectMap.set(el.id, el.getRect());
     });
-    const selRect = selectionManager.getBoundingRect();
-    const startPoint = editor.viewportManager.getCursorScenePoint(e);
+    let { x, y, width, height } = selectionManager.getBoundingRect();
+    const startSelectedBoxTf = new Matrix().translate(x, y);
+    let lastPoint = { x: e.offsetX, y: e.offsetY };
 
     const updatedTransformMap = new Map<string, IMatrixArr>();
     const updatedRectMap = new Map<string, IRect>();
@@ -85,15 +79,46 @@ export class ResizeControl extends Control<SelectionManager> {
           this.setIsActive(true);
         },
         onDragMove: ev => {
-          const currPoint = editor.viewportManager.getCursorScenePoint(ev);
-          const newRect = this.getNewSelRect(startPoint, currPoint, selRect);
-          const scaleX = newRect.width / selRect.width;
-          const scaleY = newRect.height / selRect.height;
-          selectionList.forEach(model => {
-            const originRect = originRectMap.get(model.id)!;
-            const newRect = this.resizeRect(originRect, scaleX, scaleY);
-            model.setPosition(newRect.x, newRect.y);
-            model.setSize(newRect.width, newRect.height);
+          const currPoint = { x: ev.offsetX, y: ev.offsetY };
+          if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
+          const gloalPt = editor.viewportManager.getCursorScenePoint(ev);
+          lastPoint = currPoint;
+
+          let prependedTransform = new Matrix();
+
+          if (selectionManager.getSelectionList().length === 1) {
+            const originWorldTf = originTransformMap.get(selectionList[0].id)!;
+            const originRect = originRectMap.get(selectionList[0].id)!;
+            const updatedTransformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, {
+              width: originRect.width,
+              height: originRect.height,
+              transform: originWorldTf
+            });
+            prependedTransform = new Matrix(...updatedTransformRect.transform).append(new Matrix(...originWorldTf).invert());
+          } else {
+            const transformRect = resizeRect(this.getTag() as ResizeDirs, gloalPt, {
+              width,
+              height,
+              transform: startSelectedBoxTf.getArray()
+            });
+            prependedTransform = new Matrix(...transformRect.transform).append(startSelectedBoxTf.clone().invert());
+          }
+
+          const prependedTransformArr = prependedTransform.getArray();
+          selectionList.forEach(el => {
+            const originWorldTf = originTransformMap.get(el.id)!;
+            const newWorldTf = multiplyMatrix(prependedTransformArr, originWorldTf);
+            const newLocalTf = multiplyMatrix(invertMatrix([1, 0, 0, 1, 0, 0]), newWorldTf);
+            const { width, height } = originRectMap.get(el.id)!;
+            const newAttrs = recomputeTransformRect({
+              width,
+              height,
+              transform: newLocalTf
+            });
+            el.setSize(newAttrs.width, newAttrs.height);
+            el.setWorldTransform(newAttrs.transform);
+            updatedTransformMap.set(el.id, el.getWorldTransform());
+            updatedRectMap.set(el.id, el.getRect());
           });
         },
         onDragEnd: ev => {
@@ -126,29 +151,6 @@ export class ResizeControl extends Control<SelectionManager> {
   getCursor() {
     // todo: 需要考虑父元素旋转
     return `${this.getTag()}-resize`;
-  }
-
-  getNewSelRect(startPoint: IPoint, endPoint: IPoint, { x, y, width, height }: IRect): IRect {
-    const dir = this.getTag() as ResizeDirs;
-    const minWidth = 20;
-    const minHeight = 20;
-    if (dir === ResizeDirs.e) {
-      width = Math.max(minWidth, width + endPoint.x - startPoint.x);
-    }
-    return {
-      x,
-      y,
-      width,
-      height
-    };
-  }
-
-  resizeRect({ x, y, width, height }: IRect, scaleX: number, scaleY: number): IRect {
-    const dir = this.getTag() as ResizeDirs;
-    if (dir === ResizeDirs.e) {
-      width *= scaleX;
-    }
-    return { x, y, width, height };
   }
 
   static BORDER_WIDTH = 1;

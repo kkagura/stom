@@ -48,7 +48,7 @@ export class RectModel extends Model<RectModelAttrs> {
 
   getRenderRect(): IRect {
     let extend = this.attrs.border?.width || 1;
-    const rect = this.getBRect();
+    const rect = this.getBoundingRect();
     extend = Math.max(extend, LinkControl.SIZE / 2 + LinkControl.BORDER_WIDTH);
     return extendRect(rect, extend);
   }

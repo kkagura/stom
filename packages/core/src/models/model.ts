@@ -201,15 +201,15 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.isHovered = false;
   }
 
-  getBbox(): IBox {
+  getBoundingBox(): IBox {
     return calcRectBbox({
       ...this.getSize(),
       transform: this.getWorldTransform()
     });
   }
 
-  getBRect(): IRect {
-    return boxToRect(this.getBbox());
+  getBoundingRect(): IRect {
+    return boxToRect(this.getBoundingBox());
   }
 
   getRotate() {
