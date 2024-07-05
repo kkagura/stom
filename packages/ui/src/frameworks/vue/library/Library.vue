@@ -1,8 +1,10 @@
 <template>
   <div :class="[bem.b()]">
     <LibraryCollapse v-for="el in groupList" :title="el.groupName">
-      <div @mousedown="handleMousedown($event, cls.CATEGORY)" :class="[bem.e('item')]" v-for="cls in el.models">
-        <component :is="getIcon(cls.CATEGORY)"></component>
+      <div :class="bem.e('list')">
+        <div @mousedown="handleMousedown($event, cls.CATEGORY)" :class="[bem.e('item')]" v-for="cls in el.models">
+          <component :is="getIcon(cls.CATEGORY)"></component>
+        </div>
       </div>
     </LibraryCollapse>
     <Teleport to="body">
@@ -18,7 +20,7 @@ import { PropType, reactive } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { ModelGroup } from './library';
 import LibraryCollapse from './LibraryCollapse.vue';
-import { Rect } from '../icons';
+import { Rect, Terminator } from '../icons';
 import { ModelClass } from '@stom/core';
 import { findParentDom, useDragEvent } from '@stom/shared';
 import { useStomStore } from '../store';
@@ -37,7 +39,8 @@ defineProps({
 });
 
 const iconMap = {
-  rect: Rect
+  rect: Rect,
+  terminator: Terminator
 };
 
 const getIcon = (category: string) => {

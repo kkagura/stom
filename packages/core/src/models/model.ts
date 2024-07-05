@@ -252,5 +252,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return true;
   }
 
+  updateControlPosition(control: Control) {}
+
   abstract getCategory(): string;
 }

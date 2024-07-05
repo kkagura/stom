@@ -8,3 +8,4 @@ export * from './model';
 export * from './rect-model';
 export * from './resize-control';
 export * from './rotate-control';
+export * from './terminator-model';

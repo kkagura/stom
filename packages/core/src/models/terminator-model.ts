@@ -1,25 +1,24 @@
 import { Direction, IRect, Matrix, extendRect, isPointInRect, isPointInRoundRect } from '@stom/geo';
 import { BorderAttr } from './attrs';
-import { Model, ModelEvents } from './model';
+import { Model } from './model';
 import { Editor } from '../editor';
+import { LinkControl } from './link-control';
 import { genId } from '@stom/shared';
 import { Control } from './control';
-import { LinkControl } from './link-control';
 
-export interface RectModelAttrs {
+export interface TerminatorModelAttrs {
   border: BorderAttr | null;
   fill: boolean;
   fillColor: string;
-  roundGap: number;
 }
 
-export class RectModel extends Model<RectModelAttrs> {
-  static CATEGORY = 'rect';
-  attrs: RectModelAttrs = {
+export class TerminatorModel extends Model<TerminatorModelAttrs> {
+  static CATEGORY: string = 'terminator';
+
+  attrs: TerminatorModelAttrs = {
     border: { width: 2, color: '#000', style: 'solid' },
     fill: true,
-    fillColor: '#fff',
-    roundGap: 0
+    fillColor: '#fff'
   };
 
   rect: IRect = {
@@ -31,7 +30,7 @@ export class RectModel extends Model<RectModelAttrs> {
 
   private linkControls: LinkControl[] = [];
 
-  constructor(public id: string = genId()) {
+  constructor(id: string = genId()) {
     super(id);
 
     this.linkControls = [
@@ -40,17 +39,6 @@ export class RectModel extends Model<RectModelAttrs> {
       new LinkControl(this, Direction.BOTTOM),
       new LinkControl(this, Direction.LEFT)
     ];
-  }
-
-  private getRoundGap() {
-    return Math.min(Math.min(this.rect.width, this.rect.height) / 2, this.attrs.roundGap ?? 0);
-  }
-
-  getRenderRect(): IRect {
-    let extend = this.attrs.border?.width || 1;
-    const rect = this.getBoundingRect();
-    extend = Math.max(extend, LinkControl.SIZE / 2 + LinkControl.BORDER_WIDTH);
-    return extendRect(rect, extend);
   }
 
   hitTest(x: number, y: number): boolean | Control {
@@ -67,7 +55,14 @@ export class RectModel extends Model<RectModelAttrs> {
     const tf = new Matrix(...this.getWorldTransform());
     const point = tf.applyInverse({ x, y });
     const { width, height } = this.getRect();
-    return isPointInRoundRect(point, { x: 0, y: 0, width, height }, this.getRoundGap());
+    return isPointInRect(point, { x: 0, y: 0, width, height }, this.attrs?.border?.width ?? 0);
+  }
+
+  getRenderRect(): IRect {
+    let extend = this.attrs.border?.width || 1;
+    const rect = this.getBoundingRect();
+    extend = Math.max(extend, LinkControl.SIZE / 2 + LinkControl.BORDER_WIDTH);
+    return extendRect(rect, extend);
   }
 
   beforePaint(ctx: CanvasRenderingContext2D, editor: Editor): void {
@@ -76,16 +71,19 @@ export class RectModel extends Model<RectModelAttrs> {
     ctx.transform(...transform);
   }
 
-  paint(ctx: CanvasRenderingContext2D) {
+  paint(ctx: CanvasRenderingContext2D): void {
     const { attrs } = this;
-    const { width, height } = this.rect;
+    const { width, height } = this.getRect();
     ctx.beginPath();
-    const roundGap = this.getRoundGap();
-    if (roundGap) {
-      ctx.roundRect(0, 0, width, height, roundGap);
-    } else {
-      ctx.rect(0, 0, width, height);
-    }
+    let radius = Math.min(width, height) / 2;
+    const centerW = Math.max(0, width - 2 * radius);
+    ctx.moveTo(radius, 0);
+    ctx.lineTo(radius + centerW, 0);
+    ctx.arcTo(radius + centerW + radius, 0, radius + centerW + radius, height / 2, radius);
+    ctx.arcTo(radius + centerW + radius, height, radius + centerW, height, radius);
+    ctx.lineTo(radius, height);
+    ctx.arcTo(0, height, 0, height / 2, radius);
+    ctx.arcTo(0, 0, radius, 0, radius);
     if (attrs.fill) {
       ctx.fillStyle = attrs.fillColor;
       ctx.fill();
@@ -107,12 +105,8 @@ export class RectModel extends Model<RectModelAttrs> {
     ctx.restore();
   }
 
-  dispose() {
-    super.dispose();
-  }
-
   getCategory(): string {
-    return RectModel.CATEGORY;
+    return TerminatorModel.CATEGORY;
   }
 
   updateControlPosition(control: Control): void {

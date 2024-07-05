@@ -12,22 +12,7 @@ export class LinkControl extends Control<Model> {
   }
 
   updatePosition = () => {
-    const rect = this.getHost().getRect();
-    const { width, height } = rect;
-    const tag = this.getTag();
-    switch (tag) {
-      case 'top':
-        this.setCenterPosition(width / 2, 0);
-        break;
-      case 'right':
-        this.setCenterPosition(width, height / 2);
-        break;
-      case 'bottom':
-        this.setCenterPosition(width / 2, height);
-        break;
-      case 'left':
-        this.setCenterPosition(0, height / 2);
-    }
+    this.getHost().updateControlPosition(this);
   };
 
   init() {
