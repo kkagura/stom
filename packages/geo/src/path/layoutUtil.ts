@@ -87,7 +87,7 @@ const oppositeDirectionConfig = {
   [Direction.RIGHT]: Direction.LEFT
 };
 
-const getOppositeDirection = (dir: Direction) => {
+export const getOppositeDirection = (dir: Direction) => {
   return oppositeDirectionConfig[dir];
 };
 

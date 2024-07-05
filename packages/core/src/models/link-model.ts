@@ -1,4 +1,15 @@
-import { IPoint, IRect, Direction, extendRect, getRectByPoints, createPath, IMatrixArr } from '@stom/geo';
+import {
+  IPoint,
+  IRect,
+  Direction,
+  extendRect,
+  getRectByPoints,
+  createPath,
+  IMatrixArr,
+  getDiretion,
+  getSweepAngle,
+  getOppositeDirection
+} from '@stom/geo';
 import { Model, ModelEvents } from './model';
 import { genId } from '@stom/shared';
 import { LinkControl } from './link-control';
@@ -32,12 +43,11 @@ export class LinkModel extends Model<LinkModelAttrs> {
   private _endDirection: Direction = Direction.LEFT;
 
   findPathPoints = () => {
-    // todo: 处理节点旋转的情况
     const startHost = this.start.getHost();
     const start = {
       rect: startHost.getRect(),
       origin: this.start.getSceneCenterPosition(),
-      direction: this.start.getTag() as Direction
+      direction: this.getStartDirection()
     };
 
     const endOrign = 'paint' in this.end ? this.end.getSceneCenterPosition() : this.end;
@@ -45,7 +55,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
     const end = {
       rect: 'paint' in this.end ? this.end.getHost().getRect() : undefined,
       origin: endOrign,
-      direction: 'paint' in this.end ? (this.end.getTag() as Direction) : this.getEndDirection()
+      direction: this.getEndDirection()
     };
 
     const { mapPoints, controlPoints } = createPath(start, end, 20);
@@ -98,8 +108,22 @@ export class LinkModel extends Model<LinkModelAttrs> {
     this.triggerChange(1);
   }
 
-  getEndDirection() {
-    if ('paint' in this.end) return this.end.getTag() as Direction;
+  getStartDirection(): Direction {
+    const controlCenter = this.start.getSceneCenterPosition();
+    const hostCenter = this.start.getHost().getCenterPosition();
+    const movement: [number, number] = [controlCenter.x - hostCenter.x, controlCenter.y - hostCenter.y];
+    const x = getDiretion(movement);
+    return getOppositeDirection(x);
+  }
+
+  getEndDirection(): Direction {
+    if ('paint' in this.end) {
+      const controlCenter = this.end.getSceneCenterPosition();
+      const hostCenter = this.end.getHost().getCenterPosition();
+      const movement: [number, number] = [controlCenter.x - hostCenter.x, controlCenter.y - hostCenter.y];
+      const x = getDiretion(movement);
+      return getOppositeDirection(x);
+    }
     return this._endDirection;
   }
 

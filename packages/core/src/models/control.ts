@@ -131,11 +131,12 @@ export abstract class Control<Host extends ControlHost = ControlHost> extends Ev
 
   getSceneCenterPosition(): IPoint {
     const host = this.getHost();
-    const { x, y } = host.getRect();
-    return {
-      x: x + this.rect.x + this.rect.width / 2,
-      y: y + this.rect.y + this.rect.height / 2
+    const m = host.getWorldTransform();
+    const p = {
+      x: this.rect.x + this.rect.width / 2,
+      y: this.rect.y + this.rect.height / 2
     };
+    return new Matrix(...m).apply(p);
   }
 
   getRect() {

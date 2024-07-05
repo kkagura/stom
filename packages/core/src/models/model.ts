@@ -107,6 +107,22 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     changed && this.triggerChange(1);
   }
 
+  getPosition(): IPoint {
+    const rect = this.getRect();
+    return {
+      x: rect.x,
+      y: rect.y
+    };
+  }
+
+  getCenterPosition(): IPoint {
+    const rect = this.getRect();
+    return {
+      x: rect.x + rect.width / 2,
+      y: rect.y + rect.height / 2
+    };
+  }
+
   setCenterPosition(x: number, y: number) {
     const { width, height } = this.getRect();
     this.setPosition(x - width / 2, y - height / 2);

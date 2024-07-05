@@ -2,6 +2,7 @@ import { getRectByPoints } from '../rect';
 import { IPoint, IRect } from '../type';
 
 import { Direction } from './constants';
+import { getOppositeDirection } from './layoutUtil';
 import { createRoute } from './route';
 
 const transformPoint = (p: IPoint) => [p.x, p.y];
@@ -49,6 +50,8 @@ export const getDiretion = (movement: [number, number]) => {
 
   return dir;
 };
+
+export { getOppositeDirection };
 
 /**
  * 路径查找

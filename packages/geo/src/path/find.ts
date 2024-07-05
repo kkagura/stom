@@ -48,6 +48,7 @@ const find = (
   let target: { path: number[][]; grid: Grid; G: number } | null = null;
   let min1 = Infinity;
   let min2 = Infinity;
+  // todo: 旋转rect的时候可能导致path找不到
 
   result.forEach(item => {
     const completedPath = [...item.path];
