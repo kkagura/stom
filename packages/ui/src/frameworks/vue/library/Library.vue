@@ -20,7 +20,7 @@ import { PropType, reactive } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { ModelGroup } from './library';
 import LibraryCollapse from './LibraryCollapse.vue';
-import { Rect, Terminator } from '../icons';
+import { Rect, Terminator, Diamond } from '../icons';
 import { ModelClass } from '@stom/core';
 import { findParentDom, useDragEvent } from '@stom/shared';
 import { useStomStore } from '../store';
@@ -40,7 +40,8 @@ defineProps({
 
 const iconMap = {
   rect: Rect,
-  terminator: Terminator
+  terminator: Terminator,
+  diamond: Diamond
 };
 
 const getIcon = (category: string) => {

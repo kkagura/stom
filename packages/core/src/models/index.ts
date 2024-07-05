@@ -1,6 +1,7 @@
 export * from './attrs';
 export * from './common-events';
 export * from './control';
+export * from './diamond-model';
 export * from './link-control';
 export * from './link-model';
 export * from './model-manager';
