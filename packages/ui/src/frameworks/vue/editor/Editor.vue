@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ShallowRef, onMounted, ref } from 'vue';
+import { ShallowRef, markRaw, onMounted, ref } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { Editor, Box } from '@stom/core';
 
@@ -20,7 +20,7 @@ const box = new Box();
 const editor: ShallowRef<Editor | undefined> = ref();
 
 onMounted(() => {
-  editor.value = new Editor(editorRef.value, box);
+  editor.value = markRaw(new Editor(editorRef.value, box));
   emit('ready', editor.value);
 });
 

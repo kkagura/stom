@@ -8,10 +8,10 @@
 
 <script setup lang="ts">
 import { useNamespace } from '../../../hooks/useNameSpace';
-import { Undo, Redo } from '../icons';
+import { Undo, Redo, ZoomOut, ZoomIn, Delete } from '../icons';
 import Icon from '../components/icon/Icon.vue';
 import { PropType, onBeforeUnmount, ref } from 'vue';
-import { Command, CommandName, CommonEvents } from '@stom/core';
+import { Command, CommonEvents } from '@stom/core';
 const bem = useNamespace('toolbar');
 
 const props = defineProps({
@@ -21,9 +21,12 @@ const props = defineProps({
   }
 });
 
-const iconMap: Record<CommandName, any> = {
-  [CommandName.UNDO]: Undo,
-  [CommandName.REDO]: Redo
+const iconMap: Record<string, any> = {
+  undo: Undo,
+  redo: Redo,
+  zoomOut: ZoomOut,
+  zoomIn: ZoomIn,
+  delete: Delete
 };
 
 const currentComponent = iconMap[props.command.getName()];

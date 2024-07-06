@@ -144,7 +144,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
   }
 
   getSelectionList() {
-    return this.selection;
+    return [...this.selection];
   }
 
   getRect(): IRect {

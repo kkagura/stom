@@ -3,7 +3,7 @@ import { Box, BoxEvents } from './box';
 import { getDevicePixelRatio, setCanvasSize } from '@stom/shared';
 import { EventManager } from './event-manager';
 import { ViewportEvents, ViewportManager } from './viewport-manager';
-import { LinkModel, Model } from './models';
+import { CommonEvents, LinkModel, Model } from './models';
 import { ActionManager } from './action-manager';
 import { SelectionManager } from './selection-manager';
 import { Control } from './models/control';
@@ -53,7 +53,7 @@ export class Editor {
     this.installPlugin(this.selectionManager);
 
     this.viewportManager = new ViewportManager(this);
-    this.viewportManager.on(ViewportEvents.change, () => {
+    this.viewportManager.on(CommonEvents.change, () => {
       this.paintAll = true;
     });
 
@@ -300,5 +300,41 @@ export class Editor {
     };
 
     this.actionManager.push(action);
+  }
+
+  removeModels(models: Model[]) {
+    const relations: Set<Model> = new Set(models);
+
+    this.box.each(m => {
+      if (m instanceof LinkModel) {
+        const startHost = m.getStartHost();
+        const endHost = m.getEndHost();
+        if (relations.has(startHost) || (endHost && relations.has(endHost))) {
+          relations.add(m);
+        }
+      }
+    });
+    const toBeRemoved = [...relations];
+    this.box.removeModels(toBeRemoved);
+
+    const action = {
+      undo: () => {
+        this.box.addModels(toBeRemoved);
+        toBeRemoved.forEach(el => el.reset());
+      },
+      redo: () => {
+        this.box.removeModels(toBeRemoved);
+      }
+    };
+
+    this.actionManager.push(action);
+  }
+
+  removeSelection() {
+    const selected = this.selectionManager.getSelectionList();
+    if (selected.length > 0) {
+      this.removeModels(selected);
+      this.selectionManager.clearSelection();
+    }
   }
 }

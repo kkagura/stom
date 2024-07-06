@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { PropType, onBeforeUnmount, watch } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
-import { Command, CommandManager, CommandName } from '@stom/core';
+import { Command } from '@stom/core';
 import ToolbarButton from './ToolbarButton.vue';
 const bem = useNamespace('toolbar');
 

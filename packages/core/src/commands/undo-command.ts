@@ -1,14 +1,11 @@
 import { Editor } from '../editor';
 import { CommonEvents } from '../models';
 import { Command } from './command';
-import { CommandName } from './command-manager';
 
 export class UndoCommand extends Command {
   constructor(editor: Editor) {
     super(editor);
-    editor.actionManager.on(CommonEvents.change, () => {
-      this.emit(CommonEvents.change);
-    });
+    editor.actionManager.on(CommonEvents.change, this.statusChange);
   }
 
   isEnable(): boolean {
@@ -23,5 +20,10 @@ export class UndoCommand extends Command {
     return UndoCommand.name;
   }
 
-  static name: CommandName = CommandName.UNDO;
+  dispose(): void {
+    super.dispose();
+    this.editor.actionManager.off(CommonEvents.change, this.statusChange);
+  }
+
+  static name = 'undo';
 }

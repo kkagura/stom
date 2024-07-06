@@ -1,12 +1,5 @@
 import { Command } from './command';
 
-export enum CommandName {
-  UNDO = 'undo',
-  REDO = 'redo'
-  // SAVE = 'save',
-  // DELETE = 'delete'
-}
-
 export class CommandManager {
   private commandMap: Map<string, Command> = new Map();
   constructor(private commandList: Command[]) {

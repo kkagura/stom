@@ -1,13 +1,15 @@
 import { EventEmitter } from '@stom/shared';
 import { Editor } from './editor';
 import { IPoint, IRect } from '@stom/geo';
+import { CommonEvents } from './models';
 
 export enum ViewportEvents {
-  change = 'change'
+  ZOOM_CHANGE = 'zoomChange'
 }
 
 interface Events {
-  [ViewportEvents.change]: () => void;
+  [CommonEvents.change]: () => void;
+  [ViewportEvents.ZOOM_CHANGE]: (zoom: number) => void;
 }
 
 export class ViewportManager extends EventEmitter<Events> {
@@ -35,7 +37,8 @@ export class ViewportManager extends EventEmitter<Events> {
       this.x = newX;
       this.y = newY;
       this.zoom = newZoom;
-      this.emit(ViewportEvents.change);
+      this.emit(ViewportEvents.ZOOM_CHANGE, newZoom);
+      this.emit(CommonEvents.change);
     }
   }
 
@@ -51,7 +54,8 @@ export class ViewportManager extends EventEmitter<Events> {
       this.x = newX;
       this.y = newY;
       this.zoom = newZoom;
-      this.emit(ViewportEvents.change);
+      this.emit(ViewportEvents.ZOOM_CHANGE, newZoom);
+      this.emit(CommonEvents.change);
     }
   }
 
@@ -60,7 +64,7 @@ export class ViewportManager extends EventEmitter<Events> {
     this.y -= y;
 
     if (x !== 0 || y !== 0) {
-      this.emit(ViewportEvents.change);
+      this.emit(CommonEvents.change);
     }
   }
 
