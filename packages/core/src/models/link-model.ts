@@ -163,16 +163,55 @@ export class LinkModel extends Model<LinkModelAttrs> {
   paint(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     const points = this.getAllPoints();
+    const { x, y } = points.pop()!;
+    const dir = this.getEndDirection();
+    // 底边
+    const a = 8;
+    // 高
+    const h = 12;
     points.forEach((p, i) => {
       ctx[i ? 'lineTo' : 'moveTo'](p.x, p.y);
     });
+    // 最后一个点需要留出画箭头的空间
+    if (dir === Direction.LEFT) {
+      ctx.lineTo(x - h / 2, y);
+    } else if (dir === Direction.RIGHT) {
+      ctx.lineTo(x + h / 2, y);
+    } else if (dir === Direction.BOTTOM) {
+      ctx.lineTo(x, y + h / 2);
+    } else if (dir === Direction.TOP) {
+      ctx.lineTo(x, y - h / 2);
+    }
     const { attrs } = this;
+    const w = attrs.lineWidth;
     ctx.strokeStyle = attrs.lineColor;
     ctx.lineCap = attrs.lineCap;
-    ctx.lineWidth = attrs.lineWidth;
+    ctx.lineWidth = w;
     ctx.setLineDash(attrs.lineDash);
     ctx.stroke();
+
+    // 绘制箭头等腰三角形
     ctx.beginPath();
+    if (dir === Direction.LEFT) {
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - h, y - a / 2);
+      ctx.lineTo(x - h, y + a / 2);
+    } else if (dir === Direction.RIGHT) {
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + h, y - a / 2);
+      ctx.lineTo(x + h, y + a / 2);
+    } else if (dir === Direction.BOTTOM) {
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - a / 2, y + h);
+      ctx.lineTo(x + a / 2, y + h);
+    } else if (dir === Direction.TOP) {
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - a / 2, y - h);
+      ctx.lineTo(x + a / 2, y - h);
+    }
+    ctx.closePath();
+    ctx.fillStyle = attrs.lineColor;
+    ctx.fill();
 
     // debug
 
