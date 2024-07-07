@@ -5,3 +5,4 @@ export * from './canvas';
 export * from './array';
 export * from './number';
 export * from './dom';
+export * from './animation';

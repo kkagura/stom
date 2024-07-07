@@ -1,7 +1,8 @@
-import { EventEmitter } from '@stom/shared';
+import { Animation, EventEmitter, createAnimation } from '@stom/shared';
 import { Editor } from './editor';
 import { IPoint, IRect } from '@stom/geo';
 import { CommonEvents } from './models';
+import { EditorPlugin } from './plugin';
 
 export enum ViewportEvents {
   ZOOM_CHANGE = 'zoomChange'
@@ -9,13 +10,16 @@ export enum ViewportEvents {
 
 interface Events {
   [CommonEvents.change]: () => void;
+  [CommonEvents.REPAINT]: () => void;
   [ViewportEvents.ZOOM_CHANGE]: (zoom: number) => void;
 }
 
-export class ViewportManager extends EventEmitter<Events> {
+export class ViewportManager extends EventEmitter<Events> implements EditorPlugin<Events> {
   private x: number = 0;
   private y: number = 0;
   private zoom: number = 1;
+  private zoomTextOpaticy = -1;
+  private animation: Animation | null = null;
 
   constructor(private editor: Editor) {
     super();
@@ -37,6 +41,7 @@ export class ViewportManager extends EventEmitter<Events> {
       this.x = newX;
       this.y = newY;
       this.zoom = newZoom;
+      this.startAnimation();
       this.emit(ViewportEvents.ZOOM_CHANGE, newZoom);
       this.emit(CommonEvents.change);
     }
@@ -54,6 +59,7 @@ export class ViewportManager extends EventEmitter<Events> {
       this.x = newX;
       this.y = newY;
       this.zoom = newZoom;
+      this.startAnimation();
       this.emit(ViewportEvents.ZOOM_CHANGE, newZoom);
       this.emit(CommonEvents.change);
     }
@@ -133,6 +139,39 @@ export class ViewportManager extends EventEmitter<Events> {
       x: viewport.width / 2,
       y: viewport.height / 2
     };
+  }
+
+  startAnimation() {
+    if (!this.animation) {
+      this.animation = createAnimation({
+        duration: 2000,
+        startValue: 1,
+        endValue: 0,
+        onUpdate: t => {
+          this.zoomTextOpaticy = t;
+          this.emit(CommonEvents.REPAINT);
+        },
+        onEnd() {
+          this.zoomTextOpaticy = -1;
+        }
+      });
+    } else {
+      this.animation.stop();
+    }
+    this.animation.start();
+  }
+
+  paint(ctx: CanvasRenderingContext2D): void {
+    if (this.zoomTextOpaticy >= 0) {
+      const zoom = this.getZoom();
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.font = '30px Arial';
+      ctx.fillStyle = '#000';
+      ctx.globalAlpha = this.zoomTextOpaticy;
+      ctx.fillText(`ZOOM: ${zoom.toFixed(1)}`, 10, 40);
+      ctx.restore();
+    }
   }
 
   dispose() {

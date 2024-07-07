@@ -56,6 +56,7 @@ export class Editor {
     this.installTopPlugin(this.selectionManager);
 
     this.viewportManager = new ViewportManager(this);
+    this.installTopPlugin(this.viewportManager);
     this.viewportManager.on(CommonEvents.change, () => {
       this.paintAll = true;
       this.dirtyTop = true;
