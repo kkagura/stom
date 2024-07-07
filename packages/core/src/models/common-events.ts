@@ -4,5 +4,6 @@ export enum CommonEvents {
   mouseIn = 'mouseIn',
   mouseOut = 'mouseOut',
   mouseDown = 'mouseDown',
-  mouseUp = 'mouseUp'
+  mouseUp = 'mouseUp',
+  REPAINT = 'repaint'
 }

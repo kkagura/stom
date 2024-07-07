@@ -1,16 +1,14 @@
 import { IRect, isRectIntersect, mergeRects } from '@stom/geo';
 import { Box, BoxEvents } from './box';
-import { getDevicePixelRatio, setCanvasSize } from '@stom/shared';
+import { EventEmitter, getDevicePixelRatio, setCanvasSize } from '@stom/shared';
 import { EventManager } from './event-manager';
 import { ViewportEvents, ViewportManager } from './viewport-manager';
 import { CommonEvents, LinkModel, Model } from './models';
 import { ActionManager } from './action-manager';
 import { SelectionManager } from './selection-manager';
 import { Control } from './models/control';
-
-export interface EditorPlugin {
-  paint(ctx: CanvasRenderingContext2D): void;
-}
+import { Grid } from './grid';
+import { BasePluginEvents, EditorPlugin } from './plugin';
 
 export class Editor {
   rootCanvas: HTMLCanvasElement;
@@ -27,12 +25,17 @@ export class Editor {
   actionManager: ActionManager;
   selectionManager: SelectionManager;
 
+  grid: Grid;
+
   private dirtyList: Set<Model> = new Set();
   private paintAll: boolean = true;
 
   private frameRects: Map<string, IRect> = new Map();
 
-  private plugins: EditorPlugin[] = [];
+  private topPlugins: EditorPlugin<BasePluginEvents>[] = [];
+  private dirtyTop = true;
+  private rootPlugins: EditorPlugin<BasePluginEvents>[] = [];
+  private dirtyRoot = true;
 
   constructor(
     public container: HTMLElement,
@@ -47,15 +50,20 @@ export class Editor {
     this.actionManager = new ActionManager();
 
     this.eventManager = new EventManager(this);
-    this.installPlugin(this.eventManager);
+    this.installTopPlugin(this.eventManager);
 
     this.selectionManager = new SelectionManager(this);
-    this.installPlugin(this.selectionManager);
+    this.installTopPlugin(this.selectionManager);
 
     this.viewportManager = new ViewportManager(this);
     this.viewportManager.on(CommonEvents.change, () => {
       this.paintAll = true;
+      this.dirtyTop = true;
+      this.dirtyRoot = true;
     });
+
+    this.grid = new Grid(this);
+    this.installRootPlugin(this.grid);
 
     this.box.on(BoxEvents.modelsChange, models => {
       models.forEach(m => this.dirtyList.add(m));
@@ -88,9 +96,23 @@ export class Editor {
     setCanvasSize(this.topCanvas, width, height);
   }
 
-  installPlugin(plugin: EditorPlugin) {
-    this.plugins.push(plugin);
+  installTopPlugin(plugin: EditorPlugin<BasePluginEvents>) {
+    plugin.on(CommonEvents.REPAINT, this.repaintTop);
+    this.topPlugins.push(plugin);
   }
+
+  repaintTop = () => {
+    this.dirtyTop = true;
+  };
+
+  installRootPlugin(plugin: EditorPlugin<BasePluginEvents>) {
+    plugin.on(CommonEvents.REPAINT, this.repaintRoot);
+    this.rootPlugins.push(plugin);
+  }
+
+  repaintRoot = () => {
+    this.dirtyRoot = true;
+  };
 
   repaint = () => {
     if (this.paintAll) {
@@ -98,8 +120,15 @@ export class Editor {
     } else if (this.dirtyList.size) {
       this.partRepaint();
     }
-    // todo: 优化性能
-    this.paintPlugin();
+
+    if (this.dirtyRoot) {
+      this.paintRootPlugin();
+    }
+
+    if (this.dirtyTop) {
+      this.paintTopPlugin();
+    }
+
     this.paintAll = false;
     this.dirtyList.clear();
     requestAnimationFrame(this.repaint);
@@ -240,7 +269,8 @@ export class Editor {
     }
   }
 
-  paintPlugin() {
+  paintTopPlugin() {
+    this.dirtyTop = false;
     const ctx = this.topCtx;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -253,7 +283,25 @@ export class Editor {
     const dy = -viewport.y;
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
-    this.plugins.forEach(p => p.paint(ctx));
+    this.topPlugins.forEach(p => p.paint(ctx));
+    ctx.restore();
+  }
+
+  paintRootPlugin() {
+    this.dirtyRoot = false;
+    const ctx = this.rootCtx;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const viewport = this.viewportManager.getViewport();
+    ctx.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
+
+    const dpr = getDevicePixelRatio();
+    const zoom = this.viewportManager.getZoom();
+    const dx = -viewport.x;
+    const dy = -viewport.y;
+    ctx.scale(dpr * zoom, dpr * zoom);
+    ctx.translate(dx, dy);
+    this.rootPlugins.forEach(p => p.paint(ctx));
     ctx.restore();
   }
 

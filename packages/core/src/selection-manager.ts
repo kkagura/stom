@@ -1,12 +1,13 @@
 import { EventEmitter, arrayRemove } from '@stom/shared';
 import { Model, ModelEvents } from './models';
-import { Editor, EditorPlugin } from './editor';
+import { Editor } from './editor';
 import { BoxEvents } from './box';
 import { IMatrixArr, IPoint, IRect, Matrix, ResizeDirs, boxToRect, calcRectBbox, extendRect, isPointInRect, mergeBoxes, mergeRects } from '@stom/geo';
 import { CommonEvents } from './models/common-events';
 import { ResizeControl } from './models/resize-control';
 import { RotateControl } from './models/rotate-control';
 import { Control } from './models/control';
+import { EditorPlugin } from './plugin';
 
 export enum SelectionEvents {
   setSelection = 'setSelection',
@@ -18,13 +19,14 @@ export enum SelectionEvents {
 interface Events {
   [CommonEvents.change]: () => void;
   [CommonEvents.rectChange]: () => void;
+  [CommonEvents.REPAINT](): void;
   [SelectionEvents.setSelection]: (models: Model[]) => void;
   [SelectionEvents.clearSelection]: () => void;
   [SelectionEvents.addSelection]: (model: Model) => void;
   [SelectionEvents.removeSelection]: (model: Model) => void;
 }
 
-export class SelectionManager extends EventEmitter<Events> implements EditorPlugin {
+export class SelectionManager extends EventEmitter<Events> implements EditorPlugin<Events> {
   private selection: Model[] = [];
   private rect: IRect = { x: 0, y: 0, height: 0, width: 0 };
   private resizers: ResizeControl[] = [];
@@ -42,12 +44,20 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
       });
     });
     this.initResizers();
+    this.rotator.on(CommonEvents.change, this.repaint);
     this.on(CommonEvents.change, this.caculateContainRect);
   }
 
   initResizers() {
     this.resizers = Object.values(ResizeDirs).map(tag => new ResizeControl(this, tag));
+    this.resizers.forEach(el => {
+      el.on(CommonEvents.change, this.repaint);
+    });
   }
+
+  repaint = () => {
+    this.emit(CommonEvents.REPAINT);
+  };
 
   private _addSelection(model: Model) {
     model.on(CommonEvents.rectChange, this.caculateContainRect);
@@ -122,6 +132,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
       this.rect = { x: 0, width: 0, height: 0, y: 0 };
     }
     this.emit(CommonEvents.rectChange);
+    this.repaint();
   };
 
   getRenderRect() {
@@ -161,6 +172,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
 
   setRotate(dRotation: number) {
     this.rotate = dRotation;
+    this.repaint();
   }
 
   getWorldTransform(): IMatrixArr {

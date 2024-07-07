@@ -1,11 +1,17 @@
 import { IRect, getRectByPoints, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
-import { Editor, EditorPlugin } from './editor';
+import { Editor } from './editor';
 import { Model, ModelEvents } from './models';
 import { Control } from './models/control';
 import { CommonEvents } from './models/common-events';
+import { EditorPlugin } from './plugin';
+import { EventEmitter } from '@stom/shared';
 
-export class EventManager implements EditorPlugin {
+interface Events {
+  [CommonEvents.REPAINT](): void;
+}
+
+export class EventManager extends EventEmitter<Events> implements EditorPlugin<Events> {
   private mousedown = false;
   /**
    * 框选框
@@ -23,6 +29,7 @@ export class EventManager implements EditorPlugin {
   private mouseControl: Control | null = null;
 
   constructor(private editor: Editor) {
+    super();
     this.setup();
   }
 
@@ -124,6 +131,7 @@ export class EventManager implements EditorPlugin {
     const onMove = (ev: MouseEvent) => {
       const currentPoint = this.editor.viewportManager.getCursorScenePoint(ev);
       this.selectionRect = getRectByPoints(startPoint, currentPoint);
+      this.emit(CommonEvents.REPAINT);
     };
     const onUp = (ev: MouseEvent) => {
       const offsetX = ev.clientX - startX;
@@ -142,6 +150,7 @@ export class EventManager implements EditorPlugin {
       } else {
         selectionManager.clearSelection();
       }
+      this.emit(CommonEvents.REPAINT);
 
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
