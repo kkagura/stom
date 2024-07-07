@@ -75,7 +75,7 @@ export class Editor {
     requestAnimationFrame(this.repaint);
   }
 
-  createCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
+  private createCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
     Object.assign(canvas.style, {
@@ -86,15 +86,20 @@ export class Editor {
       height: '100%'
     });
     this.container.appendChild(canvas);
+    window.addEventListener('resize', this.resize);
     return [canvas, ctx];
   }
 
-  resize() {
+  resize = () => {
     const { width, height } = this.container.getBoundingClientRect();
     setCanvasSize(this.rootCanvas, width, height);
     setCanvasSize(this.mainCanvas, width, height);
     setCanvasSize(this.topCanvas, width, height);
-  }
+
+    this.paintAll = true;
+    this.dirtyTop = true;
+    this.dirtyRoot = true;
+  };
 
   installTopPlugin(plugin: EditorPlugin<BasePluginEvents>) {
     plugin.on(CommonEvents.REPAINT, this.repaintTop);
@@ -384,5 +389,14 @@ export class Editor {
       this.removeModels(selected);
       this.selectionManager.clearSelection();
     }
+  }
+
+  dispose() {
+    this.box.dispose();
+    this.eventManager.dispose();
+    this.viewportManager.dispose();
+    this.actionManager.dispose();
+    this.selectionManager.dispose();
+    this.grid.dispose();
   }
 }

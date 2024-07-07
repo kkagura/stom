@@ -44,4 +44,9 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
       ctx.stroke();
     }
   }
+
+  dispose() {
+    this.clear();
+    this.editor.viewportManager.off(CommonEvents.change, this.repaint);
+  }
 }

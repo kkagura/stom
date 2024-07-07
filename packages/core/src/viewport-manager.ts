@@ -135,6 +135,10 @@ export class ViewportManager extends EventEmitter<Events> {
     };
   }
 
+  dispose() {
+    this.clear();
+  }
+
   static ZOOM_STEP = 0.1;
   static MIN_ZOOM = 0.1;
   static MAX_ZOOM = 5;

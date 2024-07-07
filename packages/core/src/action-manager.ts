@@ -124,5 +124,9 @@ export class ActionManager extends EventEmitter<Events> {
     }
   }
 
+  dispose() {
+    this.clear();
+  }
+
   static MAX: number = 50;
 }

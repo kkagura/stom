@@ -239,6 +239,19 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     this.emit(CommonEvents.change);
   }
 
+  dispose() {
+    this.clear();
+    this.editor.box.off(BoxEvents.removeModels, models => {
+      models.forEach(model => {
+        if (this.isSelected(model)) {
+          this.removeSelection(model);
+        }
+      });
+    });
+    this.resizers.forEach(r => r.dispose());
+    this.rotator.dispose();
+  }
+
   static SELECTION_STROKE_COLOR = '#0f8eff';
   static SELECTION_LINE_DASH = [5, 5];
 }
