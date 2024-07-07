@@ -27,7 +27,7 @@ export class ViewportManager extends EventEmitter<Events> {
 
   zoomOut(point: IPoint) {
     const zoom = this.zoom;
-    let newZoom = zoom * (1 + ViewportManager.ZOOM_STEP);
+    let newZoom = zoom + ViewportManager.ZOOM_STEP;
     newZoom = Math.min(newZoom, ViewportManager.MAX_ZOOM);
     if (newZoom !== zoom) {
       const { x: viewX, y: viewY } = point;
@@ -44,7 +44,7 @@ export class ViewportManager extends EventEmitter<Events> {
 
   zoomIn(point: IPoint) {
     const zoom = this.zoom;
-    let newZoom = zoom * (1 - ViewportManager.ZOOM_STEP);
+    let newZoom = zoom - ViewportManager.ZOOM_STEP;
     newZoom = Math.max(newZoom, ViewportManager.MIN_ZOOM);
     if (newZoom !== zoom) {
       const { x: viewX, y: viewY } = point;
