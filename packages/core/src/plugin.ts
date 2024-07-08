@@ -7,5 +7,6 @@ export interface BasePluginEvents {
 }
 
 export interface EditorPlugin<T extends BasePluginEvents> extends EventEmitter<T> {
-  paint(ctx: CanvasRenderingContext2D): void;
+  paintTop(ctx: CanvasRenderingContext2D): void;
+  paintRoot(ctx: CanvasRenderingContext2D): void;
 }

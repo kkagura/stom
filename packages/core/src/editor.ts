@@ -32,10 +32,8 @@ export class Editor {
 
   private frameRects: Map<string, IRect> = new Map();
 
-  private topPlugins: EditorPlugin<BasePluginEvents>[] = [];
-  private dirtyTop = true;
-  private rootPlugins: EditorPlugin<BasePluginEvents>[] = [];
-  private dirtyRoot = true;
+  private plugins: EditorPlugin<BasePluginEvents>[] = [];
+  private pluginsDirty = true;
 
   constructor(
     public container: HTMLElement,
@@ -50,21 +48,20 @@ export class Editor {
     this.actionManager = new ActionManager();
 
     this.eventManager = new EventManager(this);
-    this.installTopPlugin(this.eventManager);
+    this.installPlugin(this.eventManager);
 
     this.selectionManager = new SelectionManager(this);
-    this.installTopPlugin(this.selectionManager);
+    this.installPlugin(this.selectionManager);
 
     this.viewportManager = new ViewportManager(this);
-    this.installTopPlugin(this.viewportManager);
+    this.installPlugin(this.viewportManager);
     this.viewportManager.on(CommonEvents.change, () => {
       this.paintAll = true;
-      this.dirtyTop = true;
-      this.dirtyRoot = true;
+      this.pluginsDirty = true;
     });
 
     this.grid = new Grid(this);
-    this.installRootPlugin(this.grid);
+    this.installPlugin(this.grid);
 
     this.box.on(BoxEvents.modelsChange, models => {
       models.forEach(m => this.dirtyList.add(m));
@@ -98,41 +95,31 @@ export class Editor {
     setCanvasSize(this.topCanvas, width, height);
 
     this.paintAll = true;
-    this.dirtyTop = true;
-    this.dirtyRoot = true;
+    this.pluginsDirty = true;
   };
 
-  installTopPlugin(plugin: EditorPlugin<BasePluginEvents>) {
-    plugin.on(CommonEvents.REPAINT, this.repaintTop);
-    this.topPlugins.push(plugin);
+  installPlugin(plugin: EditorPlugin<BasePluginEvents>) {
+    plugin.on(CommonEvents.REPAINT, this.repaintPlugin);
+    this.plugins.push(plugin);
   }
 
-  repaintTop = () => {
-    this.dirtyTop = true;
-  };
-
-  installRootPlugin(plugin: EditorPlugin<BasePluginEvents>) {
-    plugin.on(CommonEvents.REPAINT, this.repaintRoot);
-    this.rootPlugins.push(plugin);
-  }
-
-  repaintRoot = () => {
-    this.dirtyRoot = true;
+  repaintPlugin = () => {
+    this.pluginsDirty = true;
   };
 
   repaint = () => {
+    if (this.pluginsDirty) {
+      this.paintTop();
+    }
+
     if (this.paintAll) {
       this.fullRepaint();
     } else if (this.dirtyList.size) {
       this.partRepaint();
     }
 
-    if (this.dirtyRoot) {
-      this.paintRootPlugin();
-    }
-
-    if (this.dirtyTop) {
-      this.paintTopPlugin();
+    if (this.pluginsDirty) {
+      this.paintRoot();
     }
 
     this.paintAll = false;
@@ -275,8 +262,7 @@ export class Editor {
     }
   }
 
-  paintTopPlugin() {
-    this.dirtyTop = false;
+  paintTop() {
     const ctx = this.topCtx;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -289,12 +275,11 @@ export class Editor {
     const dy = -viewport.y;
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
-    this.topPlugins.forEach(p => p.paint(ctx));
+    this.plugins.forEach(p => p.paintTop(ctx));
     ctx.restore();
   }
 
-  paintRootPlugin() {
-    this.dirtyRoot = false;
+  paintRoot() {
     const ctx = this.rootCtx;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -307,7 +292,7 @@ export class Editor {
     const dy = -viewport.y;
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
-    this.rootPlugins.forEach(p => p.paint(ctx));
+    this.plugins.forEach(p => p.paintRoot(ctx));
     ctx.restore();
   }
 

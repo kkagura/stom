@@ -237,7 +237,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.removeEventListener('wheel', this.handleMouseWheel);
   }
 
-  paint(ctx: CanvasRenderingContext2D): void {
+  paintTop(ctx: CanvasRenderingContext2D): void {
     if (this.selectionRect) {
       ctx.beginPath();
       ctx.roundRect(this.selectionRect.x, this.selectionRect.y, this.selectionRect.width, this.selectionRect.height, 2);
@@ -248,6 +248,8 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       ctx.stroke();
     }
   }
+
+  paintRoot(ctx: CanvasRenderingContext2D): void {}
 
   isHovered(model: Model) {
     return this.mouseEl === model;

@@ -21,7 +21,7 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
     this.emit(CommonEvents.REPAINT);
   };
 
-  paint(ctx: CanvasRenderingContext2D): void {
+  paintRoot(ctx: CanvasRenderingContext2D): void {
     if (!this.dirty) return;
     const gap = this.gap;
     const { x, y, width, height } = this.editor.viewportManager.getViewRect();
@@ -43,6 +43,30 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
       ctx.strokeStyle = i % (gap * 5) === 0 ? '#ddd' : '#eee';
       ctx.stroke();
     }
+  }
+
+  paintTop(ctx: CanvasRenderingContext2D): void {
+    // if (!this.dirty) return;
+    // const gap = this.gap;
+    // const { x, y, width, height } = this.editor.viewportManager.getViewRect();
+    // const startX = Math.ceil(x / gap) * gap;
+    // for (let i = startX; i <= x + width; i += gap) {
+    //   ctx.beginPath();
+    //   ctx.moveTo(i, y);
+    //   ctx.lineTo(i, y + height);
+    //   ctx.lineWidth = 1;
+    //   ctx.strokeStyle = i % (gap * 5) === 0 ? '#ddd' : '#eee';
+    //   ctx.stroke();
+    // }
+    // const startY = Math.ceil(y / gap) * gap;
+    // for (let i = startY; i <= y + height; i += gap) {
+    //   ctx.beginPath();
+    //   ctx.moveTo(x, i);
+    //   ctx.lineTo(x + width, i);
+    //   ctx.lineWidth = 1;
+    //   ctx.strokeStyle = i % (gap * 5) === 0 ? '#ddd' : '#eee';
+    //   ctx.stroke();
+    // }
   }
 
   dispose() {

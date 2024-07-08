@@ -161,7 +161,7 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
     this.animation.start();
   }
 
-  paint(ctx: CanvasRenderingContext2D): void {
+  paintTop(ctx: CanvasRenderingContext2D): void {
     if (this.zoomTextOpaticy >= 0) {
       const zoom = this.getZoom();
       ctx.save();
@@ -173,6 +173,8 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
       ctx.restore();
     }
   }
+
+  paintRoot(ctx: CanvasRenderingContext2D): void {}
 
   dispose() {
     this.clear();

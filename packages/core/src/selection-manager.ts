@@ -183,7 +183,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     return [1, 0, 0, 1, x, y];
   }
 
-  paint(ctx: CanvasRenderingContext2D): void {
+  paintTop(ctx: CanvasRenderingContext2D): void {
     if (this.selection.length > 0) {
       ctx.save();
       const { width, height } = this.rect;
@@ -218,6 +218,8 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
       // ctx.strokeRect(r.x, r.y, r.width, r.height);
     }
   }
+
+  paintRoot(ctx: CanvasRenderingContext2D): void {}
 
   getControlAt(p: IPoint) {
     if (this.selection.length === 0) return;
