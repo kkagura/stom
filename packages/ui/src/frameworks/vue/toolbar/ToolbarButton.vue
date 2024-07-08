@@ -1,5 +1,5 @@
 <template>
-  <div :class="[bem.e('button'), bem.is('disabled', !isEnable)]" @click="handleClick">
+  <div :class="[bem.e('button'), bem.is('disabled', !isEnable), bem.is('active', isActive)]" @click="handleClick">
     <Icon>
       <component :is="currentComponent"></component>
     </Icon>
@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { useNamespace } from '../../../hooks/useNameSpace';
-import { Undo, Redo, ZoomOut, ZoomIn, Delete } from '../icons';
+import { Undo, Redo, ZoomOut, ZoomIn, Delete, Performance } from '../icons';
 import Icon from '../components/icon/Icon.vue';
 import { PropType, onBeforeUnmount, ref } from 'vue';
 import { Command, CommonEvents } from '@stom/core';
@@ -26,11 +26,13 @@ const iconMap: Record<string, any> = {
   redo: Redo,
   zoomOut: ZoomOut,
   zoomIn: ZoomIn,
-  delete: Delete
+  delete: Delete,
+  performance: Performance
 };
 
 const currentComponent = iconMap[props.command.getName()];
 const isEnable = ref(props.command.isEnable());
+const isActive = ref(props.command.isActive());
 
 const handleClick = () => {
   if (isEnable.value) {
@@ -40,6 +42,7 @@ const handleClick = () => {
 
 const onChange = () => {
   isEnable.value = props.command.isEnable();
+  isActive.value = props.command.isActive();
 };
 
 props.command.on(CommonEvents.change, onChange);

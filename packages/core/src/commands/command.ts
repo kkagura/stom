@@ -22,6 +22,10 @@ export abstract class Command extends EventEmitter<Events> {
 
   abstract getName(): string;
 
+  isActive() {
+    return false;
+  }
+
   dispose() {
     this.clear();
   }

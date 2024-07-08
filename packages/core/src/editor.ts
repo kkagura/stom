@@ -35,6 +35,8 @@ export class Editor {
   private plugins: EditorPlugin<BasePluginEvents>[] = [];
   private pluginsDirty = true;
 
+  private showPerformance: boolean = true;
+
   constructor(
     public container: HTMLElement,
     public box: Box
@@ -108,6 +110,7 @@ export class Editor {
   };
 
   repaint = () => {
+    const now = Date.now();
     if (this.pluginsDirty) {
       this.paintTop();
     }
@@ -122,10 +125,32 @@ export class Editor {
       this.paintRoot();
     }
 
+    const time = Date.now() - now;
+    if (this.showPerformance) {
+      this.paintPerformance(time);
+    }
+
     this.paintAll = false;
     this.dirtyList.clear();
     requestAnimationFrame(this.repaint);
   };
+
+  paintPerformance(time: number) {
+    let fps = 60;
+    if (time > 17) {
+      fps = 1000 / time;
+    }
+    const text = `FPS:${parseInt(fps + '')}`;
+    const ctx = this.topCtx;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.font = '30px Arial';
+    ctx.fillStyle = '#f00';
+    const textW = ctx.measureText(text).width;
+    const w = this.topCanvas.width;
+    ctx.fillText(text, w - 10 - textW, 40);
+    ctx.restore();
+  }
 
   getElementsAt(e: MouseEvent) {
     const { x, y } = this.viewportManager.getCursorScenePoint(e);
@@ -375,6 +400,14 @@ export class Editor {
       this.removeModels(selected);
       this.selectionManager.clearSelection();
     }
+  }
+
+  getShowPerformance() {
+    return this.showPerformance;
+  }
+
+  setShowPerformance(bool: boolean) {
+    this.showPerformance = bool;
   }
 
   dispose() {

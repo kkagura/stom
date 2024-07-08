@@ -10,7 +10,7 @@
   .st-toolbar__button {
     width: 26px;
     height: 26px;
-    margin-right: 2px;
+    margin-right: 8px;
     box-sizing: border-box;
     padding: 4px;
     transition: all 0.2s ease;
@@ -20,8 +20,15 @@
       cursor: not-allowed;
       opacity: .4;
     }
+    &.is-active {
+      background-color: #0f8eff;
+      color: #fff;
+    }
     &:not(.is-disabled) {
       cursor: pointer;
+
+    }
+    &:not(.is-active):not(.is-disabled) {
       &:hover {
         background-color: #eaecee;
       }

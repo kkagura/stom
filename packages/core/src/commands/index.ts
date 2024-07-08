@@ -5,3 +5,4 @@ export * from './redo-command';
 export * from './zoom-in-command';
 export * from './zoom-out-command';
 export * from './delete-command';
+export * from './performance-command';
