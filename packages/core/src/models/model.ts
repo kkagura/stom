@@ -8,19 +8,21 @@ export enum ModelEvents {
   mouseIn = 'mouseIn',
   mouseOut = 'mouseOut',
   selected = 'selected',
-  unselected = 'unselected'
+  unselected = 'unselected',
+  ATTR_CHANGE = 'attrChange'
 }
 
-interface Events {
+interface Events<Attrs extends Record<string, any> = any> {
   [CommonEvents.change]: () => void;
   [CommonEvents.rectChange]: () => void;
   [ModelEvents.mouseIn]: (e: MouseEvent) => void;
   [ModelEvents.mouseOut]: (e: MouseEvent) => void;
   [ModelEvents.selected]: () => void;
   [ModelEvents.unselected]: () => void;
+  [ModelEvents.ATTR_CHANGE](payload: { property: keyof Attrs; value: Attrs[keyof Attrs] }): void;
 }
 
-export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events> {
+export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events<Attrs>> {
   abstract attrs: Attrs;
   static CATEGORY: string;
   rect: IRect = {
@@ -59,19 +61,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   init() {}
 
-  /**
-   * 触发改变
-   * 1: 包围盒属性变化
-   * 2: 交互属性变化（例如是否悬浮、是否选中）
-   * @param type
-   */
-  triggerChange(type: number) {
-    if (type === 1) {
-      this.emit(CommonEvents.rectChange);
-    }
-    this.emit(CommonEvents.change);
-  }
-
   getMinWidth() {
     return 0;
   }
@@ -96,7 +85,10 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       this.rect.height = h;
       changed = true;
     }
-    changed && this.triggerChange(1);
+    if (changed) {
+      this.emit(CommonEvents.rectChange);
+      this.emit(CommonEvents.change);
+    }
   }
 
   setPosition(x: number, y: number) {
@@ -104,7 +96,10 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     let changed = x !== rect.x || y !== rect.y;
     this.rect.x = x;
     this.rect.y = y;
-    changed && this.triggerChange(1);
+    if (changed) {
+      this.emit(CommonEvents.rectChange);
+      this.emit(CommonEvents.change);
+    }
   }
 
   getPosition(): IPoint {
@@ -132,7 +127,8 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     this.rect.x += offsetX;
     this.rect.y += offsetY;
     if (offsetX !== 0 || offsetY !== 0) {
-      this.triggerChange(1);
+      this.emit(CommonEvents.rectChange);
+      this.emit(CommonEvents.change);
     }
   }
 
@@ -188,7 +184,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   setIsHovered(isHovered: boolean) {
     if (this.isHovered === isHovered) return;
     this.isHovered = isHovered;
-    this.triggerChange(2);
+    this.emit(CommonEvents.change);
   }
 
   getIsSelected() {
@@ -198,7 +194,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   setIsSelected(isSelected: boolean) {
     if (this.isSelected === isSelected) return;
     this.isSelected = isSelected;
-    this.triggerChange(2);
+    this.emit(CommonEvents.change);
   }
 
   getActiveControl() {
@@ -208,7 +204,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   setActiveControl(activeControl: Control) {
     if (activeControl === this.activeControl) return;
     this.activeControl = activeControl;
-    this.triggerChange(2);
+    this.emit(CommonEvents.change);
   }
 
   dispose() {
@@ -253,6 +249,18 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   }
 
   updateControlPosition(control: Control) {}
+
+  setAttr<K extends keyof Attrs>(attr: K, value: Attrs[K], force = false) {
+    const oldVal = this.attrs[attr];
+    if (oldVal !== value || force) {
+      this.attrs[attr] = value;
+      this.emit(ModelEvents.ATTR_CHANGE, {
+        property: attr,
+        value
+      });
+      this.emit(CommonEvents.change);
+    }
+  }
 
   abstract getCategory(): string;
 }

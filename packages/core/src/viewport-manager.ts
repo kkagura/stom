@@ -176,6 +176,7 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
 
   dispose() {
     this.clear();
+    this.animation?.stop();
   }
 
   static ZOOM_STEP = 0.1;

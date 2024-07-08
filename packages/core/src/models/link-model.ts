@@ -11,7 +11,7 @@ import {
   getOppositeDirection
 } from '@stom/geo';
 import { Model, ModelEvents } from './model';
-import { genId } from '@stom/shared';
+import { Animation, createAnimation, genId } from '@stom/shared';
 import { LinkControl } from './link-control';
 import { CommonEvents } from './common-events';
 
@@ -24,6 +24,7 @@ interface LinkModelAttrs {
   // lineStyle: string;
   lineCap: CanvasLineCap;
   lineDash: number[];
+  lineDashOffset: number;
 }
 
 export class LinkModel extends Model<LinkModelAttrs> {
@@ -33,7 +34,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
     lineWidth: 2,
     // lineStyle: 'solid',
     lineCap: 'round',
-    lineDash: []
+    lineDash: [10, 10],
+    lineDashOffset: -20
   };
 
   private controlPoints: IPoint[] = [];
@@ -41,6 +43,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
   private mapPoints: IPoint[] = [];
 
   private _endDirection: Direction = Direction.LEFT;
+
+  private animation: Animation | null = null;
 
   findPathPoints = () => {
     const startHost = this.start.getHost();
@@ -63,7 +67,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
     this.controlPoints = controlPoints;
     controlPoints.shift();
     controlPoints.pop();
-    this.triggerChange(1);
+    this.emit(CommonEvents.rectChange);
+    this.emit(CommonEvents.change);
   };
 
   constructor(
@@ -73,6 +78,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
   ) {
     super(id);
     start.getHost().on(CommonEvents.rectChange, this.findPathPoints);
+    this.startAnimation();
   }
 
   getStartPoint() {
@@ -97,7 +103,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
       end.getHost().on(CommonEvents.rectChange, this.findPathPoints);
     }
     this.findPathPoints();
-    this.triggerChange(-1);
+    this.emit(CommonEvents.change);
   }
 
   setEndDirection(endDirection: Direction) {
@@ -105,7 +111,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
     if (this._endDirection === endDirection) return;
     this._endDirection = endDirection;
     this.findPathPoints();
-    this.triggerChange(1);
+    this.emit(CommonEvents.change);
   }
 
   getStartDirection(): Direction {
@@ -188,6 +194,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
     ctx.lineCap = attrs.lineCap;
     ctx.lineWidth = w;
     ctx.setLineDash(attrs.lineDash);
+    ctx.lineDashOffset = attrs.lineDashOffset;
     ctx.stroke();
 
     // 绘制箭头等腰三角形
@@ -265,8 +272,25 @@ export class LinkModel extends Model<LinkModelAttrs> {
     return false;
   }
 
+  startAnimation() {
+    if (!this.animation) {
+      const offset = this.attrs.lineDashOffset;
+      this.animation = createAnimation({
+        startValue: 0,
+        endValue: offset,
+        duration: 1000,
+        loop: true,
+        onUpdate: value => {
+          this.setAttr('lineDashOffset', value);
+        }
+      });
+    }
+    this.animation.start();
+  }
+
   dispose() {
     super.dispose();
+    this.animation?.stop();
     this.getStartHost().off(CommonEvents.rectChange, this.findPathPoints);
     this.getEndHost()?.off(CommonEvents.rectChange, this.findPathPoints);
   }
@@ -275,5 +299,6 @@ export class LinkModel extends Model<LinkModelAttrs> {
     super.reset();
     this.getStartHost().on(CommonEvents.rectChange, this.findPathPoints);
     this.getEndHost()?.on(CommonEvents.rectChange, this.findPathPoints);
+    this.startAnimation();
   }
 }
