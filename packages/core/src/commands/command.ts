@@ -22,6 +22,8 @@ export abstract class Command extends EventEmitter<Events> {
 
   abstract getName(): string;
 
+  abstract getLabel(): string;
+
   isActive() {
     return false;
   }

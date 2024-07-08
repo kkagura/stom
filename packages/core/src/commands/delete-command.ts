@@ -27,4 +27,8 @@ export class DeleteCommand extends Command {
   getName() {
     return DeleteCommand.name;
   }
+
+  getLabel() {
+    return '删除选中';
+  }
 }

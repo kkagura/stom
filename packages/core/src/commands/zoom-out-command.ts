@@ -28,6 +28,10 @@ export class ZoomOutCommand extends Command {
     this.editor.viewportManager.off(ViewportEvents.ZOOM_CHANGE, this.statusChange);
   }
 
+  getLabel() {
+    return '放大';
+  }
+
   getName() {
     return ZoomOutCommand.name;
   }

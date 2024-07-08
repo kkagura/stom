@@ -25,5 +25,9 @@ export class RndoCommand extends Command {
     this.editor.actionManager.off(CommonEvents.change, this.statusChange);
   }
 
+  getLabel() {
+    return '重做';
+  }
+
   static name = 'redo';
 }

@@ -1,5 +1,5 @@
 <template>
-  <div :class="[bem.e('button'), bem.is('disabled', !isEnable), bem.is('active', isActive)]" @click="handleClick">
+  <div :title="label" :class="[bem.e('button'), bem.is('disabled', !isEnable), bem.is('active', isActive)]" @click="handleClick">
     <Icon>
       <component :is="currentComponent"></component>
     </Icon>
@@ -33,6 +33,7 @@ const iconMap: Record<string, any> = {
 const currentComponent = iconMap[props.command.getName()];
 const isEnable = ref(props.command.isEnable());
 const isActive = ref(props.command.isActive());
+const label = props.command.getLabel();
 
 const handleClick = () => {
   if (isEnable.value) {

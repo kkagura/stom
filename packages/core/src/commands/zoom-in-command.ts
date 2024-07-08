@@ -28,6 +28,10 @@ export class ZoomInCommand extends Command {
     this.editor.viewportManager.off(ViewportEvents.ZOOM_CHANGE, this.statusChange);
   }
 
+  getLabel() {
+    return '缩小';
+  }
+
   getName() {
     return ZoomInCommand.name;
   }

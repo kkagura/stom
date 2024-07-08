@@ -25,5 +25,9 @@ export class UndoCommand extends Command {
     this.editor.actionManager.off(CommonEvents.change, this.statusChange);
   }
 
+  getLabel() {
+    return '撤回';
+  }
+
   static name = 'undo';
 }

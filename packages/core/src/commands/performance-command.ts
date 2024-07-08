@@ -29,5 +29,9 @@ export class PerformanceCommand extends Command {
     this.editor.actionManager.off(CommonEvents.change, this.statusChange);
   }
 
+  getLabel() {
+    return '性能数据';
+  }
+
   static name = 'performance';
 }
