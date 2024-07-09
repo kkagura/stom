@@ -1,6 +1,6 @@
 import { IRect, isRectIntersect, mergeRects } from '@stom/geo';
 import { Box, BoxEvents } from './box';
-import { EventEmitter, getDevicePixelRatio, setCanvasSize } from '@stom/shared';
+import { EventEmitter, clearDrawStyle, getDevicePixelRatio, setCanvasSize } from '@stom/shared';
 import { EventManager } from './event-manager';
 import { ViewportEvents, ViewportManager } from './viewport-manager';
 import { CommonEvents, LinkModel, Model } from './models';
@@ -279,6 +279,7 @@ export class Editor {
     if (this.box.has(model)) {
       const renderRect = model.getRenderRect();
       this.frameRects.set(model.id, { ...renderRect });
+      clearDrawStyle(ctx);
       model.beforePaint(ctx, this);
       model.paint(ctx);
       model.afterPaint(ctx, this);
@@ -300,7 +301,10 @@ export class Editor {
     const dy = -viewport.y;
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
-    this.plugins.forEach(p => p.paintTop(ctx));
+    this.plugins.forEach(p => {
+      clearDrawStyle(ctx);
+      p.paintTop(ctx);
+    });
     ctx.restore();
   }
 
@@ -317,7 +321,10 @@ export class Editor {
     const dy = -viewport.y;
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
-    this.plugins.forEach(p => p.paintRoot(ctx));
+    this.plugins.forEach(p => {
+      clearDrawStyle(ctx);
+      p.paintRoot(ctx);
+    });
     ctx.restore();
   }
 

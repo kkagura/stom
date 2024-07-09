@@ -9,3 +9,8 @@ export function setCanvasSize(canvas: HTMLCanvasElement, width: number, height: 
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
 }
+
+export function clearDrawStyle(ctx: CanvasRenderingContext2D) {
+  ctx.setLineDash([]);
+  ctx.lineDashOffset = 0;
+}
