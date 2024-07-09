@@ -5,3 +5,4 @@ export * from './point';
 export * from './box';
 export * from './angle';
 export * from './path';
+export * from './ellipse';

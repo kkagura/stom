@@ -1,4 +1,4 @@
-import { Model, ModelClass, RectModel, TerminatorModel, DiamondModel } from '@stom/core';
+import { Model, ModelClass, RectModel, TerminatorModel, DiamondModel, EllipseModel } from '@stom/core';
 
 export interface ModelGroup {
   groupName: string;
@@ -11,7 +11,7 @@ export const getDefaultLibrary = (): ModelGroup[] => {
     {
       groupId: 'base',
       groupName: '基础图形',
-      models: [RectModel, TerminatorModel, DiamondModel]
+      models: [RectModel, TerminatorModel, DiamondModel, EllipseModel]
     }
   ];
 };
