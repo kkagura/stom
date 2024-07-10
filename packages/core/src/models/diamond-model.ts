@@ -1,4 +1,4 @@
-import { Direction, IRect, Matrix, extendRect, isPointInRect, isPointInRoundRect } from '@stom/geo';
+import { Direction, IRect, Matrix, extendRect, isPointInDiamond, isPointInRect, isPointInRoundRect } from '@stom/geo';
 import { BorderAttr } from './attrs';
 import { Model } from './model';
 import { Editor } from '../editor';
@@ -52,10 +52,10 @@ export class DiamondModel extends Model<DiamondModelAttrs> {
       if (linkControl) return linkControl;
     }
 
-    const tf = new Matrix(...this.getWorldTransform());
-    const point = tf.applyInverse({ x, y });
     const { width, height } = this.getRect();
-    return isPointInRect(point, { x: 0, y: 0, width, height }, this.attrs?.border?.width ?? 0);
+    const tf = new Matrix().translate(width / 2, height / 2).prepend(new Matrix(...this.getWorldTransform()));
+    const point = tf.applyInverse({ x, y });
+    return isPointInDiamond(point, width, height, this.attrs.border?.width);
   }
 
   getRenderRect(): IRect {

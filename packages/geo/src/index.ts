@@ -7,3 +7,4 @@ export * from './angle';
 export * from './path';
 export * from './ellipse';
 export * from './line';
+export * from './diamond';
