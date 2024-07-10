@@ -59,7 +59,7 @@ export class EllipseModel extends Model<EllipseModelAttrs> {
     }
 
     const { width, height } = this.getRect();
-    const tf = new Matrix(...this.getWorldTransform()).translate(width / 2, height / 2);
+    const tf = new Matrix().translate(width / 2, height / 2).prepend(new Matrix(...this.getWorldTransform()));
     const point = tf.applyInverse({ x, y });
     return isPointInEllipse(point, width / 2, height / 2, this.attrs.border?.width ?? 0);
   }
