@@ -6,3 +6,4 @@ export * from './box';
 export * from './angle';
 export * from './path';
 export * from './ellipse';
+export * from './line';

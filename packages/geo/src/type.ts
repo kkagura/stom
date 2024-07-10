@@ -34,3 +34,5 @@ export interface IBox {
   maxX: number;
   maxY: number;
 }
+
+export type ILineSegment = [IPoint, IPoint];

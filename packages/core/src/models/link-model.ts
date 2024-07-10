@@ -8,12 +8,15 @@ import {
   IMatrixArr,
   getDiretion,
   getSweepAngle,
-  getOppositeDirection
+  getOppositeDirection,
+  getLineSegmentsByPoints,
+  isPointNearLineSegments
 } from '@stom/geo';
 import { Model, ModelEvents } from './model';
 import { Animation, createAnimation, genId } from '@stom/shared';
 import { LinkControl } from './link-control';
 import { CommonEvents } from './common-events';
+import { Control } from './control';
 
 export enum LinkModelEvents {
   PORT_CHANGE = 'port-change'
@@ -79,6 +82,11 @@ export class LinkModel extends Model<LinkModelAttrs> {
     super(id);
     start.getHost().on(CommonEvents.rectChange, this.findPathPoints);
     this.startAnimation();
+  }
+
+  hitTest(x: number, y: number): boolean {
+    const lineSegments = getLineSegmentsByPoints(this.getAllPoints());
+    return isPointNearLineSegments({ x, y }, lineSegments, this.attrs.lineWidth + 1);
   }
 
   getStartPoint() {

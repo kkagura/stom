@@ -177,7 +177,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     }
     if (this.mouseControl) {
       this.setCursorStyle(this.mouseControl.getCursor());
-    } else if (this.mouseEl) {
+    } else if (this.mouseEl && this.mouseEl.getMovable()) {
       this.setCursorStyle('move');
     } else {
       this.setCursorStyle('default');
