@@ -6,6 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "rollup -c --watch",
+    "build": "rollup -c",
     "build-type": "node scripts/build-type.js"
   },
   "keywords": [],
