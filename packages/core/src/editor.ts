@@ -3,12 +3,21 @@ import { Box, BoxEvents } from './box';
 import { EventEmitter, clearDrawStyle, getDevicePixelRatio, setCanvasSize } from '@stom/shared';
 import { EventManager } from './event-manager';
 import { ViewportEvents, ViewportManager } from './viewport-manager';
-import { CommonEvents, LinkModel, Model } from './models';
+import { CommonEvents, LinkModel, Model, ModelJson, ModelManager } from './models';
 import { ActionManager } from './action-manager';
 import { SelectionManager } from './selection-manager';
 import { Control } from './models/control';
 import { Grid } from './grid';
 import { BasePluginEvents, EditorPlugin } from './plugin';
+
+export interface SceneData {
+  models: ModelJson[];
+  viewport: {
+    x: number;
+    y: number;
+    zoom: number;
+  };
+}
 
 export class Editor {
   rootCanvas: HTMLCanvasElement;
@@ -424,5 +433,34 @@ export class Editor {
     this.actionManager.dispose();
     this.selectionManager.dispose();
     this.grid.dispose();
+  }
+
+  getSceneData(): SceneData {
+    const models: ModelJson[] = [];
+    this.box.each(model => {
+      const json = model.toJson();
+      models.push(json);
+    });
+    const viewport = this.viewportManager.getViewport();
+    const x = viewport.x;
+    const y = viewport.y;
+    return {
+      models,
+      viewport: {
+        x,
+        y,
+        zoom: this.viewportManager.getZoom()
+      }
+    };
+  }
+
+  parseSceneData(jsonObj: SceneData, modelManager: ModelManager) {
+    this.box.removeAll();
+    const models: Model[] = [];
+    jsonObj.models.forEach(json => {
+      const model = modelManager.parseJson(json, models);
+      models.push(model);
+    });
+    this.box.addModels(models);
   }
 }

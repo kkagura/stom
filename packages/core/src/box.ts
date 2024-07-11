@@ -153,4 +153,9 @@ export class Box extends EventEmitter<Events> {
     this.layerMap.clear();
     this.clear();
   }
+
+  removeAll() {
+    const models = this.modelList.slice();
+    this._removeModels(models);
+  }
 }

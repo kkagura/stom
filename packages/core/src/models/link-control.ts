@@ -39,6 +39,7 @@ export class LinkControl extends Control<Model> {
 
           if (!linkModel) {
             linkModel = new LinkModel(this, end);
+            linkModel.setIsCreating(true);
             linkModel.setLayerId(layerId);
             editor.box.addModel(linkModel);
           } else {
@@ -49,6 +50,7 @@ export class LinkControl extends Control<Model> {
         onDragEnd: e => {
           this.setIsActive(false);
           if (!linkModel) return;
+          linkModel.setIsCreating(false);
           const res = editor.getElementAt(e);
           if (res && res.control && res.control instanceof LinkControl) {
             linkModel.setEnd(res.control);

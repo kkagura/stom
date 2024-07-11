@@ -1,11 +1,11 @@
 <template>
   <div :class="[bem.b()]">
-    <ToolbarButton v-for="c in commands" :command="c" :key="c.getName()"></ToolbarButton>
+    <ToolbarButton :get-icon="getIcon" v-for="c in commands" :command="c" :key="c.getName()"></ToolbarButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PropType, onBeforeUnmount, watch } from 'vue';
+import { PropType } from 'vue';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { Command } from '@stom/core';
 import ToolbarButton from './ToolbarButton.vue';
@@ -17,6 +17,9 @@ defineProps({
   commands: {
     type: Array as PropType<Command[]>,
     required: true
+  },
+  getIcon: {
+    type: Function as PropType<(command: string) => any>
   }
 });
 </script>

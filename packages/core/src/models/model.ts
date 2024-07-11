@@ -1,5 +1,5 @@
 import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle } from '@stom/geo';
-import { EventEmitter, genId } from '@stom/shared';
+import { EventEmitter, cloneDeep, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { CommonEvents } from './common-events';
@@ -10,6 +10,22 @@ export enum ModelEvents {
   selected = 'selected',
   unselected = 'unselected',
   ATTR_CHANGE = 'attrChange'
+}
+
+export interface ModelJson<Attrs extends Record<string, any> = any> {
+  id: string;
+  category: string;
+  attrs: Attrs;
+  rect: IRect;
+  transform: IMatrixArr;
+  layerId: string;
+  [key: string]: any;
+}
+
+export interface ModelClass {
+  CATEGORY: string;
+  fromJson: (json: ModelJson<any>, models: Model[], Model: ModelClass) => Model;
+  new (...args: any[]): Model;
 }
 
 interface Events<Attrs extends Record<string, any> = any> {
@@ -262,5 +278,31 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     }
   }
 
+  toJson(): ModelJson<Attrs> {
+    const obj: ModelJson<Attrs> = {
+      id: this.id,
+      category: this.getCategory(),
+      attrs: this.attrs,
+      rect: this.rect,
+      transform: this.transform,
+      layerId: this.layerId
+    };
+    return cloneDeep(obj);
+  }
+
   abstract getCategory(): string;
+
+  static fromJson(json: ModelJson<any>, models: Model[], Model: ModelClass): Model {
+    const instance = new Model(json.id);
+    instance.attrs = json.attrs;
+    instance.setPosition(json.rect.x, json.rect.y);
+    instance.setSize(json.rect.width, json.rect.height);
+    instance.transform = json.transform;
+    instance.setLayerId(json.layerId);
+    return instance;
+  }
+
+  getControlByTag(tag: string): Control | null {
+    return null;
+  }
 }

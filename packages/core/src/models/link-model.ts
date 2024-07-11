@@ -12,7 +12,7 @@ import {
   getLineSegmentsByPoints,
   isPointNearLineSegments
 } from '@stom/geo';
-import { Model, ModelEvents } from './model';
+import { Model, ModelClass, ModelEvents, ModelJson } from './model';
 import { Animation, createAnimation, genId } from '@stom/shared';
 import { LinkControl } from './link-control';
 import { CommonEvents } from './common-events';
@@ -49,6 +49,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
 
   private animation: Animation | null = null;
 
+  private isCreating = false;
+
   findPathPoints = () => {
     const startHost = this.start.getHost();
     const start = {
@@ -81,10 +83,14 @@ export class LinkModel extends Model<LinkModelAttrs> {
   ) {
     super(id);
     start.getHost().on(CommonEvents.rectChange, this.findPathPoints);
+    if ('paint' in this.end) {
+      this.end.getHost().on(CommonEvents.rectChange, this.findPathPoints);
+    }
     this.startAnimation();
   }
 
   hitTest(x: number, y: number): boolean {
+    if (this.isCreating) return false;
     const lineSegments = getLineSegmentsByPoints(this.getAllPoints());
     return isPointNearLineSegments({ x, y }, lineSegments, this.attrs.lineWidth + 1);
   }
@@ -308,5 +314,48 @@ export class LinkModel extends Model<LinkModelAttrs> {
     this.getStartHost().on(CommonEvents.rectChange, this.findPathPoints);
     this.getEndHost()?.on(CommonEvents.rectChange, this.findPathPoints);
     this.startAnimation();
+  }
+
+  toJson(): ModelJson<LinkModelAttrs> {
+    const json = super.toJson();
+    json.start = this.getStartHost().id;
+    const endHost = this.getEndHost();
+    json.end = endHost ? endHost.id : this.getEndPoint();
+    json.startControlDir = this.start.getTag();
+    const end = this.end;
+    json.endControlDir = 'getTag' in end ? end.getTag() : this._endDirection;
+    return json;
+  }
+
+  setIsCreating(bool: boolean) {
+    this.isCreating = bool;
+  }
+
+  static fromJson(json: ModelJson<any>, models: Model[]): Model {
+    const startHost = models.find(m => m.id === json.start);
+    if (!startHost) {
+      throw new Error(`Link创建失败:找不到ID为${json.start}的元素`);
+    }
+    const start = startHost.getControlByTag(json.startControlDir)! as LinkControl;
+    let end;
+    if (typeof json.end === 'string') {
+      const endHost = models.find(m => m.id === json.end);
+      if (!endHost) {
+        throw new Error(`Link创建失败:找不到ID为${json.end}的元素`);
+      }
+      end = endHost.getControlByTag(json.endControlDir)!;
+    } else {
+      end = json.end;
+    }
+
+    const instance = new LinkModel(start, end, json.id);
+    instance.setEndDirection(json.endControlDir);
+    instance.attrs = json.attrs;
+    instance.setPosition(json.rect.x, json.rect.y);
+    instance.setSize(json.rect.width, json.rect.height);
+    instance.transform = json.transform;
+    instance.setLayerId(json.layerId);
+    instance.findPathPoints();
+    return instance;
   }
 }

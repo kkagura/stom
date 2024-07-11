@@ -6,3 +6,4 @@ export * from './array';
 export * from './number';
 export * from './dom';
 export * from './animation';
+export * from './clone';

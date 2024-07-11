@@ -137,4 +137,8 @@ export class EllipseModel extends Model<EllipseModelAttrs> {
         control.setCenterPosition(0, height / 2);
     }
   }
+
+  getControlByTag(tag: string): Control | null {
+    return this.linkControls.find(el => el.getTag() === tag) || null;
+  }
 }
