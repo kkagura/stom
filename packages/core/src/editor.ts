@@ -46,10 +46,9 @@ export class Editor {
 
   private showPerformance: boolean = true;
 
-  constructor(
-    public container: HTMLElement,
-    public box: Box
-  ) {
+  public box = new Box();
+
+  constructor(public container: HTMLElement) {
     container.style.position = 'relative';
     [this.rootCanvas, this.rootCtx] = this.createCanvas();
     [this.mainCanvas, this.mainCtx] = this.createCanvas();

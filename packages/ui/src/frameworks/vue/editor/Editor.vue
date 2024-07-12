@@ -15,12 +15,11 @@ const emit = defineEmits<{
 
 const bem = useNamespace('container');
 const editorRef = ref();
-const box = new Box();
 
 const editor: ShallowRef<Editor | undefined> = ref();
 
 onMounted(() => {
-  editor.value = markRaw(new Editor(editorRef.value, box));
+  editor.value = markRaw(new Editor(editorRef.value));
   emit('ready', editor.value);
 });
 
