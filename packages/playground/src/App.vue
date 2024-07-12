@@ -18,9 +18,7 @@ import { Editor, Toolbar, createStomStore, getDefaultCommands, Library, getDefau
 import { Command, type Editor as IEditor } from '@stom/core';
 import { SaveCommand } from './SaveCommand';
 import { getSceneJson } from './service';
-// todo: fix type
-// const defaultCommands = ref<Command[]>([]);
-const defaultCommands = shallowRef<any[]>([]);
+const defaultCommands = shallowRef<Command[]>([]);
 
 const store = createStomStore();
 
