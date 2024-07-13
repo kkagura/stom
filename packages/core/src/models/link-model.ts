@@ -10,13 +10,15 @@ import {
   getSweepAngle,
   getOppositeDirection,
   getLineSegmentsByPoints,
-  isPointNearLineSegments
+  isPointNearLineSegments,
+  isPointInRect
 } from '@stom/geo';
 import { Model, ModelClass, ModelEvents, ModelJson } from './model';
 import { Animation, createAnimation, genId } from '@stom/shared';
 import { LinkControl } from './link-control';
 import { CommonEvents } from './common-events';
 import { Control } from './control';
+import { PointControl } from './point-control';
 
 export enum LinkModelEvents {
   PORT_CHANGE = 'port-change'
@@ -50,6 +52,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
   private animation: Animation | null = null;
 
   private isCreating = false;
+
+  private pointControls: PointControl[] = [];
 
   findPathPoints = () => {
     const startHost = this.start.getHost();
@@ -87,10 +91,35 @@ export class LinkModel extends Model<LinkModelAttrs> {
       this.end.getHost().on(CommonEvents.rectChange, this.findPathPoints);
     }
     this.startAnimation();
+    this.initPointControls();
   }
 
-  hitTest(x: number, y: number): boolean {
-    if (this.isCreating) return false;
+  initPointControls() {
+    // todo: 暂时只允许拖拽结束节点
+    this.pointControls = [new PointControl(this, 'end')];
+  }
+
+  updateControlPosition() {
+    const rect = this.getRect();
+    this.pointControls.forEach(control => {
+      if (control.getTag() === 'end') {
+        const { x, y } = this.getEndPoint();
+        control.setCenterPosition(x - rect.x, y - rect.y);
+      }
+    });
+  }
+
+  hitTest(x: number, y: number) {
+    if (this.isCreating || this.getIsUpdating()) return false;
+    // 先判断点是否在绘图区域内
+    if (!isPointInRect({ x, y }, this.getRenderRect())) {
+      return false;
+    }
+    // 再判断是否在控制点上
+    if (this.getIsHovered()) {
+      const pointControl = this.pointControls.find(el => el.hitTest(x, y));
+      if (pointControl) return pointControl;
+    }
     const lineSegments = getLineSegmentsByPoints(this.getAllPoints());
     return isPointNearLineSegments({ x, y }, lineSegments, this.attrs.lineWidth + 1);
   }
@@ -117,6 +146,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
       end.getHost().on(CommonEvents.rectChange, this.findPathPoints);
     }
     this.findPathPoints();
+    this.updateControlPosition();
     this.emit(CommonEvents.change);
   }
 
@@ -163,7 +193,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
 
   getRenderRect(): IRect {
     const rect = this.getRect();
-    const extend = this.attrs.lineWidth * 2;
+    const w = PointControl.BORDER_WIDTH;
+    const extend = this.attrs.lineWidth * 2 + w;
     return extendRect(rect, extend);
   }
 
@@ -189,7 +220,11 @@ export class LinkModel extends Model<LinkModelAttrs> {
     const a = 8;
     // 高
     const h = 12;
+    let minX = Infinity,
+      minY = Infinity;
     points.forEach((p, i) => {
+      minX = Math.min(p.x, minX);
+      minY = Math.min(p.y, minY);
       ctx[i ? 'lineTo' : 'moveTo'](p.x, p.y);
     });
     // 最后一个点需要留出画箭头的空间
@@ -234,6 +269,15 @@ export class LinkModel extends Model<LinkModelAttrs> {
     ctx.fillStyle = attrs.lineColor;
     ctx.fill();
 
+    if (this.getIsSelected()) {
+      ctx.save();
+      ctx.translate(minX, minY);
+      this.pointControls.forEach(control => {
+        control.paint(ctx);
+      });
+      ctx.restore();
+    }
+
     // debug
 
     // const renderRect = this.getRenderRect();
@@ -274,8 +318,18 @@ export class LinkModel extends Model<LinkModelAttrs> {
     return null;
   }
 
+  move(x: number, y: number) {
+    if (!('paint' in this.end)) {
+      this.end.x += x;
+      this.end.y += y;
+      this.findPathPoints();
+      this.emit(CommonEvents.rectChange);
+      this.emit(CommonEvents.change);
+    }
+  }
+
   getMovable() {
-    return false;
+    return !('paint' in this.end);
   }
 
   getResizeable() {
@@ -329,6 +383,10 @@ export class LinkModel extends Model<LinkModelAttrs> {
 
   setIsCreating(bool: boolean) {
     this.isCreating = bool;
+  }
+
+  getIsUpdating() {
+    return this.pointControls.some(control => control.getIsActive());
   }
 
   static fromJson(json: ModelJson<any>, models: Model[]): Model {

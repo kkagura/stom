@@ -1,7 +1,7 @@
 import { IRect, getRectByPoints, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor } from './editor';
-import { Model, ModelEvents } from './models';
+import { LinkModel, Model, ModelEvents } from './models';
 import { Control } from './models/control';
 import { CommonEvents } from './models/common-events';
 import { EditorPlugin } from './plugin';
@@ -80,6 +80,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       lastY = startY;
 
     const selection = selectionManager.getSelectionList();
+    const multiple = selection.length > 1;
     const onMove = (ev: MouseEvent) => {
       const offsetX = ev.clientX - lastX;
       const offsetY = ev.clientY - lastY;
@@ -87,7 +88,14 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       lastY = ev.clientY;
       this.selectionRect = null;
       selection.forEach(m => {
-        m.move(offsetX / zoom, offsetY / zoom);
+        if (m instanceof LinkModel) {
+          // todo：优化
+          if (m.getMovable() && multiple) {
+            m.move(offsetX / zoom, offsetY / zoom);
+          }
+        } else {
+          m.move(offsetX / zoom, offsetY / zoom);
+        }
       });
     };
     const onUp = (ev: MouseEvent) => {

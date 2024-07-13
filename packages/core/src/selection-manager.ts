@@ -1,5 +1,5 @@
 import { EventEmitter, arrayRemove } from '@stom/shared';
-import { Model, ModelEvents } from './models';
+import { LinkModel, Model, ModelEvents } from './models';
 import { Editor } from './editor';
 import { BoxEvents } from './box';
 import { IMatrixArr, IPoint, IRect, Matrix, ResizeDirs, boxToRect, calcRectBbox, extendRect, isPointInRect, mergeBoxes, mergeRects } from '@stom/geo';
@@ -158,6 +158,13 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     return [...this.selection];
   }
 
+  /**
+   * 判断是否选中了一个link节点
+   */
+  isOneLink() {
+    return this.selection.length === 1 && this.selection[0] instanceof LinkModel;
+  }
+
   getRect(): IRect {
     return this.rect;
   }
@@ -204,12 +211,14 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
       ctx.setLineDash(SelectionManager.SELECTION_LINE_DASH);
       ctx.stroke();
       ctx.translate(0, 0);
-      this.resizers.forEach(resizer => {
-        resizer.updatePosition();
-        resizer.paint(ctx);
-      });
-      this.rotator.updatePosition();
-      this.rotator.paint(ctx);
+      if (!this.isOneLink()) {
+        this.resizers.forEach(resizer => {
+          resizer.updatePosition();
+          resizer.paint(ctx);
+        });
+        this.rotator.updatePosition();
+        this.rotator.paint(ctx);
+      }
 
       ctx.restore();
 
