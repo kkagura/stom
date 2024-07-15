@@ -10,7 +10,7 @@
     "dev:geo": "cd ./packages/geo && npm run dev",
     "dev:core": "cd ./packages/core && npm run dev",
     "dev:shared": "cd ./packages/shared && npm run dev",
-    "build": "run-p build:shared build:geo build:core build:ui build:play",
+    "build": "pnpm -r exec pnpm run build",
     "build:play": "cd ./packages/playground && npm run build",
     "build:ui": "cd ./packages/ui && npm run build",
     "build:geo": "cd ./packages/geo && npm run build",
