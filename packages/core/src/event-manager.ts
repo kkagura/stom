@@ -39,6 +39,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.addEventListener('mouseup', this.handleMouseUp);
     this.editor.topCanvas.addEventListener('mouseleave', this.handleMouseUp);
     this.editor.topCanvas.addEventListener('wheel', this.handleMouseWheel);
+    this.editor.topCanvas.addEventListener('keydown', this.handleKeydonw);
   }
 
   handleMouseDown = (e: MouseEvent) => {
@@ -262,6 +263,22 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   isHovered(model: Model) {
     return this.mouseEl === model;
   }
+
+  handleKeydonw = (e: KeyboardEvent) => {
+    const key = e.key.toLowerCase();
+    const ctrlOrMeta = e.ctrlKey || e.metaKey;
+    if (key === 'backspace' || e.key === 'delete') {
+      this.editor.removeSelection();
+    } else if (key === 'z' && ctrlOrMeta) {
+      if (e.shiftKey) {
+        this.editor.actionManager.redo();
+      } else {
+        this.editor.actionManager.undo();
+      }
+    } else if (key === 'y' && ctrlOrMeta) {
+      this.editor.actionManager.redo();
+    }
+  };
 
   static SELECTION_STROKE_COLOR = '#0f8eff';
   static SELECTION_FILL_COLOR = '#0f8eff33';

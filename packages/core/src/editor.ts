@@ -85,6 +85,7 @@ export class Editor {
 
   private createCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
     const canvas = document.createElement('canvas');
+    canvas.setAttribute('tabindex', '-1');
     const ctx = canvas.getContext('2d')!;
     Object.assign(canvas.style, {
       position: 'absolute',
