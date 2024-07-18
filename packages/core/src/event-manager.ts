@@ -244,6 +244,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.removeEventListener('mouseup', this.handleMouseUp);
     this.editor.topCanvas.removeEventListener('mouseleave', this.handleMouseUp);
     this.editor.topCanvas.removeEventListener('wheel', this.handleMouseWheel);
+    this.editor.topCanvas.removeEventListener('keydown', this.handleKeydonw);
   }
 
   paintTop(ctx: CanvasRenderingContext2D): void {

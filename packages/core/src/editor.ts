@@ -20,32 +20,42 @@ export interface SceneData {
 }
 
 export class Editor {
+  // 最底层canvas 负责绘制背景与网格
   rootCanvas: HTMLCanvasElement;
   private rootCtx: CanvasRenderingContext2D;
 
+  // 主canvas，负责绘制各个图形
   mainCanvas: HTMLCanvasElement;
   private mainCtx: CanvasRenderingContext2D;
 
+  // 顶层canvas，负责绘制选中的图形的边框、吸附线等其它交互相关的效果
   topCanvas: HTMLCanvasElement;
   private topCtx: CanvasRenderingContext2D;
 
+  // 事件管理系统，负责鼠标、键盘事件的监听以及分发
   eventManager: EventManager;
+  // 视口管理器，负责管理视口，包括平移、缩放等
   viewportManager: ViewportManager;
+  // 操作管理器，负责管理操作历史，包括撤销、重做等
   actionManager: ActionManager;
+  // 选中管理器，负责管理选中的图形，包括连选、点选、反选等操作
   selectionManager: SelectionManager;
-
+  // 网格管理器，负责绘制网格
   grid: Grid;
 
+  // 脏列表，记录哪些图形发生了变化，需要重新绘制
   private dirtyList: Set<Model> = new Set();
+  // 标记是否全量绘制（当窗口发生平移、缩放时，需要标记全量重绘）
   private paintAll: boolean = true;
-
+  // 在每次图形被重绘时，将其的renderRect缓存起来，用来做脏矩形检测
   private frameRects: Map<string, IRect> = new Map();
-
+  // 插件
   private plugins: EditorPlugin<BasePluginEvents>[] = [];
+  // 标记插件是否需要重绘
   private pluginsDirty = true;
-
+  // 标记是否显示性能数据
   private showPerformance: boolean = true;
-
+  // 管理所有图形的容器
   public box = new Box();
 
   constructor(public container: HTMLElement) {
@@ -120,9 +130,6 @@ export class Editor {
 
   repaint = () => {
     const now = Date.now();
-    if (this.pluginsDirty) {
-      this.paintTop();
-    }
 
     if (this.paintAll) {
       this.fullRepaint();
@@ -131,6 +138,7 @@ export class Editor {
     }
 
     if (this.pluginsDirty) {
+      this.paintTop();
       this.paintRoot();
     }
 
@@ -139,6 +147,7 @@ export class Editor {
       this.paintPerformance(time);
     }
 
+    this.pluginsDirty = false;
     this.paintAll = false;
     this.dirtyList.clear();
     requestAnimationFrame(this.repaint);
