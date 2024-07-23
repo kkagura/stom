@@ -1,4 +1,16 @@
-import { Direction, IRect, Matrix, extendRect, isPointInDiamond, isPointInRect, isPointInRoundRect } from '@stom/geo';
+import {
+  Direction,
+  IBox,
+  IRect,
+  Matrix,
+  calcRectBbox,
+  extendRect,
+  getPointsBbox,
+  getRectByPoints,
+  isPointInDiamond,
+  isPointInRect,
+  isPointInRoundRect
+} from '@stom/geo';
 import { BorderAttr } from './attrs';
 import { Model } from './model';
 import { Editor } from '../editor';
@@ -41,6 +53,24 @@ export class DiamondModel extends Model<DiamondModelAttrs> {
     ];
   }
 
+  getConnectionPoints() {
+    const { width, height } = this.getRect();
+    const hw = width / 2;
+    const hh = height / 2;
+    return [
+      { x: hw, y: 0 },
+      { x: width, y: hh },
+      { x: hw, y: height },
+      { x: 0, y: hh }
+    ] as const;
+  }
+
+  getBoundingBox(): IBox {
+    const transform = new Matrix(...this.getWorldTransform());
+    const points = this.getConnectionPoints().map(p => transform.apply(p));
+    return getPointsBbox(points);
+  }
+
   hitTest(x: number, y: number): boolean | Control {
     // 先判断点是否在绘图区域内
     if (!isPointInRect({ x, y }, this.getRenderRect())) {
@@ -73,15 +103,11 @@ export class DiamondModel extends Model<DiamondModelAttrs> {
 
   paint(ctx: CanvasRenderingContext2D): void {
     const { attrs } = this;
-    const { width, height } = this.getRect();
-    const hw = width / 2;
-    const hh = height / 2;
+    const points = this.getConnectionPoints();
     ctx.beginPath();
-    ctx.moveTo(hw, 0);
-    ctx.lineTo(width, hh);
-    ctx.lineTo(hw, height);
-    ctx.lineTo(0, hh);
-    ctx.lineTo(hw, 0);
+    [...points, points[0]].forEach((p, i) => {
+      ctx[i ? 'lineTo' : 'moveTo'](p.x, p.y);
+    });
 
     if (attrs.fill) {
       ctx.fillStyle = attrs.fillColor;
