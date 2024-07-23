@@ -4,3 +4,4 @@ export * from './toolbar/toolbar';
 export { default as Library } from './library/Library.vue';
 export * from './library/library';
 export * from './store';
+export * from './icons';

@@ -1,7 +1,13 @@
 <template>
   <div class="editor-page">
     <div class="editor-header">
-      <Toolbar :commands="defaultCommands"></Toolbar>
+      <div class="header-toolbar">
+        <Toolbar :commands="defaultCommands"></Toolbar>
+      </div>
+      <div @click="handleClickLogo" class="header-logo">
+        <Github class="header-icon"></Github>
+        <span>stom</span>
+      </div>
     </div>
     <div class="editor-content">
       <Library :group-list="library"></Library>
@@ -14,7 +20,8 @@
 
 <script setup lang="ts">
 import { ShallowRef, markRaw, ref, shallowRef } from 'vue';
-import { Editor, Toolbar, createStomStore, getDefaultCommands, Library, getDefaultLibrary } from '@stom/ui/vue';
+// todo: github logo不应该由组件库提供 或者组件库应该提供完整的logo 而不是单独的github icon
+import { Editor, Toolbar, createStomStore, getDefaultCommands, Library, getDefaultLibrary, Github } from '@stom/ui/vue';
 import { Command, type Editor as IEditor } from '@stom/core';
 import { SaveCommand } from './SaveCommand';
 import { getSceneJson } from './service';
@@ -36,6 +43,10 @@ const onReady = (editor: IEditor) => {
   commands.push(new SaveCommand(editor, modelManager));
   defaultCommands.value = markRaw(commands);
 };
+
+const handleClickLogo = () => {
+  window.open('https://github.com/kkagura/stom');
+};
 </script>
 <style lang="postcss">
 .editor-page {
@@ -44,6 +55,30 @@ const onReady = (editor: IEditor) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  .editor-header {
+    display: flex;
+    .header-toolbar {
+      flex: 1;
+      overflow: hidden;
+    }
+    .header-logo {
+      padding-right: 40px;
+      border-top: 1px solid #dfe2e5;
+      border-bottom: 1px solid #dfe2e5;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      color: #0f8eff;
+      font-size: 16px;
+      cursor: pointer;
+      .header-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 4px;
+      }
+    }
+  }
   .editor-content {
     flex: 1;
     overflow: hidden;
