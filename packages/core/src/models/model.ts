@@ -1,4 +1,4 @@
-import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle } from '@stom/geo';
+import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle, invertMatrix, multiplyMatrix } from '@stom/geo';
 import { EventEmitter, cloneDeep, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';

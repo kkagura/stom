@@ -9,6 +9,8 @@ import { SelectionManager } from './selection-manager';
 import { Control } from './models/control';
 import { Grid } from './grid';
 import { BasePluginEvents, EditorPlugin } from './plugin';
+import { TextInput } from './text-input';
+import { AlignManager } from './align-manager';
 
 export interface SceneData {
   models: ModelJson[];
@@ -57,6 +59,10 @@ export class Editor {
   private showPerformance: boolean = true;
   // 管理所有图形的容器
   public box = new Box();
+  // 编辑文字相关的逻辑
+  public textInput = new TextInput(this);
+  // 对齐相关逻辑
+  public alignManager = new AlignManager(this);
 
   constructor(public container: HTMLElement) {
     container.style.position = 'relative';
