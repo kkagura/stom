@@ -33,6 +33,13 @@ export class AlignManager {
         break;
       case AlignDir.LEFT:
         changed = this.alignLeft(models, mixedBBox, bboxes, worldTfs);
+        break;
+      case AlignDir.HORIZONTAL_CENTER:
+        changed = this.alignHorizontalCenter(models, mixedBBox, bboxes, worldTfs);
+        break;
+      case AlignDir.VERTICAL_CENTER:
+        changed = this.alignVerticalCenter(models, mixedBBox, bboxes, worldTfs);
+        break;
     }
     if (changed) {
       const newWorldTfs = models.map(item => item.getWorldTransform());
@@ -52,7 +59,7 @@ export class AlignManager {
     }
   }
 
-  alignTop(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignTop(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dy = mixedBBox.minY - bboxes[i].minY;
@@ -65,7 +72,7 @@ export class AlignManager {
     return changed;
   }
 
-  alignBottom(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignBottom(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dy = mixedBBox.maxY - bboxes[i].maxY;
@@ -78,7 +85,7 @@ export class AlignManager {
     return changed;
   }
 
-  alignLeft(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignLeft(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dx = mixedBBox.minX - bboxes[i].minX;
@@ -91,10 +98,38 @@ export class AlignManager {
     return changed;
   }
 
-  alignRight(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignRight(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dx = mixedBBox.maxX - bboxes[i].maxX;
+      if (dx === 0) {
+        return;
+      }
+      changed = true;
+      this.updateModel(model, worldTfs[i], dx, 0);
+    });
+    return changed;
+  }
+
+  private alignVerticalCenter(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+    let changed = false;
+    const centerY = mixedBBox.minY / 2 + mixedBBox.maxY / 2;
+    models.forEach((model, i) => {
+      const dy = centerY - (bboxes[i].minY / 2 + bboxes[i].maxY / 2);
+      if (dy === 0) {
+        return;
+      }
+      changed = true;
+      this.updateModel(model, worldTfs[i], 0, dy);
+    });
+    return changed;
+  }
+
+  private alignHorizontalCenter(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+    let changed = false;
+    const centerX = mixedBBox.minX / 2 + mixedBBox.maxX / 2;
+    models.forEach((model, i) => {
+      const dx = centerX - (bboxes[i].minX / 2 + bboxes[i].maxX / 2);
       if (dx === 0) {
         return;
       }

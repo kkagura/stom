@@ -10,7 +10,9 @@ import {
   AlignTopCommand,
   AlignBottomCommand,
   AlignLeftCommand,
-  AlignRightCommand
+  AlignRightCommand,
+  AlignHorizontalCenterCommand,
+  AlignVerticalCenterCommand
 } from '@stom/core';
 
 /**
@@ -29,6 +31,8 @@ export function getDefaultCommands(editor: Editor): Command[] {
     new AlignTopCommand(editor),
     new AlignBottomCommand(editor),
     new AlignLeftCommand(editor),
-    new AlignRightCommand(editor)
+    new AlignRightCommand(editor),
+    new AlignHorizontalCenterCommand(editor),
+    new AlignVerticalCenterCommand(editor)
   ];
 }

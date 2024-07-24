@@ -8,7 +8,21 @@
 
 <script setup lang="ts">
 import { useNamespace } from '../../../hooks/useNameSpace';
-import { Undo, Redo, ZoomOut, ZoomIn, Delete, Performance, Save, AlignTop, AlignBottom, AlignLeft, AlignRight } from '../icons';
+import {
+  Undo,
+  Redo,
+  ZoomOut,
+  ZoomIn,
+  Delete,
+  Performance,
+  Save,
+  AlignTop,
+  AlignBottom,
+  AlignLeft,
+  AlignRight,
+  AlignHorizontalCenter,
+  AlignVerticalCenter
+} from '../icons';
 import Icon from '../components/icon/Icon.vue';
 import { PropType, onBeforeUnmount, ref } from 'vue';
 import { Command, CommonEvents } from '@stom/core';
@@ -35,7 +49,9 @@ const iconMap: Record<string, any> = {
   alignTop: AlignTop,
   alignBottom: AlignBottom,
   alignLeft: AlignLeft,
-  alignRight: AlignRight
+  alignRight: AlignRight,
+  alignHorizontalCenter: AlignHorizontalCenter,
+  alignVerticalCenter: AlignVerticalCenter
 };
 
 const currentComponent = props.getIcon?.(props.command.getName()) || iconMap[props.command.getName()];
