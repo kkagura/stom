@@ -244,10 +244,14 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return getTransformAngle(this.getWorldTransform());
   }
 
-  setRotate(dRotation: number, originWorldTf: IMatrixArr, center: IPoint) {
-    const rotateMatrix = new Matrix().translate(-center.x, -center.y).rotate(dRotation).translate(center.x, center.y);
+  setRotate(newRotate: number, center: IPoint) {
+    const rotate = this.getRotate();
+    const delta = newRotate - rotate;
+    const rotateMatrix = new Matrix().translate(-center.x, -center.y).rotate(delta).translate(center.x, center.y);
 
-    const newWoldTf = rotateMatrix.append(new Matrix(...originWorldTf)).getArray();
+    const tf = this.getWorldTransform();
+
+    const newWoldTf = rotateMatrix.append(new Matrix(...tf)).getArray();
 
     this.setWorldTransform(newWoldTf);
   }
