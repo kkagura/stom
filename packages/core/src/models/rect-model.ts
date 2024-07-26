@@ -1,4 +1,4 @@
-import { Direction, IRect, Matrix, extendRect, isPointInRect, isPointInRoundRect } from '@stom/geo';
+import { Direction, IRect, Matrix, applyMatrix, extendRect, getTransformAngle, isPointInRect, isPointInRoundRect } from '@stom/geo';
 import { BorderAttr } from './attrs';
 import { Model, ModelEvents, ModelJson } from './model';
 import { Editor } from '../editor';
@@ -105,6 +105,17 @@ export class RectModel extends Model<RectModelAttrs> {
       });
     }
     ctx.restore();
+
+    const p = this.getPosition();
+    const angle = getTransformAngle(this.getWorldTransform());
+    console.log(angle);
+    const p1 = new Matrix(...this.getTransform()).applyInverse(p);
+    ctx.beginPath();
+    ctx.arc(p1.x, p1.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    const rect = this.getRect();
+    ctx.beginPath();
+    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
   }
 
   dispose() {

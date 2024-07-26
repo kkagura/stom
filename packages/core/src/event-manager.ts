@@ -40,6 +40,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.addEventListener('mouseleave', this.handleMouseUp);
     this.editor.topCanvas.addEventListener('wheel', this.handleMouseWheel);
     this.editor.topCanvas.addEventListener('keydown', this.handleKeydonw);
+    this.editor.topCanvas.addEventListener('dblclick', this.handleDblclick);
   }
 
   handleMouseDown = (e: MouseEvent) => {
@@ -245,6 +246,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.removeEventListener('mouseleave', this.handleMouseUp);
     this.editor.topCanvas.removeEventListener('wheel', this.handleMouseWheel);
     this.editor.topCanvas.removeEventListener('keydown', this.handleKeydonw);
+    this.editor.topCanvas.removeEventListener('dblclick', this.handleDblclick);
   }
 
   paintTop(ctx: CanvasRenderingContext2D): void {
@@ -278,6 +280,14 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       }
     } else if (key === 'y' && ctrlOrMeta) {
       this.editor.actionManager.redo();
+    }
+  };
+
+  handleDblclick = (e: MouseEvent) => {
+    if (this.mouseEl) {
+      const rect = this.mouseEl.getRect();
+      const worldTf = this.mouseEl.getWorldTransform();
+      this.editor.textInput.show(rect, worldTf, '', {});
     }
   };
 

@@ -231,14 +231,17 @@ export class Editor {
     rect: IRect;
     models: Set<Model>;
   } {
+    // 判断当前是否有需要重绘的元素
     if (this.dirtyList.size === 0)
       return {
         rect: { x: 0, y: 0, width: 0, height: 0 },
         models: new Set()
       };
+    // 获取整个视图窗口大小
     const viewRect = this.viewportManager.getViewRect();
     const modelSet = new Set<Model>(this.dirtyList);
     const modelList = this.box.getModelList();
+    // 获取所有的renderRect，包含当前帧与上一帧
     const renderRects = [...modelSet].reduce((acc, model) => {
       acc.push(model.getRenderRect());
       const lastRenderRect = this.frameRects.get(model.id);
@@ -247,15 +250,20 @@ export class Editor {
       }
       return acc;
     }, [] as IRect[]);
+    // 合并所有的renderRect作为初始的矩形
     let dirtyRect = mergeRects(...renderRects);
     for (let i = 0; i < modelList.length; i++) {
       const m = modelList[i];
+      // 已经加入队列的元素不参与比较
       if (modelSet.has(m)) continue;
       const renderRect = m.getRenderRect();
+      // 不在视图窗口内的元素不考虑
       if (!isRectIntersect(renderRect, viewRect)) continue;
+      // 如果与当前帧相交，则需要重绘，将图形加入到重绘队列中
       if (isRectIntersect(renderRect, dirtyRect)) {
         modelSet.add(m);
         dirtyRect = mergeRects(renderRect, dirtyRect);
+        // 一旦脏矩形的大小改变了，则重新开始循环
         i = -1;
       }
     }
@@ -266,6 +274,7 @@ export class Editor {
   }
 
   partRepaint() {
+    // 获取需要重绘的区域大小，与所有需要重绘的元素
     const { rect, models } = this.findDirtyRect();
     if (!models.size) return;
 
@@ -278,9 +287,11 @@ export class Editor {
     const zoom = this.viewportManager.getZoom();
     const dx = -viewport.x;
     const dy = -viewport.y;
+    // 高清屏处理
     ctx.scale(dpr * zoom, dpr * zoom);
     ctx.translate(dx, dy);
 
+    // 清除重绘区域
     ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
 
     this.box.each(m => {
@@ -288,13 +299,6 @@ export class Editor {
         this.paintModel(m, ctx);
       }
     });
-
-    // debug start
-    // ctx.beginPath();
-    // ctx.rect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
-    // ctx.strokeStyle = 'green';
-    // ctx.stroke();
-    // debug end
 
     ctx.restore();
   }

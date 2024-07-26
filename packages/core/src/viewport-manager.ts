@@ -126,10 +126,10 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
    */
   getViewPoint(p: IPoint, zoom = this.zoom) {
     const { x, y } = p;
-    const { x: scrollX, y: scrollY } = this;
+    const { x: scrollX, y: scrollY } = this.getViewport();
     return {
-      x: (x - scrollX) / zoom,
-      y: (y - scrollY) / zoom
+      x: (x - scrollX) * zoom,
+      y: (y - scrollY) * zoom
     };
   }
 
