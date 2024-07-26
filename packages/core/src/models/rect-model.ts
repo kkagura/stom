@@ -70,12 +70,6 @@ export class RectModel extends Model<RectModelAttrs> {
     return isPointInRoundRect(point, { x: 0, y: 0, width, height }, this.getRoundGap());
   }
 
-  beforePaint(ctx: CanvasRenderingContext2D, editor: Editor): void {
-    ctx.save();
-    const transform = this.getWorldTransform();
-    ctx.transform(...transform);
-  }
-
   paint(ctx: CanvasRenderingContext2D) {
     const { attrs } = this;
     const { width, height } = this.rect;
@@ -104,18 +98,7 @@ export class RectModel extends Model<RectModelAttrs> {
         control.paint(ctx);
       });
     }
-    ctx.restore();
-
-    const p = this.getPosition();
-    const angle = getTransformAngle(this.getWorldTransform());
-    console.log(angle);
-    const p1 = new Matrix(...this.getTransform()).applyInverse(p);
-    ctx.beginPath();
-    ctx.arc(p1.x, p1.y, 5, 0, Math.PI * 2);
-    ctx.fill();
-    const rect = this.getRect();
-    ctx.beginPath();
-    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    super.afterPaint(ctx, editor);
   }
 
   dispose() {

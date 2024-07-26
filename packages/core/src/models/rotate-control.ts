@@ -61,7 +61,7 @@ export class RotateControl extends Control<SelectionManager> {
           const dRotation = lastMouseRotation - startRotation;
 
           selectionList.forEach(el => {
-            el.setRotate(dRotation, {
+            el.setRotate(dRotation, originTransformMap.get(el.id)!, {
               x: cxInSelectedElementsBBox,
               y: cyInSelectedElementsBBox
             });

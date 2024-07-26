@@ -13,6 +13,7 @@ import { TextInput } from './text-input';
 import { AlignManager } from './align-manager';
 
 export interface SceneData {
+  version: string;
   models: ModelJson[];
   viewport: {
     x: number;
@@ -63,6 +64,9 @@ export class Editor {
   public textInput = new TextInput(this);
   // 对齐相关逻辑
   public alignManager = new AlignManager(this);
+
+  // todo: 构建时引入
+  private version = '1.0.0';
 
   constructor(public container: HTMLElement) {
     container.style.position = 'relative';
@@ -464,6 +468,7 @@ export class Editor {
     const x = viewport.x;
     const y = viewport.y;
     return {
+      version: this.version,
       models,
       viewport: {
         x,
@@ -474,6 +479,10 @@ export class Editor {
   }
 
   parseSceneData(jsonObj: SceneData, modelManager: ModelManager) {
+    if (jsonObj.version !== this.version) {
+      console.warn('导入json失败，，版本不匹配');
+      return;
+    }
     this.box.removeAll();
     const models: Model[] = [];
     jsonObj.models.forEach(json => {

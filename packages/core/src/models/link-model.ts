@@ -19,6 +19,7 @@ import { LinkControl } from './link-control';
 import { CommonEvents } from './common-events';
 import { Control } from './control';
 import { PointControl } from './point-control';
+import { Editor } from '../editor';
 
 export enum LinkModelEvents {
   PORT_CHANGE = 'port-change'
@@ -211,6 +212,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
     return [1, 0, 0, 1, x, y];
   }
 
+  beforePaint(ctx: CanvasRenderingContext2D, editor: Editor): void {}
+
   paint(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     const points = this.getAllPoints();
@@ -294,6 +297,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
     // ctx.rect(rect.x, rect.y, rect.width, rect.height);
     // ctx.stroke();
   }
+
+  afterPaint(ctx: CanvasRenderingContext2D, editor: Editor): void {}
 
   getCategory() {
     return LinkModel.CATEGORY;

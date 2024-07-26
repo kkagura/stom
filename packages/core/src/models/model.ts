@@ -50,6 +50,8 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   transform: IMatrixArr = [1, 0, 0, 1, 0, 0];
 
+  rotateTansform: IMatrixArr = [1, 0, 0, 1, 0, 0];
+
   private layerId: string = '';
 
   private isHovered = false;
@@ -174,11 +176,15 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   getWorldTransform(): IMatrixArr {
     const [a, b, c, d] = this.transform;
-    return [a, b, c, d, this.rect.x, this.rect.y];
+    const tf = new Matrix(a, b, c, d, this.rect.x, this.rect.y);
+    const rtf = new Matrix(...this.rotateTansform);
+    return rtf.append(tf).getArray();
   }
 
   setWorldTransform(transform: IMatrixArr) {
-    const [a, b, c, d, dx, dy] = transform;
+    const worldTf = new Matrix(...transform);
+    const tf = new Matrix(...this.rotateTansform).invert().append(worldTf);
+    const [a, b, c, d, dx, dy] = tf.getArray();
     this.transform = [a, b, c, d, 0, 0];
     this.setPosition(dx, dy);
   }
@@ -187,11 +193,17 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return false;
   }
 
-  beforePaint(ctx: CanvasRenderingContext2D, editor: Editor) {}
+  beforePaint(ctx: CanvasRenderingContext2D, editor: Editor): void {
+    ctx.save();
+    const transform = this.getWorldTransform();
+    ctx.transform(...transform);
+  }
 
   abstract paint(ctx: CanvasRenderingContext2D): void;
 
-  afterPaint(ctx: CanvasRenderingContext2D, editor: Editor) {}
+  afterPaint(ctx: CanvasRenderingContext2D, editor: Editor): void {
+    ctx.restore();
+  }
 
   getIsHovered() {
     return this.isHovered;
@@ -240,20 +252,27 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return boxToRect(this.getBoundingBox());
   }
 
+  getRotateTransform() {
+    return [...this.rotateTansform];
+  }
+
+  setRotateTransform(transform: IMatrixArr) {
+    this.rotateTansform = transform;
+
+    this.emit(CommonEvents.rectChange);
+    this.emit(CommonEvents.change);
+  }
+
   getRotate() {
     return getTransformAngle(this.getWorldTransform());
   }
 
-  setRotate(newRotate: number, center: IPoint) {
-    const rotate = this.getRotate();
-    const delta = newRotate - rotate;
-    const rotateMatrix = new Matrix().translate(-center.x, -center.y).rotate(delta).translate(center.x, center.y);
+  setRotate(newRotate: number, oldTf: IMatrixArr, center: IPoint) {
+    const rotateMatrix = new Matrix().translate(-center.x, -center.y).rotate(newRotate).translate(center.x, center.y);
 
-    const tf = this.getWorldTransform();
+    const newTf = rotateMatrix.append(new Matrix(...oldTf)).getArray();
 
-    const newWoldTf = rotateMatrix.append(new Matrix(...tf)).getArray();
-
-    this.setWorldTransform(newWoldTf);
+    this.setWorldTransform(newTf);
   }
 
   getMovable() {
@@ -289,6 +308,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       attrs: this.attrs,
       rect: this.rect,
       transform: this.transform,
+      rotateTransform: this.rotateTansform,
       layerId: this.layerId
     };
     return cloneDeep(obj);
@@ -302,6 +322,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     instance.setPosition(json.rect.x, json.rect.y);
     instance.setSize(json.rect.width, json.rect.height);
     instance.transform = json.transform;
+    instance.setRotateTransform(json.rotateTransform);
     instance.setLayerId(json.layerId);
     return instance;
   }
