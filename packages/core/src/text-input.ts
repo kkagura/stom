@@ -37,6 +37,6 @@ export class TextInput {
   }
 
   remove() {
-    // this.editor.container.removeChild(this.inputDiv);
+    this.editor.container.removeChild(this.inputDiv);
   }
 }
