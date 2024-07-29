@@ -170,17 +170,14 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   setTransform(transform: IMatrixArr) {
     this.transform = [...transform];
+    this.emit(CommonEvents.rectChange);
+    this.emit(CommonEvents.change);
   }
 
   getWorldTransform(): IMatrixArr {
-    const [a, b, c, d] = this.transform;
-    return [a, b, c, d, this.rect.x, this.rect.y];
-  }
-
-  setWorldTransform(transform: IMatrixArr) {
-    const [a, b, c, d, dx, dy] = transform;
-    this.transform = [a, b, c, d, 0, 0];
-    this.setPosition(dx, dy);
+    const wtf = new Matrix(...this.getTransform());
+    const { x, y } = this.getRect();
+    return wtf.translate(x, y).getArray();
   }
 
   hitTest(x: number, y: number): boolean | Control {
@@ -241,19 +238,21 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   }
 
   getRotate() {
-    return getTransformAngle(this.getWorldTransform());
+    return getTransformAngle(this.getTransform());
   }
 
-  setRotate(newRotate: number, center: IPoint) {
-    const rotate = this.getRotate();
-    const delta = newRotate - rotate;
-    const rotateMatrix = new Matrix().translate(-center.x, -center.y).rotate(delta).translate(center.x, center.y);
+  setRotate(dRotation: number, originTf: IMatrixArr, center: IPoint) {
+    const { x, y } = this.getPosition();
+    const rotateMatrix = new Matrix()
+      .translate(x, y)
+      .translate(-center.x, -center.y)
+      .rotate(dRotation)
+      .translate(-x, -y)
+      .translate(center.x, center.y);
 
-    const tf = this.getWorldTransform();
+    const newTf = rotateMatrix.append(new Matrix(...originTf)).getArray();
 
-    const newWoldTf = rotateMatrix.append(new Matrix(...tf)).getArray();
-
-    this.setWorldTransform(newWoldTf);
+    this.setTransform(newTf);
   }
 
   getMovable() {

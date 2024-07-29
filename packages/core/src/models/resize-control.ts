@@ -116,7 +116,8 @@ export class ResizeControl extends Control<SelectionManager> {
               transform: newLocalTf
             });
             el.setSize(newAttrs.width, newAttrs.height);
-            el.setWorldTransform(newAttrs.transform);
+            const [, , , , dx, dy] = newAttrs.transform;
+            el.setPosition(dx, dy);
             updatedTransformMap.set(el.id, el.getWorldTransform());
             updatedRectMap.set(el.id, el.getRect());
           });
@@ -126,18 +127,16 @@ export class ResizeControl extends Control<SelectionManager> {
           const action = {
             undo: () => {
               selectionList.forEach(el => {
-                const { width, height } = originRectMap.get(el.id)!;
-                const originTransform = originTransformMap.get(el.id)!;
+                const { width, height, x, y } = originRectMap.get(el.id)!;
                 el.setSize(width, height);
-                el.setWorldTransform(originTransform);
+                el.setPosition(x, y);
               });
             },
             redo: () => {
               selectionList.forEach(el => {
-                const { width, height } = updatedRectMap.get(el.id)!;
-                const originTransform = updatedTransformMap.get(el.id)!;
+                const { width, height, x, y } = updatedRectMap.get(el.id)!;
                 el.setSize(width, height);
-                el.setWorldTransform(originTransform);
+                el.setPosition(x, y);
               });
             }
           };

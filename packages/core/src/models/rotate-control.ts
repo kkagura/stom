@@ -21,7 +21,7 @@ export class RotateControl extends Control<SelectionManager> {
     const originTransformMap = new Map<string, IMatrixArr>();
     const originRectMap = new Map<string, IRect>();
     selectionList.forEach(el => {
-      originTransformMap.set(el.id, el.getWorldTransform());
+      originTransformMap.set(el.id, el.getTransform());
       originRectMap.set(el.id, { ...el.getRect() });
     });
     const { x, y, width, height } = selectionManager.getBoundingRect();
@@ -30,7 +30,7 @@ export class RotateControl extends Control<SelectionManager> {
       y: y + height / 2
     };
     const mousePoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
-    const startRotation = getSweepAngle(
+    let startRotation = getSweepAngle(
       { x: 0, y: -1 },
       {
         x: mousePoint.x - selectionBoxCenter.x,
@@ -51,21 +51,21 @@ export class RotateControl extends Control<SelectionManager> {
           const lastPoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
           const { x: cxInSelectedElementsBBox, y: cyInSelectedElementsBBox } = selectionBoxCenter;
 
-          const lastMouseRotation = getSweepAngle(
+          const currRotation = getSweepAngle(
             { x: 0, y: -1 },
             {
               x: lastPoint.x - cxInSelectedElementsBBox,
               y: lastPoint.y - cyInSelectedElementsBBox
             }
           );
-          const dRotation = lastMouseRotation - startRotation;
+          const dRotation = currRotation - startRotation;
 
           selectionList.forEach(el => {
-            el.setRotate(dRotation, {
+            el.setRotate(dRotation, originTransformMap.get(el.id)!, {
               x: cxInSelectedElementsBBox,
               y: cyInSelectedElementsBBox
             });
-            updatedTransformMap.set(el.id, el.getWorldTransform());
+            updatedTransformMap.set(el.id, el.getTransform());
           });
 
           selectionManager.setRotate(dRotation);
@@ -79,13 +79,13 @@ export class RotateControl extends Control<SelectionManager> {
             undo: () => {
               selectionList.forEach(el => {
                 const originTransform = originTransformMap.get(el.id)!;
-                el.setWorldTransform(originTransform);
+                el.setTransform(originTransform);
               });
             },
             redo: () => {
               selectionList.forEach(el => {
                 const originTransform = updatedTransformMap.get(el.id)!;
-                el.setWorldTransform(originTransform);
+                el.setTransform(originTransform);
               });
             }
           };
