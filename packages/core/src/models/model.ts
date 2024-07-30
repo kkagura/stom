@@ -3,6 +3,7 @@ import { EventEmitter, cloneDeep, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { CommonEvents } from './common-events';
+import { TextStyle } from './attrs';
 
 export enum ModelEvents {
   mouseIn = 'mouseIn',
@@ -55,6 +56,15 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   private isHovered = false;
   private isSelected = false;
   private activeControl: Control | null = null;
+  // todo: 富文本？
+  private content: { text: string; style: TextStyle } = {
+    text: '',
+    style: {
+      color: '#000',
+      fontSize: 12,
+      lineHeight: 1.5
+    }
+  };
 
   constructor(public id: string = genId()) {
     super();
@@ -294,7 +304,8 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       attrs: this.attrs,
       rect: this.rect,
       transform: this.transform,
-      layerId: this.layerId
+      layerId: this.layerId,
+      content: this.content
     };
     return cloneDeep(obj);
   }
@@ -308,10 +319,38 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     instance.setSize(json.rect.width, json.rect.height);
     instance.transform = json.transform;
     instance.setLayerId(json.layerId);
+    json.content && instance.setContent(json.content);
     return instance;
   }
 
   getControlByTag(tag: string): Control | null {
     return null;
+  }
+
+  getText() {
+    return this.content.text;
+  }
+
+  getTextStyle() {
+    return this.content.style;
+  }
+
+  getContet() {
+    return this.content;
+  }
+
+  setText(text: string) {
+    this.content.text = text;
+  }
+
+  setTextStyle(style: Partial<TextStyle>) {
+    this.content.style = {
+      ...this.content.style,
+      ...style
+    };
+  }
+
+  setContent(content: { text: string; style: TextStyle }) {
+    this.content = content;
   }
 }

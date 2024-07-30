@@ -1,4 +1,4 @@
-import { IRect, getRectByPoints, isRectIntersect } from '@stom/geo';
+import { IRect, Matrix, getRectByPoints, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor } from './editor';
 import { LinkModel, Model, ModelEvents } from './models';
@@ -285,11 +285,16 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
 
   handleDblclick = (e: MouseEvent) => {
     if (this.mouseEl) {
-      const rect = this.mouseEl.getRect();
-      // const worldTf = this.mouseEl.getWorldTransform();
-      // const ltf = this.mouseEl.getTransform();
-      // const rtf = this.mouseEl.getRotateTransform();
-      // this.editor.textInput.show(rect, ltf, rtf, '', {});
+      const el = this.mouseEl;
+      const zoom = this.editor.viewportManager.getZoom();
+      const pos = this.editor.viewportManager.getViewPoint({ x: 0, y: 0 }, zoom);
+      const rect = el.getRect();
+      const tf = new Matrix(...this.mouseEl.getWorldTransform()).scale(zoom, zoom);
+      const text = el.getText();
+      const textStyle = el.getTextStyle();
+      this.editor.textInput.show(rect, pos, tf.getArray(), text, textStyle, (text: string) => {
+        el.setText(text);
+      });
     }
   };
 
