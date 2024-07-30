@@ -104,7 +104,7 @@ export class ResizeControl extends Control<SelectionManager> {
                 const { width, height } = originRectMap.get(el.id)!;
                 const originTransform = originTransformMap.get(el.id)!;
                 el.setSize(width, height);
-                el.setWorldTransform(originTransform);
+                // el.setWorldTransform(originTransform);
               });
             },
             redo: () => {
@@ -112,7 +112,7 @@ export class ResizeControl extends Control<SelectionManager> {
                 const { width, height } = updatedRectMap.get(el.id)!;
                 const originTransform = updatedTransformMap.get(el.id)!;
                 el.setSize(width, height);
-                el.setWorldTransform(originTransform);
+                // el.setWorldTransform(originTransform);
               });
             }
           };

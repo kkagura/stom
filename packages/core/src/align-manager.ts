@@ -46,12 +46,14 @@ export class AlignManager {
       const action = {
         undo: () => {
           models.forEach((model, i) => {
-            model.setWorldTransform(worldTfs[i]);
+            const worldTf = worldTfs[i];
+            model.setPosition(worldTf[4], worldTf[5]);
           });
         },
         redo: () => {
           models.forEach((model, i) => {
-            model.setWorldTransform(newWorldTfs[i]);
+            const newWorldTf = newWorldTfs[i];
+            model.setPosition(newWorldTf[4], newWorldTf[5]);
           });
         }
       };
@@ -143,6 +145,6 @@ export class AlignManager {
     const newWorldTf = cloneDeep(worldTf);
     newWorldTf[4] += dx;
     newWorldTf[5] += dy;
-    model.setWorldTransform(newWorldTf);
+    model.setPosition(newWorldTf[4], newWorldTf[5]);
   }
 }

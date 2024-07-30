@@ -286,8 +286,10 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   handleDblclick = (e: MouseEvent) => {
     if (this.mouseEl) {
       const rect = this.mouseEl.getRect();
-      const worldTf = this.mouseEl.getWorldTransform();
-      this.editor.textInput.show(rect, worldTf, '', {});
+      // const worldTf = this.mouseEl.getWorldTransform();
+      // const ltf = this.mouseEl.getTransform();
+      // const rtf = this.mouseEl.getRotateTransform();
+      // this.editor.textInput.show(rect, ltf, rtf, '', {});
     }
   };
 
