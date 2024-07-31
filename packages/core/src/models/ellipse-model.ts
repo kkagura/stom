@@ -99,6 +99,7 @@ export class EllipseModel extends Model<EllipseModelAttrs> {
       ctx.lineWidth = attrs.border.width;
       ctx.stroke();
     }
+    this.paintText(ctx);
   }
 
   afterPaint(ctx: CanvasRenderingContext2D, editor: Editor): void {

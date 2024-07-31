@@ -292,8 +292,10 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       const tf = new Matrix(...this.mouseEl.getWorldTransform()).scale(zoom, zoom);
       const text = el.getText();
       const textStyle = el.getTextStyle();
+      el.setTextVisible(false);
       this.editor.textInput.show(rect, pos, tf.getArray(), text, textStyle, (text: string) => {
         el.setText(text);
+        el.setTextVisible(true);
       });
     }
   };

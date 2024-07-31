@@ -118,6 +118,7 @@ export class DiamondModel extends Model<DiamondModelAttrs> {
       ctx.lineWidth = attrs.border.width;
       ctx.stroke();
     }
+    this.paintText(ctx);
   }
 
   afterPaint(ctx: CanvasRenderingContext2D, editor: Editor): void {

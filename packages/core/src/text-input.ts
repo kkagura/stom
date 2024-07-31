@@ -1,24 +1,44 @@
 import { IMatrixArr, IPoint, IRect, Matrix } from '@stom/geo';
 import { Editor } from './editor';
-import { TextStyle } from './models';
+import { findParentDom, TextStyle } from '@stom/shared';
+
+const EMPTY = '\xa0';
 
 export class TextInput {
+  private container: HTMLDivElement = document.createElement('div');
   private inputDiv: HTMLDivElement = document.createElement('div');
   private callbck: null | ((text: string) => void) = null;
+  private text = EMPTY;
   constructor(public editor: Editor) {
-    this.inputDiv.style.position = 'absolute';
-    this.inputDiv.setAttribute('contenteditable', 'true');
-    this.inputDiv.addEventListener('blur', this.handleBlur);
-    // todo: 聚焦后的样式需要修改
-    Object.assign(this.inputDiv.style, {
+    this.container.style.position = 'absolute';
+    Object.assign(this.container.style, {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      lineHeight: 1.5,
       transformOrigin: 'left top',
-      wordBreak: 'break-all',
-      whiteSpace: 'pre-wrap'
+      borderStyle: 'solid',
+      borderColor: 'transparent',
+      boxSizing: 'border-box'
     });
+    this.container.addEventListener('mousedown', e => {
+      const el = findParentDom(e.target as HTMLElement, el => el === this.inputDiv);
+      if (!el) {
+        e.preventDefault();
+      }
+    });
+
+    this.inputDiv.setAttribute('contenteditable', 'true');
+    this.inputDiv.addEventListener('blur', this.handleBlur);
+    this.inputDiv.addEventListener('input', this.handleInput);
+    Object.assign(this.inputDiv.style, {
+      wordBreak: 'break-all',
+      whiteSpace: 'pre-wrap',
+      textAlign: 'center',
+      outlineStyle: 'none',
+      lineHeight: 1.5
+    });
+
+    this.container.appendChild(this.inputDiv);
   }
 
   handleBlur = () => {
@@ -30,24 +50,41 @@ export class TextInput {
     this.remove();
   };
 
+  handleInput = () => {
+    if (!this.inputDiv.innerText) {
+      this.inputDiv.innerText = EMPTY;
+    }
+    this.text = this.inputDiv.innerText;
+  };
+
   show(rect: IRect, { x, y }: IPoint, tf: IMatrixArr, text: string, style: TextStyle, cb: (text: string) => void) {
-    this.inputDiv.style.left = `${x}px`;
-    this.inputDiv.style.top = `${y}px`;
-    this.inputDiv.style.width = `${rect.width}px`;
-    this.inputDiv.style.height = `${rect.height}px`;
-    this.inputDiv.style.transform = `matrix(${tf.join(',')})`;
+    this.container.style.left = `${x}px`;
+    this.container.style.top = `${y}px`;
+    this.container.style.width = `${rect.width}px`;
+    this.container.style.height = `${rect.height}px`;
+    this.container.style.transform = `matrix(${tf.join(',')})`;
+
     this.inputDiv.style.color = style.color;
     this.inputDiv.style.fontSize = `${style.fontSize}px`;
+    this.inputDiv.style.fontFamily = style.fontFamily;
+    this.inputDiv.style.lineHeight = `${style.lineHeight}`;
 
+    text = text || EMPTY;
+    this.text = text;
     this.inputDiv.innerText = text;
-    this.editor.container.appendChild(this.inputDiv);
+    this.editor.container.appendChild(this.container);
     setTimeout(() => {
       this.inputDiv.focus();
       this.callbck = cb;
     });
   }
 
+  focus() {
+    this.inputDiv.focus();
+  }
+
   remove() {
-    // this.editor.container.removeChild(this.inputDiv);
+    this.editor.container.removeChild(this.container);
+    this.text = EMPTY;
   }
 }

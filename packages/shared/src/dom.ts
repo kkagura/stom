@@ -32,7 +32,7 @@ export const useDragEvent = (options: DragEventOptions, e: MouseEvent) => {
 };
 
 export const findParentDom = (dom: HTMLElement, match: (el: HTMLElement) => boolean) => {
-  let parent = dom.parentElement;
+  let parent: HTMLElement | null = dom;
   while (parent) {
     if (match(parent)) {
       return parent;

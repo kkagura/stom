@@ -1,9 +1,8 @@
 import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle, invertMatrix, multiplyMatrix } from '@stom/geo';
-import { EventEmitter, cloneDeep, genId } from '@stom/shared';
+import { EventEmitter, TextStyle, cloneDeep, fillText, genId } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { CommonEvents } from './common-events';
-import { TextStyle } from './attrs';
 
 export enum ModelEvents {
   mouseIn = 'mouseIn',
@@ -62,9 +61,12 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     style: {
       color: '#000',
       fontSize: 12,
-      lineHeight: 1.5
+      lineHeight: 1.5,
+      fontFamily: 'Arial'
     }
   };
+
+  private textVisible: boolean = true;
 
   constructor(public id: string = genId()) {
     super();
@@ -297,6 +299,10 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     }
   }
 
+  getAttr<K extends keyof Attrs>(attr: K) {
+    return this.attrs[attr];
+  }
+
   toJson(): ModelJson<Attrs> {
     const obj: ModelJson<Attrs> = {
       id: this.id,
@@ -340,7 +346,9 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   }
 
   setText(text: string) {
+    if (this.content.text === text) return;
     this.content.text = text;
+    this.emit(CommonEvents.change);
   }
 
   setTextStyle(style: Partial<TextStyle>) {
@@ -348,9 +356,43 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       ...this.content.style,
       ...style
     };
+    this.emit(CommonEvents.change);
   }
 
   setContent(content: { text: string; style: TextStyle }) {
     this.content = content;
+    this.emit(CommonEvents.change);
+  }
+
+  getTextVisible() {
+    return this.textVisible;
+  }
+
+  setTextVisible(bool: boolean) {
+    this.textVisible = bool;
+    this.emit(CommonEvents.change);
+  }
+
+  paintText(ctx: CanvasRenderingContext2D) {
+    const { width, height } = this.getRect();
+    const text = this.getText();
+    if (text && this.getTextVisible()) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, width, height);
+      ctx.clip();
+      fillText(
+        ctx,
+        {
+          x: 0,
+          y: 0,
+          width,
+          height
+        },
+        text,
+        this.getTextStyle()
+      );
+      ctx.restore();
+    }
   }
 }

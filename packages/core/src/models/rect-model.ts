@@ -2,7 +2,7 @@ import { Direction, IRect, Matrix, applyMatrix, extendRect, getTransformAngle, i
 import { BorderAttr } from './attrs';
 import { Model, ModelEvents, ModelJson } from './model';
 import { Editor } from '../editor';
-import { cloneDeep, genId } from '@stom/shared';
+import { cloneDeep, fillText, genId } from '@stom/shared';
 import { Control } from './control';
 import { LinkControl } from './link-control';
 
@@ -89,6 +89,7 @@ export class RectModel extends Model<RectModelAttrs> {
       ctx.lineWidth = attrs.border.width;
       ctx.stroke();
     }
+    this.paintText(ctx);
   }
 
   afterPaint(ctx: CanvasRenderingContext2D, editor: Editor): void {
