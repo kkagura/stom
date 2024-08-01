@@ -1,5 +1,6 @@
 export const NAME_SPACE = 'st';
 const statePrefix = 'is-';
+const hasPrefix = 'has-';
 
 const _bem = (namespace: string, block: string, blockSuffix: string, element: string, modifier: string) => {
   let cls = `${namespace}-${block}`;
@@ -33,6 +34,14 @@ export const useNamespace = (block: string) => {
     return name && state ? `${statePrefix}${name}` : '';
   };
 
+  const has: {
+    (name: string, state: boolean | undefined): string;
+    (name: string): string;
+  } = (name: string, ...args: [boolean | undefined] | []) => {
+    const state = args.length >= 1 ? args[0]! : true;
+    return name && state ? `${hasPrefix}${name}` : '';
+  };
+
   return {
     namespace,
     b,
@@ -42,6 +51,7 @@ export const useNamespace = (block: string) => {
     em,
     bm,
     bem,
-    is
+    is,
+    has
   };
 };

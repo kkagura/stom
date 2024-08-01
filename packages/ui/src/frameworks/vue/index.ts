@@ -5,3 +5,4 @@ export { default as Library } from './library/Library.vue';
 export * from './library/library';
 export * from './store';
 export * from './icons';
+export { default as PropertyPanel } from './property-panel/PropertyPanel.vue';

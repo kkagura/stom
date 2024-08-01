@@ -14,6 +14,7 @@
       <div class="editor-box">
         <Editor @ready="onReady"></Editor>
       </div>
+      <PropertyPanel></PropertyPanel>
     </div>
   </div>
 </template>
@@ -21,7 +22,7 @@
 <script setup lang="ts">
 import { ShallowRef, markRaw, ref, shallowRef } from 'vue';
 // todo: github logo不应该由组件库提供 或者组件库应该提供完整的logo 而不是单独的github icon
-import { Editor, Toolbar, createStomStore, getDefaultCommands, Library, getDefaultLibrary, Github } from '@stom/ui/vue';
+import { Editor, Toolbar, createStomStore, getDefaultCommands, Library, getDefaultLibrary, Github, PropertyPanel } from '@stom/ui/vue';
 import { Command, type Editor as IEditor } from '@stom/core';
 import { SaveCommand } from './SaveCommand';
 import { getSceneJson } from './service';
@@ -83,6 +84,7 @@ const handleClickLogo = () => {
     flex: 1;
     overflow: hidden;
     display: flex;
+    position: relative;
     .editor-box {
       flex: 1;
       height: 100%;

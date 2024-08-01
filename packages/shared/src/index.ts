@@ -7,3 +7,4 @@ export * from './number';
 export * from './dom';
 export * from './animation';
 export * from './clone';
+export * from './string';
