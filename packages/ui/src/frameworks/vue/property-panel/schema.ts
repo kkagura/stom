@@ -1,3 +1,4 @@
+import { CommonEvents } from '@stom/core';
 import { ModelSchema } from './property-panel';
 
 export const rectSchema: ModelSchema = {
@@ -15,7 +16,8 @@ export const rectSchema: ModelSchema = {
           setter(model, value) {
             if (!Array.isArray || value.length !== 2) return;
             model.setPosition(value[0], value[1]);
-          }
+          },
+          watch: CommonEvents.rectChange
         }
       ]
     }

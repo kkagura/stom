@@ -53,6 +53,9 @@ watch(
   () => props.modelValue,
   () => {
     inputValue.value = String(props.modelValue ?? '');
+  },
+  {
+    immediate: true
   }
 );
 

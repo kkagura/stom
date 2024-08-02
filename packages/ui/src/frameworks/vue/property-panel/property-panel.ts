@@ -8,6 +8,7 @@ export interface PropertySchema {
   component: any;
   getter?(model: Model): void;
   setter?(model: Model, value: any): void;
+  watch?: string;
 }
 
 export interface PropertyGroup {

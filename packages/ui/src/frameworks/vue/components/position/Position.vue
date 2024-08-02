@@ -1,7 +1,7 @@
 <template>
   <div :class="[bem.b()]">
-    <Input v-model="modelValue[0]" @blur="handlerBlur" @formatter="toNumber" prefix="X" suffix="px"></Input>
-    <Input v-model="modelValue[1]" @blur="handlerBlur" @formatter="toNumber" prefix="Y" suffix="px"></Input>
+    <Input v-model="modelValue[0]" @blur="handlerBlur" :formatter="toNumber" prefix="X" suffix="px"></Input>
+    <Input v-model="modelValue[1]" @blur="handlerBlur" :formatter="toNumber" prefix="Y" suffix="px"></Input>
   </div>
 </template>
 
@@ -9,7 +9,7 @@
 import { useNamespace } from '../../../../hooks/useNameSpace';
 import Input from '../input/Input.vue';
 import { toNumber } from '@stom/shared';
-import { PropType, ref, watch } from 'vue';
+import { nextTick, PropType, ref, watch } from 'vue';
 
 defineOptions({
   name: 'Position'
@@ -36,10 +36,8 @@ watch(
   }
 );
 
-const handlerBlur = () => {
-  if (modelValue0.value !== props.modelValue[0] || modelValue1.value !== props.modelValue[1]) {
-    emit('update:modelValue', [modelValue0.value, modelValue1.value]);
-  }
+const handlerBlur = async () => {
+  emit('update:modelValue', [modelValue0.value, modelValue1.value]);
 };
 
 const bem = useNamespace('position');
