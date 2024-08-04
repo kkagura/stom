@@ -1,7 +1,7 @@
 <template>
   <div :class="[bem.b()]">
-    <template v-if="currentSchema">
-      <div :class="bem.e('group-list')">
+    <template v-if="currentSchema && currentModel">
+      <div :key="currentModel.id" :class="bem.e('group-list')">
         <template v-for="group in currentSchema.propertyGroups">
           <div :class="bem.e('group-item')">
             <div :class="bem.e('group-title')">{{ group.name }}</div>
@@ -21,7 +21,7 @@
 import { CommonEvents, Model, SelectionManager } from '@stom/core';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { useStomStore } from '../store';
-import { markRaw, provide, Ref, ref } from 'vue';
+import { markRaw, onBeforeUnmount, provide, Ref, ref } from 'vue';
 import { currentModelKey, ModelSchema } from './property-panel';
 import { schemaMap } from './schema';
 import PropertyItem from './PropertyItem.vue';
@@ -54,5 +54,9 @@ store.ready().then(() => {
   const editor = store.getEditor();
   selectionManager = editor.selectionManager;
   selectionManager.on(CommonEvents.change, handleSelectionChange);
+});
+
+onBeforeUnmount(() => {
+  selectionManager.off(CommonEvents.change, handleSelectionChange);
 });
 </script>

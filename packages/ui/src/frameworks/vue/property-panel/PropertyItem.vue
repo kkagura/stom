@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { useNamespace } from '../../../hooks/useNameSpace';
-import { computed, PropType, ref } from 'vue';
+import { computed, onBeforeUnmount, PropType, ref } from 'vue';
 import { PropertySchema, useCurrentModel } from './property-panel';
 import Position from '../components/position/Position.vue';
 import { capitalizeFirstLetter } from '@stom/shared';
@@ -78,6 +78,10 @@ const handleWatch = () => {
 if (props.schema.watch) {
   currentModel.value!.on(props.schema.watch as any, handleWatch);
 }
+
+onBeforeUnmount(() => {
+  currentModel.value!.off(props.schema.watch as any, handleWatch);
+});
 </script>
 
 <style lang="postcss"></style>
