@@ -14,8 +14,9 @@ import { useNamespace } from '../../../hooks/useNameSpace';
 import { computed, onBeforeUnmount, PropType, ref } from 'vue';
 import { PropertySchema, useCurrentModel } from './property-panel';
 import Position from '../components/position/Position.vue';
-import { capitalizeFirstLetter } from '@stom/shared';
+import { capitalizeFirstLetter, isEqual } from '@stom/shared';
 import { Model } from '@stom/core';
+import { useStomStore } from '../store';
 
 const bem = useNamespace('property-item');
 
@@ -38,6 +39,7 @@ const comp = computed(() => {
 });
 
 const currentModel = useCurrentModel();
+const store = useStomStore();
 
 const getter = () => {
   const model = currentModel.value!;
@@ -53,7 +55,9 @@ const getter = () => {
   }
 };
 
-const setter = (val: any) => {
+const vModel = ref(getter());
+
+const setValue = (val: any) => {
   const model = currentModel.value!;
   if (props.schema.setter) {
     props.schema.setter(model, val);
@@ -65,7 +69,21 @@ const setter = (val: any) => {
   }
 };
 
-const vModel = ref(getter());
+const setter = (val: any) => {
+  const oldVal = getter();
+  if (isEqual(oldVal, val)) return;
+  setValue(val);
+  const action = {
+    undo: () => {
+      setValue(oldVal);
+    },
+    redo: () => {
+      setValue(val);
+    }
+  };
+  store.getEditor().actionManager.push(action);
+};
+
 const handleUpdate = (val: any) => {
   setter(val);
   vModel.value = getter();
