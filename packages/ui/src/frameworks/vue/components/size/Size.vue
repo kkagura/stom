@@ -1,7 +1,7 @@
 <template>
   <div :class="[bem.b()]">
-    <Input v-model="modelValue[0]" @blur="handlerBlur" prefix="X" suffix="px"></Input>
-    <Input v-model="modelValue[1]" @blur="handlerBlur" prefix="Y" suffix="px"></Input>
+    <Input v-model="modelValue[0]" @blur="handlerBlur" prefix="W" suffix="px"></Input>
+    <Input v-model="modelValue[1]" @blur="handlerBlur" prefix="H" suffix="px"></Input>
   </div>
 </template>
 
@@ -12,10 +12,10 @@ import { toNumber } from '@stom/shared';
 import { nextTick, PropType, ref, watch } from 'vue';
 
 defineOptions({
-  name: 'Position'
+  name: 'Size'
 });
 
-const bem = useNamespace('position');
+const bem = useNamespace('size');
 
 const props = defineProps({
   modelValue: {
@@ -39,8 +39,8 @@ watch(
 );
 
 const handlerBlur = async () => {
-  modelValue0.value = toNumber(modelValue0.value);
-  modelValue1.value = toNumber(modelValue1.value);
+  modelValue0.value = Math.max(20, toNumber(modelValue0.value));
+  modelValue1.value = Math.max(20, toNumber(modelValue1.value));
   emit('update:modelValue', [modelValue0.value, modelValue1.value]);
 };
 </script>

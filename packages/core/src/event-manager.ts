@@ -285,6 +285,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
 
   handleDblclick = (e: MouseEvent) => {
     if (this.mouseEl) {
+      // todo: 显示输入框后如果视图窗口改变了，输入框大小也应该跟着改变
       const el = this.mouseEl;
       const zoom = this.editor.viewportManager.getZoom();
       const pos = this.editor.viewportManager.getViewPoint({ x: 0, y: 0 }, zoom);

@@ -18,6 +18,18 @@ export const rectSchema: ModelSchema = {
             model.setPosition(value[0], value[1]);
           },
           watch: CommonEvents.rectChange
+        },
+        {
+          component: 'Size',
+          getter(model) {
+            const pos = model.getSize();
+            return [pos.width, pos.height];
+          },
+          setter(model, value) {
+            if (!Array.isArray || value.length !== 2) return;
+            model.setSize(value[0], value[1]);
+          },
+          watch: CommonEvents.rectChange
         }
       ]
     }

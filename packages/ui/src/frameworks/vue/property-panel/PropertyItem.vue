@@ -17,6 +17,7 @@ import Position from '../components/position/Position.vue';
 import { capitalizeFirstLetter, isEqual } from '@stom/shared';
 import { Model } from '@stom/core';
 import { useStomStore } from '../store';
+import Size from '../components/size/Size.vue';
 
 const bem = useNamespace('property-item');
 
@@ -28,7 +29,8 @@ const props = defineProps({
 });
 
 const componentMap: Record<string, any> = {
-  [Position.name!]: Position
+  [Position.name!]: Position,
+  [Size.name!]: Size
 };
 
 const comp = computed(() => {
