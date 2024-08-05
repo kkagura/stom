@@ -21,7 +21,7 @@
 import { CommonEvents, Model, SelectionManager } from '@stom/core';
 import { useNamespace } from '../../../hooks/useNameSpace';
 import { useStomStore } from '../store';
-import { markRaw, onBeforeUnmount, provide, Ref, ref } from 'vue';
+import { markRaw, nextTick, onBeforeUnmount, provide, Ref, ref } from 'vue';
 import { currentModelKey, ModelSchema } from './property-panel';
 import { schemaMap } from './schema';
 import PropertyItem from './PropertyItem.vue';
@@ -37,15 +37,18 @@ provide(currentModelKey, currentModel);
 
 let selectionManager: SelectionManager;
 
-const handleSelectionChange = () => {
+const handleSelectionChange = async () => {
   selectionList.value = markRaw<Model[]>(selectionManager.getSelectionList());
   if (selectionList.value.length === 1) {
     const category = selectionList.value[0].getCategory();
     const schema = schemaMap[category] || null;
     currentSchema.value = schema;
+    // 等销毁组件之后再修改model的值，否则会导致子组件解绑model事件的时候找不到model
+    await nextTick();
     currentModel.value = markRaw<Model>(selectionList.value[0]);
   } else {
     currentSchema.value = null;
+    await nextTick();
     currentModel.value = null;
   }
 };
