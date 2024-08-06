@@ -18,6 +18,7 @@ import { capitalizeFirstLetter, isEqual } from '@stom/shared';
 import { Model } from '@stom/core';
 import { useStomStore } from '../store';
 import Size from '../components/size/Size.vue';
+import ColorPicker from '../components/color-picker/ColorPicker.vue';
 
 const bem = useNamespace('property-item');
 
@@ -30,7 +31,8 @@ const props = defineProps({
 
 const componentMap: Record<string, any> = {
   [Position.name!]: Position,
-  [Size.name!]: Size
+  [Size.name!]: Size,
+  [ColorPicker.name!]: ColorPicker
 };
 
 const comp = computed(() => {

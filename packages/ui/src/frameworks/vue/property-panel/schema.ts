@@ -1,4 +1,4 @@
-import { CommonEvents } from '@stom/core';
+import { CommonEvents, ModelEvents } from '@stom/core';
 import { ModelSchema } from './property-panel';
 
 export const rectSchema: ModelSchema = {
@@ -30,6 +30,19 @@ export const rectSchema: ModelSchema = {
             model.setSize(value[0], value[1]);
           },
           watch: CommonEvents.rectChange
+        }
+      ]
+    },
+    {
+      name: '样式',
+      properties: [
+        {
+          label: '填充色',
+          component: 'ColorPicker',
+          key: 'fillColor',
+          keyType: 'attr',
+          // todo: 应该用fillColor监听？
+          watch: ModelEvents.ATTR_CHANGE
         }
       ]
     }

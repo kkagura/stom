@@ -2,6 +2,7 @@ export interface DragEventOptions {
   onDragStart?: (e: MouseEvent) => void;
   onDragMove?: (e: MouseEvent, movement: [dx: number, dy: number]) => void;
   onDragEnd?: (e: MouseEvent) => void;
+  onUp?: (e: MouseEvent) => void;
 }
 
 export const useDragEvent = (options: DragEventOptions, e: MouseEvent) => {
@@ -20,6 +21,7 @@ export const useDragEvent = (options: DragEventOptions, e: MouseEvent) => {
   };
 
   const onUp = (e: MouseEvent) => {
+    options.onUp?.(e);
     started && options.onDragEnd?.(e);
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);

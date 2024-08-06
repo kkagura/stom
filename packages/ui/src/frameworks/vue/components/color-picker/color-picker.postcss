@@ -1,0 +1,107 @@
+.st-color {
+  display: inline-block;
+  .st-color-trigger {
+    height: 24px;
+    width: 30px;
+    border: 1px solid rgba(67, 95, 115, 0.16);
+    box-sizing: border-box;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+}
+.st-color-panel__mask {
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  .st-color-panel {
+    position: absolute;
+    padding: 10px;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    background-color: #fff;
+    .st-color-panel__main {
+      display: flex;
+    }
+    .st-color-svpanel {
+      position: relative;
+      .st-color-svpanel__white {
+        background: linear-gradient(to right, #fff, #fff0);
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      .st-color-svpanel__black {
+        background: linear-gradient(to top, #000, #0000);
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      .st-color-svpanel__cursor {
+        position: absolute;
+        border-radius: 50%;
+        box-shadow:
+          0 0 0 1.5px #fff,
+          inset 0 0 1px 1px #0000004d,
+          0 0 1px 2px #0006;
+        transform: translate(-50%, -50%);
+      }
+    }
+    .st-color-hue-slider {
+      width: 12px;
+      box-sizing: border-box;
+      margin-left: 10px;
+      position: relative;
+      .st-color-hue-slider__bar {
+        height: 100%;
+        background: linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+      }
+      .st-color-hue-slider__thumb {
+        width: 100%;
+        box-shadow: 0 0 2px #0009;
+        border: 1px solid #ebeef5;
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        top: 0;
+        background-color: #fff;
+        border-radius: 1px;
+        cursor: pointer;
+      }
+    }
+    .st-color-alpha-slider {
+      height: 12px;
+      background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(135deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(135deg, transparent 75%, #ccc 75%);
+      background-size: 12px 12px;
+      background-position:
+        0 0,
+        6px 0,
+        6px -6px,
+        0 6px;
+      margin-top: 10px;
+      position: relative;
+      .st-color-alpha-slider__bar {
+        height: 100%;
+        width: 100%;
+      }
+      .st-color-alpha-slider__thumb {
+        height: 100%;
+        box-shadow: 0 0 2px #0009;
+        border: 1px solid #ebeef5;
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        top: 0;
+        background-color: #fff;
+        border-radius: 1px;
+        cursor: pointer;
+      }
+    }
+  }
+}
