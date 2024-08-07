@@ -1,4 +1,4 @@
-let canvas, ctx;
+let canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D;
 export function getRgba(color: string) {
   if (!canvas || !ctx) {
     canvas = document.createElement('canvas');
@@ -6,7 +6,7 @@ export function getRgba(color: string) {
     canvas.height = 1;
     canvas.style.width = '1px';
     canvas.style.height = '1px';
-    ctx = canvas.getContext('2d');
+    ctx = canvas.getContext('2d')!;
   }
   ctx.clearRect(0, 0, 1, 1);
   ctx.beginPath();

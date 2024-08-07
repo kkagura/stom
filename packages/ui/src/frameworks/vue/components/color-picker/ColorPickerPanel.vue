@@ -35,7 +35,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits<{ (e: 'ok', value: string) }>();
+const emit = defineEmits<{ (e: 'ok', value: string): void }>();
 
 const context = useColorPickerContext();
 const visible = ref(false);

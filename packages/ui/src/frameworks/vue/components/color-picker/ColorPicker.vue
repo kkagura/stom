@@ -32,7 +32,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits<{ (e: 'update:modelValue', value: string) }>();
+const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>();
 
 const context = createColorPickerContext(props.modelValue);
 provide(colorPickerContextKey, context);
