@@ -44,7 +44,7 @@ importers:
   packages/core:
     specifiers:
       '@stom/geo': workspace:*
-      '@stom/shared': workspace:1.0.0
+      '@stom/shared': workspace:*
     dependencies:
       '@stom/geo': link:../geo
       '@stom/shared': link:../shared
@@ -54,7 +54,7 @@ importers:
 
   packages/playground:
     specifiers:
-      '@stom/core': workspace:^1.0.0
+      '@stom/core': workspace:*
       '@stom/ui': workspace:*
       '@vitejs/plugin-vue': ^5.0.4
       typescript: ^5.2.2
