@@ -113,7 +113,7 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     }
   }
 
-  isSelected(model) {
+  isSelected(model: Model) {
     return this.selection.includes(model);
   }
 

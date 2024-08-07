@@ -38,7 +38,7 @@ export class Box extends EventEmitter<Events> {
     this.layerMap.set(layer.name, layer);
   }
 
-  removeLayer(name) {
+  removeLayer(name: string) {
     const layer = this.getLayer(name);
     if (!layer) return;
     if (layer.name === 'default') return;
@@ -53,7 +53,7 @@ export class Box extends EventEmitter<Events> {
     layer.dispose();
   }
 
-  getLayer(name) {
+  getLayer(name: string) {
     return this.layerMap.get(name) || null;
   }
 

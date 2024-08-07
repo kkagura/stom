@@ -151,7 +151,7 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
           this.zoomTextOpaticy = t;
           this.emit(CommonEvents.REPAINT);
         },
-        onEnd() {
+        onEnd: () => {
           this.zoomTextOpaticy = -1;
         }
       });
