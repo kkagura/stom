@@ -47,6 +47,7 @@ const setValueByEvent = (ev: MouseEvent) => {
 };
 
 const handleMousedown = (ev: MouseEvent) => {
+  ev.preventDefault();
   useDragEvent(
     {
       onDragMove(e) {

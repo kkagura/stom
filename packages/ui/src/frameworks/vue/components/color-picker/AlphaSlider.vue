@@ -1,14 +1,15 @@
 <template>
-  <div :class="bem.b()" :style="sliderStyle">
+  <div @mousedown="handleMousedown" :class="bem.b()" :style="sliderStyle">
     <div :class="bem.e('bar')" :style="barStyle"></div>
     <div :class="bem.e('thumb')" :style="thumbStyle"></div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useDragEvent } from '@stom/shared';
 import { useNamespace } from '../../../../hooks/useNameSpace';
 import { useColorPickerContext } from './color-picker';
-import { computed } from 'vue';
+import { computed, getCurrentInstance } from 'vue';
 
 const bem = useNamespace('color-alpha-slider');
 
@@ -27,9 +28,44 @@ const barStyle = computed(() => {
 
 const thumbStyle = computed(() => {
   return {
-    width: `${context.state.thumbSize}px`
+    width: `${context.state.thumbSize}px`,
+    left: `${context.state.alphaPos.x}px`
   };
 });
+
+const instance = getCurrentInstance()!;
+
+const setValueByEvent = (ev: MouseEvent) => {
+  const el = instance.vnode.el;
+  if (!el) return;
+  const rect: DOMRect = el.getBoundingClientRect();
+  const { clientX } = ev;
+  const size = context.state.thumbSize;
+
+  let left = clientX - rect.left;
+
+  left = Math.min(left, rect.width - size / 2);
+  left = Math.max(size / 2, left);
+  const alpha = (left - size / 2) / (rect.width - size);
+
+  context.actions.setAlpha(alpha);
+  context.actions.updateAlphaPosition();
+};
+
+const handleMousedown = (ev: MouseEvent) => {
+  ev.preventDefault();
+  useDragEvent(
+    {
+      onDragMove(e) {
+        setValueByEvent(e);
+      },
+      onUp(e) {
+        setValueByEvent(e);
+      }
+    },
+    ev
+  );
+};
 </script>
 
 <style lang="postcss"></style>

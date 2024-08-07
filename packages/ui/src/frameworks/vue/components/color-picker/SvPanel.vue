@@ -1,5 +1,5 @@
 <template>
-  <div :class="bem.b()" :style="panelStyle">
+  <div :class="bem.b()" :style="panelStyle" @mousedown="handleMousedown">
     <div :class="bem.e('white')"></div>
     <div :class="bem.e('black')"></div>
     <div :class="bem.e('cursor')" :style="cursorStyle"></div>
@@ -9,8 +9,9 @@
 <script setup lang="ts">
 import { useNamespace } from '../../../../hooks/useNameSpace';
 import { useColorPickerContext } from './color-picker';
-import { computed } from 'vue';
+import { computed, getCurrentInstance } from 'vue';
 import { hsvToRgb } from './color-utils';
+import { useDragEvent } from '@stom/shared';
 
 const bem = useNamespace('color-svpanel');
 
@@ -33,6 +34,43 @@ const cursorStyle = computed(() => {
     top: context.state.svPos.y + 'px'
   };
 });
+
+const instance = getCurrentInstance()!;
+
+const setValueByEvent = (ev: MouseEvent) => {
+  const el = instance.vnode.el;
+  if (!el) return;
+  const rect: DOMRect = el.getBoundingClientRect();
+  const { clientY, clientX } = ev;
+
+  let left = clientX - rect.left;
+  let top = clientY - rect.top;
+  left = Math.max(0, left);
+  left = Math.min(left, rect.width);
+
+  top = Math.max(0, top);
+  top = Math.min(top, rect.height);
+  const saturation = left / rect.width;
+  const value = 1 - top / rect.height;
+
+  context.actions.setSV(saturation, value);
+  context.actions.updateSVPosition();
+};
+
+const handleMousedown = (ev: MouseEvent) => {
+  ev.preventDefault();
+  useDragEvent(
+    {
+      onDragMove(e) {
+        setValueByEvent(e);
+      },
+      onUp(e) {
+        setValueByEvent(e);
+      }
+    },
+    ev
+  );
+};
 </script>
 
 <style lang="postcss"></style>

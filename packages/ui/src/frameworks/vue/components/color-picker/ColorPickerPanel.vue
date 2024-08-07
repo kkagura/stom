@@ -7,20 +7,37 @@
           <HueSlider></HueSlider>
         </div>
         <AlphaSlider></AlphaSlider>
+        <div :class="bem.e('btns')">
+          <Input v-model="inputValue" @blur="handleBlur"></Input>
+          <Button @click="handleOk">确认</Button>
+        </div>
       </div>
     </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue';
+import { computed, ref, nextTick, watch } from 'vue';
 import { useNamespace } from '../../../../hooks/useNameSpace';
 import SvPanel from './SvPanel.vue';
 import HueSlider from './HueSlider.vue';
 import AlphaSlider from './AlphaSlider.vue';
+import Input from '../input/Input.vue';
+import Button from '../button/Button.vue';
+import { useColorPickerContext } from './color-picker';
 
 const bem = useNamespace('color-panel');
 
+const props = defineProps({
+  enableAlpha: {
+    type: Boolean,
+    default: true
+  }
+});
+
+const emit = defineEmits<{ (e: 'ok', value: string) }>();
+
+const context = useColorPickerContext();
 const visible = ref(false);
 const left = ref(0);
 const top = ref(0);
@@ -63,9 +80,37 @@ const openOnLeft = (triggerRect: DOMRect) => {
   opacity.value = 1;
 };
 
+const inputValue = ref('');
+watch(
+  [() => context.state.rgba, () => context.state.hsv],
+  () => {
+    if (props.enableAlpha) {
+      const { r, g, b, a } = context.state.rgba;
+      inputValue.value = `rgba(${r}, ${g}, ${b}, ${a})`;
+    } else {
+      inputValue.value = context.state.hex;
+    }
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+);
+
+const handleBlur = () => {
+  context.actions.setValue(inputValue.value);
+};
+
+const handleOk = () => {
+  emit('ok', inputValue.value);
+};
+
+const getPanelDom = () => panelRef.value;
+
 defineExpose({
   open,
-  close
+  close,
+  getPanelDom
 });
 </script>
 
