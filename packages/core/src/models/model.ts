@@ -1,5 +1,5 @@
 import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle, invertMatrix, multiplyMatrix } from '@stom/geo';
-import { EventEmitter, TextStyle, cloneDeep, fillText, genId } from '@stom/shared';
+import { EventEmitter, TextStyle, cloneDeep, fillText, genId, isEqual } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { CommonEvents } from './common-events';
@@ -28,17 +28,17 @@ export interface ModelClass {
   new (...args: any[]): Model;
 }
 
-interface Events<Attrs extends Record<string, any> = any> {
+interface Events {
   [CommonEvents.change]: () => void;
   [CommonEvents.rectChange]: () => void;
   [ModelEvents.mouseIn]: (e: MouseEvent) => void;
   [ModelEvents.mouseOut]: (e: MouseEvent) => void;
   [ModelEvents.selected]: () => void;
   [ModelEvents.unselected]: () => void;
-  [ModelEvents.ATTR_CHANGE](payload: { property: keyof Attrs; value: Attrs[keyof Attrs] }): void;
+  [ModelEvents.ATTR_CHANGE](payload: { property: string; newValue: any; oldValue: any }): void;
 }
 
-export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events<Attrs>> {
+export abstract class Model<Attrs extends Record<string, any> = any> extends EventEmitter<Events> {
   abstract attrs: Attrs;
   static CATEGORY: string;
   rect: IRect = {
@@ -287,20 +287,40 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
 
   updateControlPosition(control: Control) {}
 
-  setAttr<K extends keyof Attrs>(attr: K, value: Attrs[K], force = false) {
-    const oldVal = this.attrs[attr];
-    if (oldVal !== value || force) {
-      this.attrs[attr] = value;
-      this.emit(ModelEvents.ATTR_CHANGE, {
-        property: attr,
-        value
-      });
-      this.emit(CommonEvents.change);
+  setAttr(attr: string, value: any) {
+    const oldVal = this.getAttr(attr);
+    if (isEqual(oldVal, value)) {
+      return;
     }
+    const paths = attr.split('.');
+    let res: any = this.attrs;
+    for (let i = 0; i < paths.length - 1; i++) {
+      if (!res) {
+        return;
+      }
+      res = res[paths[i]];
+    }
+    res && (res[paths[paths.length - 1]] = value);
+
+    this.emit(ModelEvents.ATTR_CHANGE, {
+      property: attr,
+      newValue: value,
+      oldValue: oldVal
+    });
+    this.emit(CommonEvents.change);
   }
 
-  getAttr<K extends keyof Attrs>(attr: K) {
-    return this.attrs[attr];
+  getAttr(attr: string) {
+    const paths = attr.split('.');
+    let res: any = this.attrs;
+    for (let i = 0; i < paths.length; i++) {
+      if (!res) {
+        return;
+      }
+      res = res[paths[i]];
+    }
+    console.log(attr, res);
+    return res;
   }
 
   toJson(): ModelJson<Attrs> {
