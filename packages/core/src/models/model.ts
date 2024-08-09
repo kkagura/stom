@@ -1,5 +1,19 @@
-import { IBox, IMatrixArr, IPoint, IRect, ISize, Matrix, boxToRect, calcRectBbox, getTransformAngle, invertMatrix, multiplyMatrix } from '@stom/geo';
-import { EventEmitter, TextStyle, cloneDeep, fillText, genId, isEqual } from '@stom/shared';
+import {
+  IBox,
+  IMatrixArr,
+  IPoint,
+  IRect,
+  ISize,
+  Matrix,
+  boxToRect,
+  calcRectBbox,
+  degreesToRadians,
+  getTransformAngle,
+  invertMatrix,
+  multiplyMatrix,
+  radiansToDegrees
+} from '@stom/geo';
+import { EventEmitter, TextStyle, cloneDeep, fillText, genId, isEqual, toInt } from '@stom/shared';
 import { Editor } from '../editor';
 import { Control } from './control';
 import { CommonEvents } from './common-events';
@@ -259,7 +273,28 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     return getTransformAngle(this.getTransform());
   }
 
-  setRotate(dRotation: number, originTf: IMatrixArr, center: IPoint) {
+  setRotate(rotation: number, center: IPoint = this.getCenterPosition()) {
+    const rotate = this.getRotate();
+    const delta = rotation - rotate;
+    if (delta === 0) return;
+    const { x, y } = this.getPosition();
+    const rotateMatrix = new Matrix().translate(x, y).translate(-center.x, -center.y).rotate(delta).translate(-x, -y).translate(center.x, center.y);
+    const newTf = rotateMatrix.append(new Matrix(...this.getTransform())).getArray();
+
+    this.setTransform(newTf);
+  }
+
+  getRotateDeg() {
+    const deg = radiansToDegrees(this.getRotate());
+    return toInt(deg);
+  }
+
+  setRotateDeg(deg: number) {
+    deg = toInt(deg);
+    this.setRotate(degreesToRadians(deg));
+  }
+
+  dRotate(dRotation: number, originTf: IMatrixArr, center: IPoint) {
     const { x, y } = this.getPosition();
     const rotateMatrix = new Matrix()
       .translate(x, y)
@@ -319,7 +354,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       }
       res = res[paths[i]];
     }
-    console.log(attr, res);
     return res;
   }
 

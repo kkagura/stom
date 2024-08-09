@@ -6,6 +6,7 @@ export interface PropertySchema {
   key?: string;
   keyType?: 'attr' | 'base';
   component: any;
+  componentAttrs?: Record<string, any>;
   getter?(model: Model): void;
   setter?(model: Model, value: any): void;
   watch?: string;

@@ -32,3 +32,11 @@ export const getTransformAngle = (transform: IMatrixArr, angleBase = { x: 0, y: 
   const angleVec = tf.apply(angleBase);
   return getSweepAngle(angleBase, angleVec);
 };
+
+export const radiansToDegrees = (radians: number): number => {
+  return radians * (180 / Math.PI);
+};
+
+export const degreesToRadians = (degrees: number): number => {
+  return degrees * (Math.PI / 180);
+};

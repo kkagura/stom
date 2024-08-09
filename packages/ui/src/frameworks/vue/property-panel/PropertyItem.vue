@@ -3,7 +3,7 @@
     <div v-if="schema.label" :class="bem.e('label')">{{ schema.label }}</div>
     <div :class="bem.e('content')">
       <template v-if="comp">
-        <component :model-value="vModel" @update:model-value="handleUpdate" :is="comp"></component>
+        <component v-bind="compAttrs" :model-value="vModel" @update:model-value="handleUpdate" :is="comp"></component>
       </template>
     </div>
   </div>
@@ -19,6 +19,7 @@ import { Model } from '@stom/core';
 import { useStomStore } from '../store';
 import Size from '../components/size/Size.vue';
 import ColorPicker from '../components/color-picker/ColorPicker.vue';
+import IntInput from '../components/int-input/IntInput.vue';
 
 const bem = useNamespace('property-item');
 
@@ -32,7 +33,8 @@ const props = defineProps({
 const componentMap: Record<string, any> = {
   [Position.name!]: Position,
   [Size.name!]: Size,
-  [ColorPicker.name!]: ColorPicker
+  [ColorPicker.name!]: ColorPicker,
+  [IntInput.name!]: IntInput
 };
 
 const comp = computed(() => {
@@ -42,11 +44,13 @@ const comp = computed(() => {
   return props.schema.component;
 });
 
+const compAttrs = computed(() => props.schema.componentAttrs || {});
+
 const currentModel = useCurrentModel();
 const store = useStomStore();
 
 const getter = () => {
-  const model = currentModel.value!;
+  const model: any = currentModel.value!;
   if (props.schema.getter) {
     return props.schema.getter(model);
   }
@@ -62,7 +66,7 @@ const getter = () => {
 const vModel = ref(getter());
 
 const setValue = (val: any) => {
-  const model = currentModel.value!;
+  const model: any = currentModel.value!;
   if (props.schema.setter) {
     props.schema.setter(model, val);
   } else if (props.schema.keyType === 'attr') {

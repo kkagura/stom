@@ -9,3 +9,7 @@ export const toNumber = (value: any): number => {
   value = Number(value);
   return isNaN(value) ? 0 : value;
 };
+
+export const toInt = (value: any): number => {
+  return Math.round(toNumber(value)) | 0;
+};

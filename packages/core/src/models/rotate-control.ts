@@ -1,4 +1,4 @@
-import { IMatrixArr, IRect, Matrix, getSweepAngle, isPointInRect } from '@stom/geo';
+import { IMatrixArr, IRect, Matrix, getSweepAngle, isPointInRect, radiansToDegrees } from '@stom/geo';
 import { Control } from './control';
 import { Editor } from '../editor';
 import { SelectionManager } from '../selection-manager';
@@ -61,7 +61,7 @@ export class RotateControl extends Control<SelectionManager> {
           const dRotation = currRotation - startRotation;
 
           selectionList.forEach(el => {
-            el.setRotate(dRotation, originTransformMap.get(el.id)!, {
+            el.dRotate(dRotation, originTransformMap.get(el.id)!, {
               x: cxInSelectedElementsBBox,
               y: cyInSelectedElementsBBox
             });
