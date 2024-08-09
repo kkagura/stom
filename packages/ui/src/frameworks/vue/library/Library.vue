@@ -38,7 +38,7 @@ defineProps({
   }
 });
 
-const iconMap = {
+const iconMap: any = {
   rect: Rect,
   terminator: Terminator,
   diamond: Diamond,
@@ -59,6 +59,7 @@ const moveContext = reactive({
 });
 const HALF_MOVE_SIZE = 20;
 const handleMousedown = async (e: MouseEvent, category: string) => {
+  e.preventDefault();
   moveContext.visible = true;
   moveContext.currentCategory = category;
   moveContext.left = e.pageX - HALF_MOVE_SIZE;
