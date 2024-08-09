@@ -6,7 +6,7 @@ export function getRgba(color: string) {
     canvas.height = 1;
     canvas.style.width = '1px';
     canvas.style.height = '1px';
-    ctx = canvas.getContext('2d')!;
+    ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   }
   ctx.clearRect(0, 0, 1, 1);
   ctx.beginPath();
