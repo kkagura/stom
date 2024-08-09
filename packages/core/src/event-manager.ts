@@ -223,7 +223,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   handleMouseWheel = (e: WheelEvent) => {
     e.preventDefault();
     if (e.ctrlKey || e.metaKey) {
-      const point = { x: e.offsetX, y: e.offsetY };
+      const point = this.editor.viewportManager.getCursorViewPoint(e);
       if (e.deltaY > 0) {
         this.editor.viewportManager.zoomIn(point);
       } else {

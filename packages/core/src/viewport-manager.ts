@@ -29,13 +29,13 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
     return this.zoom;
   }
 
-  zoomOut(point: IPoint) {
+  zoomOut(viewPt: IPoint) {
     const zoom = this.zoom;
     let newZoom = zoom + ViewportManager.ZOOM_STEP;
     newZoom = Math.min(newZoom, ViewportManager.MAX_ZOOM);
     if (newZoom !== zoom) {
-      const { x: viewX, y: viewY } = point;
-      const { x: sceneX, y: sceneY } = this.getScenePoint(point);
+      const { x: viewX, y: viewY } = viewPt;
+      const { x: sceneX, y: sceneY } = this.getScenePoint(viewPt);
       const newX = sceneX - viewX / newZoom;
       const newY = sceneY - viewY / newZoom;
       this.x = newX;
@@ -47,13 +47,13 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
     }
   }
 
-  zoomIn(point: IPoint) {
+  zoomIn(viewPt: IPoint) {
     const zoom = this.zoom;
     let newZoom = zoom - ViewportManager.ZOOM_STEP;
     newZoom = Math.max(newZoom, ViewportManager.MIN_ZOOM);
     if (newZoom !== zoom) {
-      const { x: viewX, y: viewY } = point;
-      const { x: sceneX, y: sceneY } = this.getScenePoint(point);
+      const { x: viewX, y: viewY } = viewPt;
+      const { x: sceneX, y: sceneY } = this.getScenePoint(viewPt);
       const newX = sceneX - viewX / newZoom;
       const newY = sceneY - viewY / newZoom;
       this.x = newX;
@@ -94,12 +94,20 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
     };
   }
 
-  getCursorViewPoint(e: MouseEvent) {
-    return { x: e.offsetX, y: e.offsetY };
+  getCursorViewPoint(e: MouseEvent, domRect?: DOMRect) {
+    // getBoundingClientRect方法性能不太好，提供一个参数让调用方可以自行获取domRect然后缓存下来
+    // 避免频繁调用
+    if (!domRect) {
+      domRect = this.editor.container.getBoundingClientRect();
+    }
+    return {
+      x: e.clientX - domRect.left,
+      y: e.clientY - domRect.top
+    };
   }
 
-  getCursorScenePoint(e: MouseEvent) {
-    const viewPoint = this.getCursorViewPoint(e);
+  getCursorScenePoint(e: MouseEvent, domRect?: DOMRect) {
+    const viewPoint = this.getCursorViewPoint(e, domRect);
     return this.getScenePoint(viewPoint);
   }
 

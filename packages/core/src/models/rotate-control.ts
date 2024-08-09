@@ -29,7 +29,7 @@ export class RotateControl extends Control<SelectionManager> {
       x: x + width / 2,
       y: y + height / 2
     };
-    const mousePoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
+    const mousePoint = editor.viewportManager.getCursorScenePoint(e);
     let startRotation = getSweepAngle(
       { x: 0, y: -1 },
       {
@@ -48,7 +48,7 @@ export class RotateControl extends Control<SelectionManager> {
           this.setIsActive(true);
         },
         onDragMove: e => {
-          const lastPoint = editor.viewportManager.getScenePoint({ x: e.offsetX, y: e.offsetY });
+          const lastPoint = editor.viewportManager.getCursorScenePoint(e);
           const { x: cxInSelectedElementsBBox, y: cyInSelectedElementsBBox } = selectionBoxCenter;
 
           const currRotation = getSweepAngle(

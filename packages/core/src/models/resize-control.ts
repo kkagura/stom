@@ -68,7 +68,7 @@ export class ResizeControl extends Control<SelectionManager> {
     });
     let { x, y, width, height } = selectionManager.getBoundingRect();
     const startSelectedBoxTf = new Matrix().translate(x, y);
-    let lastPoint = { x: e.offsetX, y: e.offsetY };
+    let lastPoint = editor.viewportManager.getCursorViewPoint(e);
 
     const updatedTransformMap = new Map<string, IMatrixArr>();
     const updatedRectMap = new Map<string, IRect>();
@@ -79,7 +79,7 @@ export class ResizeControl extends Control<SelectionManager> {
           this.setIsActive(true);
         },
         onDragMove: ev => {
-          const currPoint = { x: ev.offsetX, y: ev.offsetY };
+          const currPoint = editor.viewportManager.getCursorViewPoint(ev);
           if (currPoint.x === lastPoint.x && currPoint.y === lastPoint.y) return;
           const gloalPt = editor.viewportManager.getCursorScenePoint(ev);
           lastPoint = currPoint;
