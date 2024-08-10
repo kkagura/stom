@@ -23,6 +23,8 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
 
   constructor(private editor: Editor) {
     super();
+    const { width, height } = this.getViewRect();
+    this.move(width / 2, height / 2);
   }
 
   getZoom() {
@@ -31,7 +33,7 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
 
   zoomOut(viewPt: IPoint) {
     const zoom = this.zoom;
-    let newZoom = zoom + ViewportManager.ZOOM_STEP;
+    let newZoom = zoom * (1 + ViewportManager.ZOOM_STEP);
     newZoom = Math.min(newZoom, ViewportManager.MAX_ZOOM);
     if (newZoom !== zoom) {
       const { x: viewX, y: viewY } = viewPt;
@@ -49,7 +51,7 @@ export class ViewportManager extends EventEmitter<Events> implements EditorPlugi
 
   zoomIn(viewPt: IPoint) {
     const zoom = this.zoom;
-    let newZoom = zoom - ViewportManager.ZOOM_STEP;
+    let newZoom = zoom * (1 - ViewportManager.ZOOM_STEP);
     newZoom = Math.max(newZoom, ViewportManager.MIN_ZOOM);
     if (newZoom !== zoom) {
       const { x: viewX, y: viewY } = viewPt;

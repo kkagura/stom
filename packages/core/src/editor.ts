@@ -83,15 +83,15 @@ export class Editor {
     this.selectionManager = new SelectionManager(this);
     this.installPlugin(this.selectionManager);
 
+    this.grid = new Grid(this);
+    this.installPlugin(this.grid);
+
     this.viewportManager = new ViewportManager(this);
     this.installPlugin(this.viewportManager);
     this.viewportManager.on(CommonEvents.change, () => {
       this.paintAll = true;
       this.pluginsDirty = true;
     });
-
-    this.grid = new Grid(this);
-    this.installPlugin(this.grid);
 
     this.box.on(BoxEvents.modelsChange, models => {
       models.forEach(m => this.dirtyList.add(m));
@@ -100,7 +100,13 @@ export class Editor {
       models.forEach(m => this.frameRects.delete(m.id));
     });
 
+    this.ready();
+
     requestAnimationFrame(this.repaint);
+  }
+
+  private ready() {
+    this.plugins.forEach(p => p.onReady?.());
   }
 
   private createCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
