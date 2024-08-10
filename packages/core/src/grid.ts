@@ -8,7 +8,7 @@ interface Events {
 }
 
 export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
-  private gap = 20;
+  private baseGap = 20;
 
   constructor(private editor: Editor) {
     super();
@@ -22,15 +22,26 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
     this.emit(CommonEvents.REPAINT);
   };
 
+  getGap() {
+    const zoom = this.editor.viewportManager.getZoom();
+    const steps = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+    const step = this.baseGap / zoom;
+    for (let i = 0, len = steps.length; i < len; i++) {
+      if (steps[i] >= step) return steps[i];
+    }
+    return steps[0];
+  }
+
   paintRoot(ctx: CanvasRenderingContext2D): void {
-    const gap = this.gap;
+    const gap = this.getGap();
     const { x, y, width, height } = this.editor.viewportManager.getViewRect();
     const startX = Math.ceil(x / gap) * gap;
+    const zoom = this.editor.viewportManager.getZoom();
     for (let i = startX; i <= x + width; i += gap) {
       ctx.beginPath();
       ctx.moveTo(i, y);
       ctx.lineTo(i, y + height);
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 / zoom;
       ctx.strokeStyle = i % (gap * 5) === 0 ? '#ddd' : '#eee';
       ctx.stroke();
     }
@@ -39,15 +50,14 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
       ctx.beginPath();
       ctx.moveTo(x, i);
       ctx.lineTo(x + width, i);
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 / zoom;
       ctx.strokeStyle = i % (gap * 5) === 0 ? '#ddd' : '#eee';
       ctx.stroke();
     }
   }
 
   paintTop(ctx: CanvasRenderingContext2D): void {
-    // todo: gap应该与缩放值联动？
-    const gap = this.gap;
+    const gap = this.getGap();
     const { x, y, width: viewWidth, height: viewHeight } = this.editor.viewportManager.getViewRect();
     const startX = Math.ceil(x / gap) * gap;
     const dpr = getDevicePixelRatio();
