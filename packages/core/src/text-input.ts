@@ -80,6 +80,7 @@ export class TextInput {
   }
 
   focus() {
+    // todo: 聚焦到最后一个字符
     this.inputDiv.focus();
   }
 
