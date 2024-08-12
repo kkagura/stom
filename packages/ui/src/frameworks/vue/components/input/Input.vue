@@ -1,16 +1,16 @@
 <template>
-  <div :class="[bem.b(), bem.has('prefix', hasPrefix), bem.has('suffix', hasSuffix)]">
-    <span v-if="hasPrefix" :class="bem.e('prefix')">
-      <slot name="prefix">
-        <span>{{ prefix }}</span>
+  <div :class="[bem.b(), bem.has('prepend', hasPrepend), bem.has('append', hasAppend)]">
+    <span v-if="hasPrepend" :class="bem.e('prepend')">
+      <slot name="prepend">
+        <span>{{ prepend }}</span>
       </slot>
     </span>
     <div :class="bem.e('wrapper')">
       <input :value="inputValue" type="text" :class="bem.e('inner')" @input="handleInput" @blur="handleBlur" />
     </div>
-    <span v-if="hasSuffix" :class="bem.e('suffix')">
-      <slot name="suffix">
-        <span>{{ suffix }}</span>
+    <span v-if="hasAppend" :class="bem.e('append')">
+      <slot name="append">
+        <span>{{ append }}</span>
       </slot>
     </span>
   </div>
@@ -31,11 +31,11 @@ const props = defineProps({
     type: [String, Number],
     default: ''
   },
-  prefix: {
+  prepend: {
     type: String,
     default: ''
   },
-  suffix: {
+  append: {
     type: String,
     default: ''
   },
@@ -61,12 +61,12 @@ watch(
 
 const slots = useSlots();
 
-const hasSuffix = computed(() => {
-  return !!(slots.suffix || props.suffix);
+const hasAppend = computed(() => {
+  return !!(slots.append || props.append);
 });
 
-const hasPrefix = computed(() => {
-  return !!(slots.prefix || props.prefix);
+const hasPrepend = computed(() => {
+  return !!(slots.prepend || props.prepend);
 });
 
 const handleInput = (e: Event) => {

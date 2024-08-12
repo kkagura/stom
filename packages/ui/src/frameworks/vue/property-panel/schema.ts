@@ -32,7 +32,7 @@ const baseLayoutSchema: PropertySchema[] = [
     key: 'rotateDeg',
     keyType: 'base',
     watch: CommonEvents.rectChange,
-    componentAttrs: { suffix: '°' }
+    componentAttrs: { append: '°' }
   }
 ];
 

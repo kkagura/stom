@@ -1,5 +1,5 @@
 <template>
-  <Input :prefix="prefix" :suffix="suffix" v-model="vModel" @blur="handleBlur"></Input>
+  <Input :prepend="prepend" :append="append" v-model="vModel" @blur="handleBlur"></Input>
 </template>
 
 <script setup lang="ts">
@@ -16,11 +16,11 @@ const props = defineProps({
     type: [String, Number],
     default: ''
   },
-  prefix: {
+  prepend: {
     type: String,
     default: ''
   },
-  suffix: {
+  append: {
     type: String,
     default: ''
   }

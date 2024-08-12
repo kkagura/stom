@@ -1,7 +1,7 @@
 <template>
   <div :class="[bem.b()]">
-    <Input v-model="modelValue[0]" @blur="handlerBlur" prefix="W" suffix="px"></Input>
-    <Input v-model="modelValue[1]" @blur="handlerBlur" prefix="H" suffix="px"></Input>
+    <Input v-model="modelValue[0]" @blur="handlerBlur" prepend="W" append="px"></Input>
+    <Input v-model="modelValue[1]" @blur="handlerBlur" prepend="H" append="px"></Input>
   </div>
 </template>
 
