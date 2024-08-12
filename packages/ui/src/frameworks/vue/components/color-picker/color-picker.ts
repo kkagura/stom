@@ -39,6 +39,7 @@ export interface ColorPickerActions {
   updateSVPosition(): void;
   setSV(s: number, v: number): void;
   setValue(value: string): void;
+  refreshValue(): void;
 }
 
 export interface ColorPickerContext {
@@ -120,6 +121,7 @@ export function createColorPickerContext(value: string): ColorPickerContext {
         context.state.hex = hex;
       },
       setValue(value: string) {
+        if (value === context.state.currentValue) return;
         let r = 0,
           g = 0,
           b = 0,
@@ -141,6 +143,14 @@ export function createColorPickerContext(value: string): ColorPickerContext {
         context.actions.updateHuePosition();
         context.actions.updateAlphaPosition();
         context.actions.updateSVPosition();
+      },
+      refreshValue() {
+        if (context.state.rgba.a === 1) {
+          context.state.currentValue = context.state.hex;
+        } else {
+          const { r, g, b, a } = context.state.rgba;
+          context.state.currentValue = `rgba(${r}, ${g}, ${b}, ${a})`;
+        }
       }
     }
   });

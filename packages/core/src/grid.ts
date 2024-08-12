@@ -144,10 +144,12 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
       }
     }
 
+    // 左上角的方块
     ctx.beginPath();
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, size, size);
 
+    // 边框
     ctx.beginPath();
     ctx.moveTo(0, size);
     ctx.lineTo(width, size);

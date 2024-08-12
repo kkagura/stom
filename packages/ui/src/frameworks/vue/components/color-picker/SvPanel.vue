@@ -55,6 +55,7 @@ const setValueByEvent = (ev: MouseEvent) => {
 
   context.actions.setSV(saturation, value);
   context.actions.updateSVPosition();
+  context.actions.refreshValue();
 };
 
 const handleMousedown = (ev: MouseEvent) => {

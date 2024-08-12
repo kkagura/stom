@@ -44,6 +44,7 @@ const setValueByEvent = (ev: MouseEvent) => {
 
   context.actions.setHue(hue);
   context.actions.updateHuePosition();
+  context.actions.refreshValue();
 };
 
 const handleMousedown = (ev: MouseEvent) => {

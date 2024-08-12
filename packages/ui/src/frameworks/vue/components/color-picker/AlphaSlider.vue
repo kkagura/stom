@@ -50,6 +50,7 @@ const setValueByEvent = (ev: MouseEvent) => {
 
   context.actions.setAlpha(alpha);
   context.actions.updateAlphaPosition();
+  context.actions.refreshValue();
 };
 
 const handleMousedown = (ev: MouseEvent) => {

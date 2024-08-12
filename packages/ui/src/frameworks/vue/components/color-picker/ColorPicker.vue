@@ -1,8 +1,12 @@
 <template>
-  <div :class="bem.b()">
-    <ColorPickerTrigger ref="triggerRef" @focus="handleOpen" @blur="handleBlur"></ColorPickerTrigger>
-    <ColorPickerPanel @ok="handleOk" :enableAlpha="enableAlpha" ref="panelRef"></ColorPickerPanel>
-  </div>
+  <Popper @click-out-side="handleClickOutSide" v-model:visible="visible">
+    <div :class="bem.b()">
+      <ColorPickerTrigger ref="triggerRef" @focus="handleOpen"></ColorPickerTrigger>
+    </div>
+    <template #content>
+      <ColorPickerPanel @ok="handleOk" :enableAlpha="enableAlpha" ref="panelRef"></ColorPickerPanel>
+    </template>
+  </Popper>
 </template>
 
 <script setup lang="ts">
@@ -12,6 +16,8 @@ import ColorPickerPanel from './ColorPickerPanel.vue';
 import { computed, provide, ref } from 'vue';
 import { createColorPickerContext, colorPickerContextKey } from './color-picker';
 import { findParentDom } from '@stom/shared';
+import Popper from '../popper/Popper.vue';
+import { nextTick } from 'vue';
 
 defineOptions({
   name: 'ColorPicker'
@@ -20,6 +26,8 @@ defineOptions({
 const bem = useNamespace('color');
 const panelRef = ref<InstanceType<typeof ColorPickerPanel>>();
 const triggerRef = ref<InstanceType<typeof ColorPickerTrigger>>();
+
+const visible = ref(false);
 
 const props = defineProps({
   modelValue: {
@@ -39,23 +47,15 @@ provide(colorPickerContextKey, context);
 
 const handleOpen = () => {
   context.actions.setValue(props.modelValue);
-  const triggerRect = triggerRef.value?.$el!.getBoundingClientRect();
-  panelRef.value!.open(triggerRect, 'left');
+  visible.value = true;
 };
 
-const handleBlur = (e: any) => {
-  const el = e.relatedTarget as HTMLElement;
-  if (el) {
-    const panel = findParentDom(el, el => el === panelRef.value!.getPanelDom());
-    if (panel) {
-      return;
-    }
-  }
-  panelRef.value!.close();
+const handleClickOutSide = () => {
+  emit('update:modelValue', context.state.currentValue);
 };
 
 const handleOk = (value: string) => {
   emit('update:modelValue', value);
-  panelRef.value!.close();
+  visible.value = false;
 };
 </script>

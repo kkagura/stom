@@ -78,8 +78,8 @@ const handleInput = (e: Event) => {
   emit('update:modelValue', value);
 };
 
-const handleBlur = () => {
-  emit('blur');
+const handleBlur = (e: FocusEvent) => {
+  emit('blur', e);
 };
 </script>
 

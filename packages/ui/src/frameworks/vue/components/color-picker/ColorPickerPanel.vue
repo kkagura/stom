@@ -1,19 +1,15 @@
 <template>
-  <Teleport to="body">
-    <div v-if="visible" :class="bem.e('mask')">
-      <div ref="panelRef" :style="panelStyle" :class="bem.b()">
-        <div :class="bem.e('main')">
-          <SvPanel></SvPanel>
-          <HueSlider></HueSlider>
-        </div>
-        <AlphaSlider></AlphaSlider>
-        <div :class="bem.e('btns')">
-          <Input v-model="inputValue" @blur="handleBlur"></Input>
-          <Button @click="handleOk">确认</Button>
-        </div>
-      </div>
+  <div ref="panelRef" :class="bem.b()">
+    <div :class="bem.e('main')">
+      <SvPanel></SvPanel>
+      <HueSlider></HueSlider>
     </div>
-  </Teleport>
+    <AlphaSlider></AlphaSlider>
+    <div :class="bem.e('btns')">
+      <Input v-model="inputValue" @blur="handleBlur"></Input>
+      <Button @click="handleOk">确认</Button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -38,47 +34,8 @@ const props = defineProps({
 const emit = defineEmits<{ (e: 'ok', value: string): void }>();
 
 const context = useColorPickerContext();
-const visible = ref(false);
-const left = ref(0);
-const top = ref(0);
-const opacity = ref(0);
-const panelStyle = computed(() => {
-  return { left: left.value + 'px', top: top.value + 'px', opacity: opacity.value };
-});
-
-const open = async (triggerRect: DOMRect, position: 'left' | 'right' | 'bottom' | 'top') => {
-  // todo: 判断边界
-  opacity.value = 0;
-  visible.value = true;
-  await nextTick();
-  // todo: 其它方向
-  if (position === 'left') {
-    openOnLeft(triggerRect);
-  }
-};
-
-const close = async () => {
-  opacity.value = 0;
-  visible.value = false;
-};
 
 const panelRef = ref<HTMLElement>();
-
-const openOnLeft = (triggerRect: DOMRect) => {
-  const { width, height } = panelRef.value!.getBoundingClientRect();
-  let t = triggerRect.top + triggerRect.height / 2 - height / 2;
-  if (t < 0) {
-    t = 10;
-  }
-
-  let l = triggerRect.left - width - 10;
-  if (l < 0) {
-    l = 10;
-  }
-  top.value = t;
-  left.value = l;
-  opacity.value = 1;
-};
 
 const inputValue = ref('');
 watch(
@@ -97,7 +54,7 @@ watch(
   }
 );
 
-const handleBlur = () => {
+const handleBlur = (e: FocusEvent) => {
   context.actions.setValue(inputValue.value);
 };
 
@@ -108,8 +65,6 @@ const handleOk = () => {
 const getPanelDom = () => panelRef.value;
 
 defineExpose({
-  open,
-  close,
   getPanelDom
 });
 </script>
