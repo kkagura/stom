@@ -10,6 +10,9 @@ interface Events {
 export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
   private baseGap = 20;
 
+  private isPaintGrid = true;
+  private isPaintRuler = true;
+
   constructor(private editor: Editor) {
     super();
   }
@@ -32,7 +35,12 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
     return steps[0];
   }
 
+  /**
+   * 绘制网格
+   * @param ctx
+   */
   paintRoot(ctx: CanvasRenderingContext2D): void {
+    if (!this.isPaintGrid) return;
     const gap = this.getGap();
     const { x, y, width, height } = this.editor.viewportManager.getViewRect();
     const startX = Math.ceil(x / gap) * gap;
@@ -56,36 +64,36 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
     }
   }
 
+  /**
+   * 绘制刻度尺
+   * @param ctx
+   */
   paintTop(ctx: CanvasRenderingContext2D): void {
+    if (!this.isPaintRuler) return;
     const gap = this.getGap();
     const { x, y, width: viewWidth, height: viewHeight } = this.editor.viewportManager.getViewRect();
-    const startX = Math.ceil(x / gap) * gap;
     const dpr = getDevicePixelRatio();
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
-    const size = 40 / dpr;
-    const shortLength = 8 / dpr;
-    const longLength = 10 / dpr;
+    const size = 20;
+    const shortLength = 4;
+    const longLength = 5;
 
     const width = this.editor.mainCanvas.width;
     const height = this.editor.mainCanvas.height;
 
+    // 填充背景
     ctx.beginPath();
     ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, width * dpr, size);
+    ctx.fillRect(0, 0, width, size);
 
     ctx.beginPath();
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, size, height);
 
-    ctx.beginPath();
-    ctx.moveTo(0, size);
-    ctx.lineTo(width, size);
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
+    // 刻度以及文本
+    const startX = Math.ceil(x / gap) * gap;
     for (let i = startX; i <= x + viewWidth; i += gap) {
       ctx.beginPath();
       const p1 = this.editor.viewportManager.getViewPoint({ x: i, y });
@@ -107,13 +115,6 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
       }
     }
 
-    ctx.beginPath();
-    ctx.moveTo(size, 0);
-    ctx.lineTo(size, height);
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
     const startY = Math.ceil(y / gap) * gap;
     for (let i = startY; i <= y + viewHeight; i += gap) {
       ctx.beginPath();
@@ -121,6 +122,7 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
       const isBigGap = i % (gap * 5) === 0;
       ctx.moveTo(p1.x + size, p1.y);
       ctx.lineTo(p1.x + size - (isBigGap ? longLength : shortLength), p1.y);
+      // todo: 是否需要绘制小刻度?
       ctx.strokeStyle = isBigGap ? '#666' : 'transparent';
       ctx.stroke();
       if (isBigGap) {
@@ -145,6 +147,20 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
     ctx.beginPath();
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, size, size);
+
+    ctx.beginPath();
+    ctx.moveTo(0, size);
+    ctx.lineTo(width, size);
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(size, height);
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
     ctx.restore();
   }
