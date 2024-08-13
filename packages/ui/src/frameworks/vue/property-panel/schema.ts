@@ -189,5 +189,44 @@ export const schemaMap: Record<string, ModelSchema> = {
   rect: rectSchema,
   terminator: terminatorSchema,
   ellipse: ellipseSchema,
-  diamond: diamondSchema
+  diamond: diamondSchema,
+  link: {
+    name: '连线',
+    propertyGroups: [
+      {
+        name: '样式',
+        properties: [
+          {
+            label: '线条颜色',
+            component: 'ColorPicker',
+            key: 'lineColor',
+            keyType: 'attr',
+            watch: ModelEvents.ATTR_CHANGE
+          },
+          {
+            label: '线条宽度',
+            component: 'IntInput',
+            key: 'lineWidth',
+            keyType: 'attr',
+            watch: ModelEvents.ATTR_CHANGE
+          },
+          {
+            label: '线条类型',
+            component: 'Select',
+            key: 'lineStyle',
+            keyType: 'attr',
+            watch: ModelEvents.ATTR_CHANGE,
+            componentAttrs: {
+              options: [
+                { label: '实线', value: 'solid' },
+                { label: '虚线', value: 'dashed' }
+                // todo: 支持点线绘制
+                // { label: '点线', value: 'dotted' }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
 };

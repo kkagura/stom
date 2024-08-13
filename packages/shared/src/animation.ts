@@ -7,7 +7,7 @@ export interface AnimationOptions {
   onEnd?: () => void;
 }
 
-enum AnimationStatus {
+export enum AnimationStatus {
   RUNNING = 'running',
   STOPPED = 'stopped'
 }

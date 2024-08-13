@@ -14,12 +14,13 @@ import {
   isPointInRect
 } from '@stom/geo';
 import { Model, ModelClass, ModelEvents, ModelJson } from './model';
-import { Animation, createAnimation, genId } from '@stom/shared';
+import { Animation, AnimationStatus, clearDrawStyle, createAnimation, genId } from '@stom/shared';
 import { LinkControl } from './link-control';
 import { CommonEvents } from './common-events';
 import { Control } from './control';
 import { PointControl } from './point-control';
 import { Editor } from '../editor';
+import { LineStyle } from './attrs';
 
 export enum LinkModelEvents {
   PORT_CHANGE = 'port-change'
@@ -27,8 +28,8 @@ export enum LinkModelEvents {
 interface LinkModelAttrs {
   lineColor: string;
   lineWidth: number;
-  // lineStyle: string;
-  lineCap: CanvasLineCap;
+  lineStyle: LineStyle;
+  lineJoin: CanvasLineJoin;
   lineDash: number[];
   lineDashOffset: number;
 }
@@ -38,8 +39,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
   attrs: LinkModelAttrs = {
     lineColor: '#000',
     lineWidth: 2,
-    // lineStyle: 'solid',
-    lineCap: 'round',
+    lineStyle: 'dashed',
+    lineJoin: 'round',
     lineDash: [10, 10],
     lineDashOffset: -20
   };
@@ -194,7 +195,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
 
   getRenderRect(): IRect {
     const rect = this.getRect();
-    const w = PointControl.BORDER_WIDTH;
+    const w = Math.max(PointControl.BORDER_WIDTH, 2);
     const extend = this.attrs.lineWidth * 2 + w;
     return extendRect(rect, extend);
   }
@@ -243,10 +244,15 @@ export class LinkModel extends Model<LinkModelAttrs> {
     const { attrs } = this;
     const w = attrs.lineWidth;
     ctx.strokeStyle = attrs.lineColor;
-    ctx.lineCap = attrs.lineCap;
+    ctx.lineJoin = attrs.lineJoin;
     ctx.lineWidth = w;
-    ctx.setLineDash(attrs.lineDash);
-    ctx.lineDashOffset = attrs.lineDashOffset;
+    if (attrs.lineStyle === 'dashed') {
+      ctx.setLineDash(attrs.lineDash);
+      ctx.lineDashOffset = attrs.lineDashOffset;
+    } else if (attrs.lineStyle === 'dotted') {
+    } else {
+      ctx.setLineDash([]);
+    }
     ctx.stroke();
 
     // 绘制箭头等腰三角形
@@ -276,6 +282,7 @@ export class LinkModel extends Model<LinkModelAttrs> {
       ctx.save();
       ctx.translate(minX, minY);
       this.pointControls.forEach(control => {
+        clearDrawStyle(ctx);
         control.paint(ctx);
       });
       ctx.restore();
@@ -359,6 +366,23 @@ export class LinkModel extends Model<LinkModelAttrs> {
       });
     }
     this.animation.start();
+  }
+
+  stopAnimation() {
+    this.animation?.stop();
+    this.animation = null;
+  }
+
+  setAnimationState(state: boolean) {
+    if (state) {
+      this.startAnimation();
+    } else {
+      this.stopAnimation();
+    }
+  }
+
+  getAnimationState() {
+    return this.animation?.status === AnimationStatus.RUNNING;
   }
 
   dispose() {

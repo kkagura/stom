@@ -7,8 +7,8 @@ export interface PropertySchema {
   keyType?: 'attr' | 'base';
   component: any;
   componentAttrs?: Record<string, any>;
-  getter?(model: Model): void;
-  setter?(model: Model, value: any): void;
+  getter?(model: any): void;
+  setter?(model: any, value: any): void;
   watch?: string;
 }
 
