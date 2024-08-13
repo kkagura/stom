@@ -497,4 +497,20 @@ export class Editor {
     });
     this.box.addModels(models);
   }
+
+  getShowRuler() {
+    return this.grid.getShowRuler();
+  }
+
+  setShowRuler(bool: boolean) {
+    this.grid.setShowRuler(bool);
+  }
+
+  getShowGrid() {
+    return this.grid.getShowGrid();
+  }
+
+  setShowGrid(bool: boolean) {
+    this.grid.setShowGrid(bool);
+  }
 }

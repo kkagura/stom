@@ -7,6 +7,7 @@ import './components/position/position.postcss';
 import './components/size/size.postcss';
 import './components/select/select.postcss';
 import './components/button/button.postcss';
+import './components/switch/switch.postcss';
 import './components/color-picker/color-picker.postcss';
 import './library/library.postcss';
 import './property-panel/property-panel.postcss';

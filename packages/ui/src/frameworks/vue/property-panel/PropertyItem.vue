@@ -21,6 +21,7 @@ import Size from '../components/size/Size.vue';
 import ColorPicker from '../components/color-picker/ColorPicker.vue';
 import IntInput from '../components/int-input/IntInput.vue';
 import Select from '../components/select/Select.vue';
+import Switch from '../components/switch/Switch.vue';
 
 const bem = useNamespace('property-item');
 
@@ -36,7 +37,8 @@ const componentMap: Record<string, any> = {
   [Size.name!]: Size,
   [ColorPicker.name!]: ColorPicker,
   [IntInput.name!]: IntInput,
-  [Select.name!]: Select
+  [Select.name!]: Select,
+  [Switch.name!]: Switch
 };
 
 const comp = computed(() => {
@@ -108,7 +110,9 @@ if (props.schema.watch) {
 }
 
 onBeforeUnmount(() => {
-  currentModel.value!.off(props.schema.watch as any, handleWatch);
+  if (props.schema.watch) {
+    currentModel.value!.off(props.schema.watch as any, handleWatch);
+  }
 });
 </script>
 

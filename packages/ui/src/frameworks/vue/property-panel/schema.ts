@@ -242,10 +242,34 @@ export const linkSchema: ModelSchema = {
   ]
 };
 
+export const sceneSchema: ModelSchema = {
+  name: '场景',
+  propertyGroups: [
+    {
+      name: '场景',
+      properties: [
+        {
+          label: '刻度尺',
+          component: 'Switch',
+          key: 'showRuler',
+          keyType: 'base'
+        },
+        {
+          label: '网格线',
+          component: 'Switch',
+          key: 'showGrid',
+          keyType: 'base'
+        }
+      ]
+    }
+  ]
+};
+
 export const schemaMap: Record<string, ModelSchema> = {
   rect: rectSchema,
   terminator: terminatorSchema,
   ellipse: ellipseSchema,
   diamond: diamondSchema,
-  link: linkSchema
+  link: linkSchema,
+  scene: sceneSchema
 };

@@ -10,8 +10,8 @@ interface Events {
 export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
   private baseGap = 20;
 
-  private isPaintGrid = true;
-  private isPaintRuler = true;
+  private showGrid = true;
+  private showRuler = true;
 
   constructor(private editor: Editor) {
     super();
@@ -40,7 +40,7 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
    * @param ctx
    */
   paintRoot(ctx: CanvasRenderingContext2D): void {
-    if (!this.isPaintGrid) return;
+    if (!this.showGrid) return;
     const gap = this.getGap();
     const { x, y, width, height } = this.editor.viewportManager.getViewRect();
     const startX = Math.ceil(x / gap) * gap;
@@ -69,7 +69,7 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
    * @param ctx
    */
   paintTop(ctx: CanvasRenderingContext2D): void {
-    if (!this.isPaintRuler) return;
+    if (!this.showRuler) return;
     const gap = this.getGap();
     const { x, y, width: viewWidth, height: viewHeight } = this.editor.viewportManager.getViewRect();
     const dpr = getDevicePixelRatio();
@@ -165,6 +165,26 @@ export class Grid extends EventEmitter<Events> implements EditorPlugin<Events> {
     ctx.stroke();
 
     ctx.restore();
+  }
+
+  getShowRuler() {
+    return this.showRuler;
+  }
+
+  setShowRuler(bool: boolean) {
+    if (this.showRuler === bool) return;
+    this.showRuler = bool;
+    this.repaint();
+  }
+
+  getShowGrid() {
+    return this.showGrid;
+  }
+
+  setShowGrid(bool: boolean) {
+    if (this.showGrid === bool) return;
+    this.showGrid = bool;
+    this.repaint();
   }
 
   dispose() {
