@@ -2,7 +2,7 @@ import { Direction, IRect, Matrix, extendRect, isPointInEllipse, isPointInRect, 
 import { BorderAttr } from './attrs';
 import { Model, ModelEvents } from './model';
 import { Editor } from '../editor';
-import { clearDrawStyle, genId } from '@stom/shared';
+import { clearDrawStyle, genId, TextStyle } from '@stom/shared';
 import { Control } from './control';
 import { LinkControl } from './link-control';
 
@@ -10,6 +10,10 @@ export interface EllipseModelAttrs {
   border: BorderAttr | null;
   fill: boolean;
   fillColor: string;
+  content: {
+    text: string;
+    style: TextStyle;
+  };
 }
 
 export class EllipseModel extends Model<EllipseModelAttrs> {
@@ -17,7 +21,16 @@ export class EllipseModel extends Model<EllipseModelAttrs> {
   attrs: EllipseModelAttrs = {
     border: { width: 2, color: '#000', style: 'solid' },
     fill: true,
-    fillColor: '#fff'
+    fillColor: '#fff',
+    content: {
+      text: '',
+      style: {
+        color: '#000',
+        fontSize: 12,
+        lineHeight: 1.5,
+        fontFamily: 'Arial'
+      }
+    }
   };
 
   rect: IRect = {

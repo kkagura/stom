@@ -69,16 +69,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   private isHovered = false;
   private isSelected = false;
   private activeControl: Control | null = null;
-  // todo: 富文本？
-  private content: { text: string; style: TextStyle } = {
-    text: '',
-    style: {
-      color: '#000',
-      fontSize: 12,
-      lineHeight: 1.5,
-      fontFamily: 'Arial'
-    }
-  };
 
   private textVisible: boolean = true;
 
@@ -364,8 +354,7 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
       attrs: this.attrs,
       rect: this.rect,
       transform: this.transform,
-      layerId: this.layerId,
-      content: this.content
+      layerId: this.layerId
     };
     return cloneDeep(obj);
   }
@@ -379,7 +368,6 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
     instance.setSize(json.rect.width, json.rect.height);
     instance.transform = json.transform;
     instance.setLayerId(json.layerId);
-    json.content && instance.setContent(json.content);
     return instance;
   }
 
@@ -388,33 +376,27 @@ export abstract class Model<Attrs extends Record<string, any> = any> extends Eve
   }
 
   getText() {
-    return this.content.text;
+    return this.getAttr('content.text');
   }
 
   getTextStyle() {
-    return this.content.style;
+    return this.getAttr('content.style');
   }
 
   getContet() {
-    return this.content;
+    return this.getAttr('content');
   }
 
   setText(text: string) {
-    if (this.content.text === text) return;
-    this.content.text = text;
-    this.emit(CommonEvents.change);
+    this.setAttr('content.text', text);
   }
 
   setTextStyle(style: Partial<TextStyle>) {
-    this.content.style = {
-      ...this.content.style,
-      ...style
-    };
-    this.emit(CommonEvents.change);
+    this.setAttr('content.style', style);
   }
 
   setContent(content: { text: string; style: TextStyle }) {
-    this.content = content;
+    this.setAttr('content', content);
     this.emit(CommonEvents.change);
   }
 

@@ -3,13 +3,17 @@ import { BorderAttr } from './attrs';
 import { Model } from './model';
 import { Editor } from '../editor';
 import { LinkControl } from './link-control';
-import { clearDrawStyle, genId } from '@stom/shared';
+import { clearDrawStyle, genId, TextStyle } from '@stom/shared';
 import { Control } from './control';
 
 export interface TerminatorModelAttrs {
   border: BorderAttr | null;
   fill: boolean;
   fillColor: string;
+  content: {
+    text: string;
+    style: TextStyle;
+  };
 }
 
 export class TerminatorModel extends Model<TerminatorModelAttrs> {
@@ -18,7 +22,16 @@ export class TerminatorModel extends Model<TerminatorModelAttrs> {
   attrs: TerminatorModelAttrs = {
     border: { width: 2, color: '#000', style: 'solid' },
     fill: true,
-    fillColor: '#fff'
+    fillColor: '#fff',
+    content: {
+      text: '',
+      style: {
+        color: '#000',
+        fontSize: 12,
+        lineHeight: 1.5,
+        fontFamily: 'Arial'
+      }
+    }
   };
 
   rect: IRect = {

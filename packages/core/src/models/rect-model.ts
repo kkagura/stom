@@ -2,7 +2,7 @@ import { Direction, IRect, Matrix, applyMatrix, extendRect, getTransformAngle, i
 import { BorderAttr } from './attrs';
 import { Model, ModelEvents, ModelJson } from './model';
 import { Editor } from '../editor';
-import { clearDrawStyle, cloneDeep, fillText, genId } from '@stom/shared';
+import { clearDrawStyle, cloneDeep, fillText, genId, TextStyle } from '@stom/shared';
 import { Control } from './control';
 import { LinkControl } from './link-control';
 
@@ -11,6 +11,10 @@ export interface RectModelAttrs {
   fill: boolean;
   fillColor: string;
   roundGap: number;
+  content: {
+    text: string;
+    style: TextStyle;
+  };
 }
 
 export class RectModel extends Model<RectModelAttrs> {
@@ -19,7 +23,16 @@ export class RectModel extends Model<RectModelAttrs> {
     border: { width: 2, color: '#000', style: 'solid' },
     fill: true,
     fillColor: '#fff',
-    roundGap: 0
+    roundGap: 0,
+    content: {
+      text: '',
+      style: {
+        color: '#000',
+        fontSize: 12,
+        lineHeight: 1.5,
+        fontFamily: 'Arial'
+      }
+    }
   };
 
   rect: IRect = {

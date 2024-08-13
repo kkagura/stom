@@ -68,6 +68,23 @@ const baseBorderSchema: PropertySchema[] = [
   }
 ];
 
+const baseTextSchema: PropertySchema[] = [
+  {
+    label: '字体颜色',
+    component: 'ColorPicker',
+    key: 'content.style.color',
+    keyType: 'attr',
+    watch: ModelEvents.ATTR_CHANGE
+  },
+  {
+    label: '字体大小',
+    component: 'IntInput',
+    key: 'content.style.fontSize',
+    keyType: 'attr',
+    watch: ModelEvents.ATTR_CHANGE
+  }
+];
+
 export const rectSchema: ModelSchema = {
   name: '矩形',
   propertyGroups: [
@@ -100,6 +117,10 @@ export const rectSchema: ModelSchema = {
         },
         ...baseBorderSchema
       ]
+    },
+    {
+      name: '文本',
+      properties: baseTextSchema
     }
   ]
 };
@@ -127,6 +148,10 @@ export const terminatorSchema: ModelSchema = {
     {
       name: '边框',
       properties: [...baseBorderSchema]
+    },
+    {
+      name: '文本',
+      properties: baseTextSchema
     }
   ]
 };
@@ -154,6 +179,10 @@ export const ellipseSchema: ModelSchema = {
     {
       name: '边框',
       properties: [...baseBorderSchema]
+    },
+    {
+      name: '文本',
+      properties: baseTextSchema
     }
   ]
 };
@@ -181,6 +210,50 @@ export const diamondSchema: ModelSchema = {
     {
       name: '边框',
       properties: [...baseBorderSchema]
+    },
+    {
+      name: '文本',
+      properties: baseTextSchema
+    }
+  ]
+};
+
+export const linkSchema: ModelSchema = {
+  name: '连线',
+  propertyGroups: [
+    {
+      name: '样式',
+      properties: [
+        {
+          label: '线条颜色',
+          component: 'ColorPicker',
+          key: 'lineColor',
+          keyType: 'attr',
+          watch: ModelEvents.ATTR_CHANGE
+        },
+        {
+          label: '线条宽度',
+          component: 'IntInput',
+          key: 'lineWidth',
+          keyType: 'attr',
+          watch: ModelEvents.ATTR_CHANGE
+        },
+        {
+          label: '线条类型',
+          component: 'Select',
+          key: 'lineStyle',
+          keyType: 'attr',
+          watch: ModelEvents.ATTR_CHANGE,
+          componentAttrs: {
+            options: [
+              { label: '实线', value: 'solid' },
+              { label: '虚线', value: 'dashed' }
+              // todo: 支持点线绘制
+              // { label: '点线', value: 'dotted' }
+            ]
+          }
+        }
+      ]
     }
   ]
 };
@@ -190,43 +263,5 @@ export const schemaMap: Record<string, ModelSchema> = {
   terminator: terminatorSchema,
   ellipse: ellipseSchema,
   diamond: diamondSchema,
-  link: {
-    name: '连线',
-    propertyGroups: [
-      {
-        name: '样式',
-        properties: [
-          {
-            label: '线条颜色',
-            component: 'ColorPicker',
-            key: 'lineColor',
-            keyType: 'attr',
-            watch: ModelEvents.ATTR_CHANGE
-          },
-          {
-            label: '线条宽度',
-            component: 'IntInput',
-            key: 'lineWidth',
-            keyType: 'attr',
-            watch: ModelEvents.ATTR_CHANGE
-          },
-          {
-            label: '线条类型',
-            component: 'Select',
-            key: 'lineStyle',
-            keyType: 'attr',
-            watch: ModelEvents.ATTR_CHANGE,
-            componentAttrs: {
-              options: [
-                { label: '实线', value: 'solid' },
-                { label: '虚线', value: 'dashed' }
-                // todo: 支持点线绘制
-                // { label: '点线', value: 'dotted' }
-              ]
-            }
-          }
-        ]
-      }
-    ]
-  }
+  link: linkSchema
 };

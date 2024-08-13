@@ -62,7 +62,7 @@ const handleFocus = () => {
 
 const inputValue = ref<number | string>('');
 watch(
-  [props.modelValue, props.options],
+  [() => props.modelValue, () => props.options],
   () => {
     inputValue.value = props.options.find(el => el.value === props.modelValue)?.label || props.modelValue;
   },

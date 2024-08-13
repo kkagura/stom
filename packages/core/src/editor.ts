@@ -66,7 +66,7 @@ export class Editor {
   public alignManager = new AlignManager(this);
 
   // todo: 构建时引入
-  private version = '1.0.0';
+  private version = '1.0.1';
 
   constructor(public container: HTMLElement) {
     container.style.position = 'relative';
