@@ -29,8 +29,8 @@ export interface NormalizedPropertySchema {
   setter(model: Model, value: any): void;
 }
 
-export const currentModelKey: InjectionKey<Ref<Model | null>> = Symbol();
+export const currentModelKey: InjectionKey<Ref<any>> = Symbol();
 
-export function useCurrentModel(): Ref<Model | null> {
+export function useCurrentModel(): Ref<any> {
   return inject(currentModelKey)!;
 }

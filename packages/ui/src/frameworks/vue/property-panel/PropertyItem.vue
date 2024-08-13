@@ -68,7 +68,7 @@ const getter = () => {
 const vModel = ref(getter());
 
 const setValue = (val: any) => {
-  const model: any = currentModel.value!;
+  const model = currentModel.value!;
   if (props.schema.setter) {
     props.schema.setter(model, val);
   } else if (props.schema.keyType === 'attr') {

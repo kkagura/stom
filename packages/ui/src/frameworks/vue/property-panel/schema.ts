@@ -12,6 +12,7 @@ const baseLayoutSchema: PropertySchema[] = [
       if (!Array.isArray || value.length !== 2) return;
       model.setPosition(value[0], value[1]);
     },
+    // model和selectionManager支持监听，scene不支持
     watch: CommonEvents.rectChange
   },
   {
@@ -41,15 +42,13 @@ const baseBorderSchema: PropertySchema[] = [
     label: '边框大小',
     component: 'IntInput',
     key: 'border.width',
-    keyType: 'attr',
-    watch: ModelEvents.ATTR_CHANGE
+    keyType: 'attr'
   },
   {
     label: '边框类型',
     component: 'Select',
     key: 'border.style',
     keyType: 'attr',
-    watch: ModelEvents.ATTR_CHANGE,
     componentAttrs: {
       options: [
         { label: '实线', value: 'solid' },
@@ -63,8 +62,7 @@ const baseBorderSchema: PropertySchema[] = [
     label: '边框颜色',
     component: 'ColorPicker',
     key: 'border.color',
-    keyType: 'attr',
-    watch: ModelEvents.ATTR_CHANGE
+    keyType: 'attr'
   }
 ];
 
@@ -73,15 +71,13 @@ const baseTextSchema: PropertySchema[] = [
     label: '字体颜色',
     component: 'ColorPicker',
     key: 'content.style.color',
-    keyType: 'attr',
-    watch: ModelEvents.ATTR_CHANGE
+    keyType: 'attr'
   },
   {
     label: '字体大小',
     component: 'IntInput',
     key: 'content.style.fontSize',
-    keyType: 'attr',
-    watch: ModelEvents.ATTR_CHANGE
+    keyType: 'attr'
   }
 ];
 
@@ -99,9 +95,7 @@ export const rectSchema: ModelSchema = {
           label: '填充色',
           component: 'ColorPicker',
           key: 'fillColor',
-          keyType: 'attr',
-          // todo: 应该用fillColor监听？
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         }
       ]
     },
@@ -112,8 +106,7 @@ export const rectSchema: ModelSchema = {
           label: '圆角',
           component: 'IntInput',
           key: 'roundGap',
-          keyType: 'attr',
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         },
         ...baseBorderSchema
       ]
@@ -139,9 +132,7 @@ export const terminatorSchema: ModelSchema = {
           label: '填充色',
           component: 'ColorPicker',
           key: 'fillColor',
-          keyType: 'attr',
-          // todo: 应该用fillColor监听？
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         }
       ]
     },
@@ -170,9 +161,7 @@ export const ellipseSchema: ModelSchema = {
           label: '填充色',
           component: 'ColorPicker',
           key: 'fillColor',
-          keyType: 'attr',
-          // todo: 应该用fillColor监听？
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         }
       ]
     },
@@ -201,9 +190,7 @@ export const diamondSchema: ModelSchema = {
           label: '填充色',
           component: 'ColorPicker',
           key: 'fillColor',
-          keyType: 'attr',
-          // todo: 应该用fillColor监听？
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         }
       ]
     },
@@ -228,22 +215,19 @@ export const linkSchema: ModelSchema = {
           label: '线条颜色',
           component: 'ColorPicker',
           key: 'lineColor',
-          keyType: 'attr',
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         },
         {
           label: '线条宽度',
           component: 'IntInput',
           key: 'lineWidth',
-          keyType: 'attr',
-          watch: ModelEvents.ATTR_CHANGE
+          keyType: 'attr'
         },
         {
           label: '线条类型',
           component: 'Select',
           key: 'lineStyle',
           keyType: 'attr',
-          watch: ModelEvents.ATTR_CHANGE,
           componentAttrs: {
             options: [
               { label: '实线', value: 'solid' },
