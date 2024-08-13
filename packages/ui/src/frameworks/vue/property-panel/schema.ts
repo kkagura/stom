@@ -45,6 +45,21 @@ const baseBorderSchema: PropertySchema[] = [
     watch: ModelEvents.ATTR_CHANGE
   },
   {
+    label: '边框类型',
+    component: 'Select',
+    key: 'border.style',
+    keyType: 'attr',
+    watch: ModelEvents.ATTR_CHANGE,
+    componentAttrs: {
+      options: [
+        { label: '实线', value: 'solid' },
+        { label: '虚线', value: 'dashed' }
+        // todo: 支持点线绘制
+        // { label: '点线', value: 'dotted' }
+      ]
+    }
+  },
+  {
     label: '边框颜色',
     component: 'ColorPicker',
     key: 'border.color',

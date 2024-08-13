@@ -1,0 +1,33 @@
+.st-select {
+  .st-select__arrow {
+    cursor: default;
+    color: #dcdfe6;
+    transition: all 0.3s;
+  }
+  &.is-active {
+    .st-select__arrow {
+      transform: rotateZ(180deg);
+    }
+  }
+}
+
+.st-select__options {
+  padding: 4px 0;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  background-color: #fff;
+  .st-option {
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #333;
+    line-height: 16px;
+    padding: 4px 6px;
+    &.is-selected {
+      color: var(--st-color-primary);
+    }
+    &:hover {
+      background-color: #f5f7fa;
+    }
+  }
+}

@@ -1,12 +1,23 @@
 <template>
-  <div :class="[bem.b(), bem.has('prepend', hasPrepend), bem.has('append', hasAppend)]">
+  <div :class="[bem.b(), bem.has('prepend', hasPrepend), bem.has('append', hasAppend), bem.is('focus', isFocus), bem.is('readonly', readonly)]">
     <span v-if="hasPrepend" :class="bem.e('prepend')">
       <slot name="prepend">
         <span>{{ prepend }}</span>
       </slot>
     </span>
     <div :class="bem.e('wrapper')">
-      <input :value="inputValue" type="text" :class="bem.e('inner')" @input="handleInput" @blur="handleBlur" />
+      <input
+        :readonly="readonly"
+        :value="inputValue"
+        @focus="handleFocus"
+        type="text"
+        :class="bem.e('inner')"
+        @input="handleInput"
+        @blur="handleBlur"
+      />
+      <span v-if="slots.suffix" :class="bem.e('suffix')">
+        <slot name="suffix"> </slot>
+      </span>
     </div>
     <span v-if="hasAppend" :class="bem.e('append')">
       <slot name="append">
@@ -42,10 +53,14 @@ const props = defineProps({
   formatter: {
     type: Function,
     required: false
+  },
+  readonly: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'blur']);
+const emit = defineEmits(['update:modelValue', 'blur', 'focus']);
 
 const inputValue = ref('');
 
@@ -78,7 +93,14 @@ const handleInput = (e: Event) => {
   emit('update:modelValue', value);
 };
 
+const isFocus = ref(false);
+const handleFocus = (e: FocusEvent) => {
+  isFocus.value = true;
+  emit('focus', e);
+};
+
 const handleBlur = (e: FocusEvent) => {
+  isFocus.value = false;
   emit('blur', e);
 };
 </script>

@@ -2,7 +2,7 @@ import { Direction, IRect, Matrix, extendRect, isPointInEllipse, isPointInRect, 
 import { BorderAttr } from './attrs';
 import { Model, ModelEvents } from './model';
 import { Editor } from '../editor';
-import { genId } from '@stom/shared';
+import { clearDrawStyle, genId } from '@stom/shared';
 import { Control } from './control';
 import { LinkControl } from './link-control';
 
@@ -97,6 +97,14 @@ export class EllipseModel extends Model<EllipseModelAttrs> {
     if (attrs.border?.width) {
       ctx.strokeStyle = attrs.border.color;
       ctx.lineWidth = attrs.border.width;
+      if (attrs.border.style === 'dashed') {
+        ctx.setLineDash([10, 10]);
+      } else if (attrs.border.style === 'dotted') {
+        ctx.setLineDash([attrs.border.width / 2, attrs.border.width * 2]);
+        ctx.lineCap = 'round';
+      } else {
+        ctx.setLineDash([]);
+      }
       ctx.stroke();
     }
     this.paintText(ctx);
@@ -106,6 +114,7 @@ export class EllipseModel extends Model<EllipseModelAttrs> {
     const control = this.getActiveControl();
     if (this.getIsHovered() || control instanceof LinkControl) {
       this.linkControls.forEach(control => {
+        clearDrawStyle(ctx);
         control.paint(ctx);
       });
     }

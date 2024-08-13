@@ -3,7 +3,7 @@ import { BorderAttr } from './attrs';
 import { Model } from './model';
 import { Editor } from '../editor';
 import { LinkControl } from './link-control';
-import { genId } from '@stom/shared';
+import { clearDrawStyle, genId } from '@stom/shared';
 import { Control } from './control';
 
 export interface TerminatorModelAttrs {
@@ -91,6 +91,14 @@ export class TerminatorModel extends Model<TerminatorModelAttrs> {
     if (attrs.border?.width) {
       ctx.strokeStyle = attrs.border.color;
       ctx.lineWidth = attrs.border.width;
+      if (attrs.border.style === 'dashed') {
+        ctx.setLineDash([10, 10]);
+      } else if (attrs.border.style === 'dotted') {
+        ctx.setLineDash([attrs.border.width / 2, attrs.border.width * 2]);
+        ctx.lineCap = 'round';
+      } else {
+        ctx.setLineDash([]);
+      }
       ctx.stroke();
     }
     this.paintText(ctx);
@@ -100,6 +108,7 @@ export class TerminatorModel extends Model<TerminatorModelAttrs> {
     const control = this.getActiveControl();
     if (this.getIsHovered() || control instanceof LinkControl) {
       this.linkControls.forEach(control => {
+        clearDrawStyle(ctx);
         control.paint(ctx);
       });
     }

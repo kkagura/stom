@@ -2,7 +2,7 @@ import { Direction, IRect, Matrix, applyMatrix, extendRect, getTransformAngle, i
 import { BorderAttr } from './attrs';
 import { Model, ModelEvents, ModelJson } from './model';
 import { Editor } from '../editor';
-import { cloneDeep, fillText, genId } from '@stom/shared';
+import { clearDrawStyle, cloneDeep, fillText, genId } from '@stom/shared';
 import { Control } from './control';
 import { LinkControl } from './link-control';
 
@@ -87,6 +87,14 @@ export class RectModel extends Model<RectModelAttrs> {
     if (attrs.border?.width) {
       ctx.strokeStyle = attrs.border.color;
       ctx.lineWidth = attrs.border.width;
+      if (attrs.border.style === 'dashed') {
+        ctx.setLineDash([10, 10]);
+      } else if (attrs.border.style === 'dotted') {
+        ctx.setLineDash([attrs.border.width / 2, attrs.border.width * 2]);
+        ctx.lineCap = 'round';
+      } else {
+        ctx.setLineDash([]);
+      }
       ctx.stroke();
     }
     this.paintText(ctx);
@@ -96,6 +104,7 @@ export class RectModel extends Model<RectModelAttrs> {
     const control = this.getActiveControl();
     if (this.getIsHovered() || control instanceof LinkControl) {
       this.linkControls.forEach(control => {
+        clearDrawStyle(ctx);
         control.paint(ctx);
       });
     }

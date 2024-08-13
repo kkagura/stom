@@ -15,7 +15,7 @@ export const isPointInRoundRect = (point: IPoint, rect: IRect, cornerRadii: numb
 
   if (point.x >= x && point.y >= y && point.x <= x + width && point.y <= y + height) {
     if (point.x <= x + cornerRadii && point.y <= y + cornerRadii) {
-      return (point.x - x - cornerRadii) ** 2 + (point.y - y - cornerRadii) ** 2 <= cornerRadii[0] ** 2;
+      return (point.x - x - cornerRadii) ** 2 + (point.y - y - cornerRadii) ** 2 <= cornerRadii ** 2;
     } else if (point.x >= x + width - cornerRadii && point.y <= y + cornerRadii) {
       return (point.x - x - width + cornerRadii) ** 2 + (point.y - y - cornerRadii) ** 2 <= cornerRadii ** 2;
     } else if (point.x >= x + width - cornerRadii && point.y >= y + height - cornerRadii) {

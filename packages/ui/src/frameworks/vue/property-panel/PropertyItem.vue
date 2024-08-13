@@ -20,6 +20,7 @@ import { useStomStore } from '../store';
 import Size from '../components/size/Size.vue';
 import ColorPicker from '../components/color-picker/ColorPicker.vue';
 import IntInput from '../components/int-input/IntInput.vue';
+import Select from '../components/select/Select.vue';
 
 const bem = useNamespace('property-item');
 
@@ -34,7 +35,8 @@ const componentMap: Record<string, any> = {
   [Position.name!]: Position,
   [Size.name!]: Size,
   [ColorPicker.name!]: ColorPicker,
-  [IntInput.name!]: IntInput
+  [IntInput.name!]: IntInput,
+  [Select.name!]: Select
 };
 
 const comp = computed(() => {

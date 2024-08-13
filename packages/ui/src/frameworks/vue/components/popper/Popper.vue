@@ -32,6 +32,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
+  (e: 'beforeOpen'): void;
+  (e: 'beforeClose'): void;
   (e: 'clickOutSide'): void;
   (e: 'update:visible', value: boolean): void;
 }>();
@@ -50,10 +52,12 @@ const { update } = usePopper(referenceRef, popperRef, options);
 watch(
   () => props.visible,
   () => {
+    if (props.visible) {
+      emit('beforeOpen');
+    } else {
+      emit('beforeClose');
+    }
     update();
-  },
-  {
-    immediate: true
   }
 );
 

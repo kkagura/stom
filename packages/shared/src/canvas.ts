@@ -15,6 +15,8 @@ export function setCanvasSize(canvas: HTMLCanvasElement, width: number, height: 
 export function clearDrawStyle(ctx: CanvasRenderingContext2D) {
   ctx.setLineDash([]);
   ctx.lineDashOffset = 0;
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'miter';
 }
 
 export interface TextStyle {
