@@ -236,6 +236,12 @@ export const linkSchema: ModelSchema = {
               // { label: '点线', value: 'dotted' }
             ]
           }
+        },
+        {
+          label: '动画',
+          component: 'Switch',
+          key: 'animationState',
+          keyType: 'base'
         }
       ]
     }
