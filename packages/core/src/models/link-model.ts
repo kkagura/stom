@@ -331,17 +331,22 @@ export class LinkModel extends Model<LinkModelAttrs> {
   }
 
   move(x: number, y: number) {
+    if (x === 0 && y === 0) return;
+    let moved = false;
     if (!('paint' in this.end)) {
       this.end.x += x;
       this.end.y += y;
+      moved = true;
+    }
+    if (!('paint' in this.start)) {
+      // todo: 允许移动
+      moved = true;
+    }
+    if (moved) {
       this.findPathPoints();
       this.emit(CommonEvents.rectChange);
       this.emit(CommonEvents.change);
     }
-  }
-
-  getMovable() {
-    return !('paint' in this.end);
   }
 
   getResizeable() {

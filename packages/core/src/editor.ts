@@ -118,7 +118,8 @@ export class Editor {
       left: '0px',
       top: '0px',
       width: '100%',
-      height: '100%'
+      height: '100%',
+      outline: 'none'
     });
     this.container.appendChild(canvas);
     window.addEventListener('resize', this.resize);

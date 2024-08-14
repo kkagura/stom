@@ -1,4 +1,4 @@
-import { IRect, Matrix, getRectByPoints, isRectIntersect } from '@stom/geo';
+import { IPoint, IRect, Matrix, getRectByPoints, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor } from './editor';
 import { LinkModel, Model, ModelEvents } from './models';
@@ -28,6 +28,11 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
    */
   private mouseControl: Control | null = null;
 
+  /**
+   * 移动元素的缓存
+   */
+  private positionCache: Map<string, IPoint> | null = null;
+
   constructor(private editor: Editor) {
     super();
     this.setup();
@@ -40,6 +45,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.addEventListener('mouseleave', this.handleMouseUp);
     this.editor.topCanvas.addEventListener('wheel', this.handleMouseWheel);
     this.editor.topCanvas.addEventListener('keydown', this.handleKeydonw);
+    this.editor.topCanvas.addEventListener('keyup', this.handleKeyup);
     this.editor.topCanvas.addEventListener('dblclick', this.handleDblclick);
   }
 
@@ -49,7 +55,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     const selectionManager = this.editor.selectionManager;
     const el = this.mouseEl;
     // 反选
-    if (e.shiftKey && el) {
+    if ((e.shiftKey || e.metaKey) && el) {
       selectionManager.toggleSelection(el);
       return;
     }
@@ -81,8 +87,8 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       lastX = startX,
       lastY = startY;
 
-    const selection = selectionManager.getSelectionList();
-    const multiple = selection.length > 1;
+    const selection = selectionManager.getSelectionList().filter(el => el.getMovable());
+    if (selection.length === 1 && selection[0] instanceof LinkModel) return;
     const onMove = (ev: MouseEvent) => {
       const offsetX = ev.clientX - lastX;
       const offsetY = ev.clientY - lastY;
@@ -90,14 +96,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       lastY = ev.clientY;
       this.selectionRect = null;
       selection.forEach(m => {
-        if (m instanceof LinkModel) {
-          // todo：优化
-          if (m.getMovable() && multiple) {
-            m.move(offsetX / zoom, offsetY / zoom);
-          }
-        } else {
-          m.move(offsetX / zoom, offsetY / zoom);
-        }
+        m.move(offsetX / zoom, offsetY / zoom);
       });
     };
     const onUp = (ev: MouseEvent) => {
@@ -246,6 +245,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     this.editor.topCanvas.removeEventListener('mouseleave', this.handleMouseUp);
     this.editor.topCanvas.removeEventListener('wheel', this.handleMouseWheel);
     this.editor.topCanvas.removeEventListener('keydown', this.handleKeydonw);
+    this.editor.topCanvas.removeEventListener('keyup', this.handleKeyup);
     this.editor.topCanvas.removeEventListener('dblclick', this.handleDblclick);
   }
 
@@ -280,6 +280,65 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       }
     } else if (key === 'y' && ctrlOrMeta) {
       this.editor.actionManager.redo();
+    } else if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+      this.moveElementByKey(key);
+    }
+  };
+
+  moveElementByKey(dir: string) {
+    const gap = 5;
+    const moveMap: Record<string, [number, number]> = {
+      arrowup: [0, -gap],
+      arrowdown: [0, gap],
+      arrowleft: [-gap, 0],
+      arrowright: [gap, 0]
+    };
+    const paires = moveMap[dir];
+    if (!paires) return;
+    const [dx, dy] = paires;
+    const selection = this.editor.selectionManager.getSelectionList().filter(el => el.getMovable());
+    if (!this.positionCache) {
+      this.positionCache = new Map();
+      selection.forEach(el => {
+        this.positionCache!.set(el.id, { ...el.getPosition() });
+      });
+    }
+
+    selection.forEach(m => {
+      m.move(dx, dy);
+    });
+  }
+
+  handleKeyup = (e: KeyboardEvent) => {
+    if (this.positionCache) {
+      const selection = this.editor.selectionManager.getSelectionList().filter(el => el.getMovable());
+      const positionCache = this.positionCache;
+      this.positionCache = null;
+      const newPostionCache = new Map<string, IPoint>();
+      selection.forEach(el => {
+        newPostionCache.set(el.id, { ...el.getPosition() });
+      });
+      const action = {
+        undo() {
+          selection.forEach(el => {
+            const oldPos = positionCache.get(el.id)!;
+            const newPos = newPostionCache.get(el.id)!;
+            const dx = oldPos.x - newPos.x;
+            const dy = oldPos.y - newPos.y;
+            el.move(dx, dy);
+          });
+        },
+        redo() {
+          selection.forEach(el => {
+            const oldPos = positionCache.get(el.id)!;
+            const newPos = newPostionCache.get(el.id)!;
+            const dx = newPos.x - oldPos.x;
+            const dy = newPos.y - oldPos.y;
+            el.move(dx, dy);
+          });
+        }
+      };
+      this.editor.actionManager.push(action);
     }
   };
 
