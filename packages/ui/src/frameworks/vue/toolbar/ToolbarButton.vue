@@ -1,5 +1,10 @@
 <template>
-  <div :title="label" :class="[bem.e('button'), bem.is('disabled', !isEnable), bem.is('active', isActive)]" @click="handleClick">
+  <div
+    @mousedown="handleMousedown"
+    :title="label"
+    :class="[bem.e('button'), bem.is('disabled', !isEnable), bem.is('active', isActive)]"
+    @click="handleClick"
+  >
     <Icon>
       <component :is="currentComponent"></component>
     </Icon>
@@ -58,6 +63,13 @@ const currentComponent = props.getIcon?.(props.command.getName()) || iconMap[pro
 const isEnable = ref(props.command.isEnable());
 const isActive = ref(props.command.isActive());
 const label = props.command.getLabel();
+
+const handleMousedown = (e: MouseEvent) => {
+  if (document.activeElement?.tagName.toLowerCase() === 'canvas') {
+    // 点击工具栏的时候不让画布失去焦点
+    e.preventDefault();
+  }
+};
 
 const handleClick = () => {
   if (isEnable.value) {

@@ -55,7 +55,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     const selectionManager = this.editor.selectionManager;
     const el = this.mouseEl;
     // 反选
-    if ((e.shiftKey || e.metaKey) && el) {
+    if ((e.ctrlKey || e.metaKey) && el) {
       selectionManager.toggleSelection(el);
       return;
     }
@@ -282,6 +282,9 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       this.editor.actionManager.redo();
     } else if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
       this.moveElementByKey(key);
+    } else if (key === 'a' && ctrlOrMeta) {
+      e.preventDefault();
+      this.editor.selectionManager.selectAll();
     }
   };
 
@@ -354,8 +357,18 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       const textStyle = el.getTextStyle();
       el.setTextVisible(false);
       this.editor.textInput.show(rect, pos, tf.getArray(), text, textStyle, (text: string) => {
+        const oldText = el.getText();
         el.setText(text);
         el.setTextVisible(true);
+        const action = {
+          undo() {
+            el.setText(oldText);
+          },
+          redo() {
+            el.setText(text);
+          }
+        };
+        this.editor.actionManager.push(action);
       });
     }
   };

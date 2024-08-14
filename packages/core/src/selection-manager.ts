@@ -77,6 +77,11 @@ export class SelectionManager extends EventEmitter<Events> implements EditorPlug
     }
   }
 
+  selectAll() {
+    const models = this.editor.box.getModelList();
+    this.setSelection(models);
+  }
+
   setSelection(models: Model[]) {
     this._clearSelection();
     models.forEach(m => this._addSelection(m));
