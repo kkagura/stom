@@ -76,13 +76,20 @@ export function fillText(ctx: CanvasRenderingContext2D, rect: IRect, text: strin
   const textHeight = lines.length * lh;
   const startY = centerY - textHeight / 2;
 
-  ctx.beginPath();
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = style.color;
   lines.forEach((item, i) => {
     const x = centerX - item.width / 2;
     const y = startY + lh * i + lh / 2;
+    ctx.beginPath();
     ctx.fillText(item.text, x, y);
+    // ctx.beginPath();
+    // ctx.moveTo(centerX - item.width / 2, startY + lh * i);
+    // ctx.lineTo(centerX + item.width / 2, startY + lh * i);
+    // ctx.lineTo(centerX + item.width / 2, startY + lh * i + lh);
+    // ctx.lineTo(centerX - item.width / 2, startY + lh * i + lh);
+    // ctx.closePath();
+    // ctx.stroke();
   });
 }

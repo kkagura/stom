@@ -58,20 +58,8 @@ export class LinkModel extends Model<LinkModelAttrs> {
   private pointControls: PointControl[] = [];
 
   findPathPoints = () => {
-    const startHost = this.start.getHost();
-    const start = {
-      rect: startHost.getRect(),
-      origin: this.start.getSceneCenterPosition(),
-      direction: this.getStartDirection()
-    };
-
-    const endOrign = 'paint' in this.end ? this.end.getSceneCenterPosition() : this.end;
-
-    const end = {
-      rect: 'paint' in this.end ? this.end.getHost().getRect() : undefined,
-      origin: endOrign,
-      direction: this.getEndDirection()
-    };
+    const start = this.getStartInfo();
+    const end = this.getEndInfo();
 
     const { mapPoints, controlPoints } = createPath(start, end, 20);
     this.mapPoints = mapPoints;
@@ -158,6 +146,79 @@ export class LinkModel extends Model<LinkModelAttrs> {
     this._endDirection = endDirection;
     this.findPathPoints();
     this.emit(CommonEvents.change);
+  }
+
+  getStartInfo() {
+    const rect = this.start.getHost().getBoundingRect();
+    const direction = this.getStartDirection();
+    const center = this.start.getSceneCenterPosition();
+    let origin = center;
+    if (direction === Direction.LEFT) {
+      origin = {
+        x: rect.x,
+        y: center.y
+      };
+    } else if (direction === Direction.RIGHT) {
+      origin = {
+        x: rect.x + rect.width,
+        y: center.y
+      };
+    } else if (direction === Direction.TOP) {
+      origin = {
+        x: center.x,
+        y: rect.y
+      };
+    } else if (direction === Direction.BOTTOM) {
+      origin = {
+        x: center.x,
+        y: rect.y + rect.height
+      };
+    }
+    return {
+      rect,
+      origin,
+      direction
+    };
+  }
+
+  getEndInfo() {
+    if ('paint' in this.end) {
+      const rect = this.end.getHost().getBoundingRect();
+      const direction = this.getEndDirection();
+      const center = this.end.getSceneCenterPosition();
+      let origin = center;
+      if (direction === Direction.LEFT) {
+        origin = {
+          x: rect.x,
+          y: center.y
+        };
+      } else if (direction === Direction.RIGHT) {
+        origin = {
+          x: rect.x + rect.width,
+          y: center.y
+        };
+      } else if (direction === Direction.TOP) {
+        origin = {
+          x: center.x,
+          y: rect.y
+        };
+      } else if (direction === Direction.BOTTOM) {
+        origin = {
+          x: center.x,
+          y: rect.y + rect.height
+        };
+      }
+      return {
+        rect,
+        origin,
+        direction
+      };
+    }
+    return {
+      rect: undefined,
+      origin: this.end,
+      direction: this._endDirection
+    };
   }
 
   getStartDirection(): Direction {
