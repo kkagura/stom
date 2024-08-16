@@ -117,7 +117,8 @@ export class ResizeControl extends Control<SelectionManager> {
             });
             el.setSize(newAttrs.width, newAttrs.height);
             const [, , , , dx, dy] = newAttrs.transform;
-            el.setPosition(dx, dy);
+            const tf = el.getTransform();
+            el.setPosition(dx - tf[4], dy - tf[5]);
             updatedTransformMap.set(el.id, el.getWorldTransform());
             updatedRectMap.set(el.id, el.getRect());
           });
