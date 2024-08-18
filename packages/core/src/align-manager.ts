@@ -147,4 +147,6 @@ export class AlignManager {
     newWorldTf[5] += dy;
     model.setPosition(newWorldTf[4], newWorldTf[5]);
   }
+
+  // todo: 辅助线
 }
