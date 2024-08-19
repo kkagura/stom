@@ -63,7 +63,7 @@ export class Editor {
   // 编辑文字相关的逻辑
   public textInput = new TextInput(this);
   // 对齐相关逻辑
-  public alignManager = new AlignManager(this);
+  public alignManager: AlignManager;
 
   // todo: 构建时引入
   private version = '1.0.1';
@@ -92,6 +92,9 @@ export class Editor {
       this.paintAll = true;
       this.pluginsDirty = true;
     });
+
+    this.alignManager = new AlignManager(this);
+    this.installPlugin(this.alignManager);
 
     this.box.on(BoxEvents.modelsChange, models => {
       models.forEach(m => this.dirtyList.add(m));

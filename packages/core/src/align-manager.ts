@@ -1,7 +1,8 @@
 import { IBox, IMatrixArr, mergeBoxes } from '@stom/geo';
 import { Editor } from './editor';
-import { Model } from './models';
-import { cloneDeep } from '@stom/shared';
+import { CommonEvents, Model } from './models';
+import { cloneDeep, EventEmitter } from '@stom/shared';
+import { EditorPlugin } from './plugin';
 
 export enum AlignDir {
   TOP = 'top',
@@ -12,8 +13,14 @@ export enum AlignDir {
   HORIZONTAL_CENTER = 'horizontalCenter'
 }
 
-export class AlignManager {
-  constructor(public editor: Editor) {}
+interface Events {
+  [CommonEvents.REPAINT](): void;
+}
+
+export class AlignManager extends EventEmitter<Events> implements EditorPlugin<Events> {
+  constructor(public editor: Editor) {
+    super();
+  }
 
   align(models: Model[], alignDir: AlignDir) {
     const bboxes = models.map(item => item.getBoundingBox());
@@ -149,4 +156,11 @@ export class AlignManager {
   }
 
   // todo: 辅助线
+  paintRoot(ctx: CanvasRenderingContext2D): void {}
+
+  paintTop(ctx: CanvasRenderingContext2D): void {}
+
+  dispose() {
+    this.clear();
+  }
 }
