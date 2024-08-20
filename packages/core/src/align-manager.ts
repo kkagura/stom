@@ -1,4 +1,4 @@
-import { IBox, IMatrixArr, mergeBoxes } from '@stom/geo';
+import { calcRectBbox, getPointsBbox, getRectByPoints, IBox, IMatrixArr, IPoint, Matrix, mergeBoxes, rectToVertices } from '@stom/geo';
 import { Editor } from './editor';
 import { CommonEvents, Model } from './models';
 import { cloneDeep, EventEmitter } from '@stom/shared';
@@ -22,46 +22,45 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
     super();
   }
 
-  // todo: 修复因为重构transform导致的对齐问题
   align(models: Model[], alignDir: AlignDir) {
     const bboxes = models.map(item => item.getBoundingBox());
-    const worldTfs = models.map(item => item.getWorldTransform());
+    const positions = models.map(item => item.getPosition());
     const mixedBBox = mergeBoxes(bboxes);
 
     let changed = false;
     switch (alignDir) {
       case AlignDir.TOP:
-        changed = this.alignTop(models, mixedBBox, bboxes, worldTfs);
+        changed = this.alignTop(models, mixedBBox, bboxes);
         break;
       case AlignDir.RIGHT:
-        changed = this.alignRight(models, mixedBBox, bboxes, worldTfs);
+        changed = this.alignRight(models, mixedBBox, bboxes);
         break;
       case AlignDir.BOTTOM:
-        changed = this.alignBottom(models, mixedBBox, bboxes, worldTfs);
+        changed = this.alignBottom(models, mixedBBox, bboxes);
         break;
       case AlignDir.LEFT:
-        changed = this.alignLeft(models, mixedBBox, bboxes, worldTfs);
+        changed = this.alignLeft(models, mixedBBox, bboxes);
         break;
       case AlignDir.HORIZONTAL_CENTER:
-        changed = this.alignHorizontalCenter(models, mixedBBox, bboxes, worldTfs);
+        changed = this.alignHorizontalCenter(models, mixedBBox, bboxes);
         break;
       case AlignDir.VERTICAL_CENTER:
-        changed = this.alignVerticalCenter(models, mixedBBox, bboxes, worldTfs);
+        changed = this.alignVerticalCenter(models, mixedBBox, bboxes);
         break;
     }
     if (changed) {
-      const newWorldTfs = models.map(item => item.getWorldTransform());
+      const newPositions = models.map(item => item.getPosition());
       const action = {
         undo: () => {
           models.forEach((model, i) => {
-            const worldTf = worldTfs[i];
-            model.setPosition(worldTf[4], worldTf[5]);
+            const oldPosition = positions[i];
+            model.setPosition(oldPosition.x, oldPosition.y);
           });
         },
         redo: () => {
           models.forEach((model, i) => {
-            const newWorldTf = newWorldTfs[i];
-            model.setPosition(newWorldTf[4], newWorldTf[5]);
+            const newPosition = newPositions[i];
+            model.setPosition(newPosition.x, newPosition.y);
           });
         }
       };
@@ -69,7 +68,7 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
     }
   }
 
-  private alignTop(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignTop(models: Model[], mixedBBox: IBox, bboxes: IBox[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dy = mixedBBox.minY - bboxes[i].minY;
@@ -77,12 +76,12 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
         return;
       }
       changed = true;
-      this.updateModel(model, worldTfs[i], 0, dy);
+      this.updateModel(model, 0, dy);
     });
     return changed;
   }
 
-  private alignBottom(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignBottom(models: Model[], mixedBBox: IBox, bboxes: IBox[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dy = mixedBBox.maxY - bboxes[i].maxY;
@@ -90,12 +89,12 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
         return;
       }
       changed = true;
-      this.updateModel(model, worldTfs[i], 0, dy);
+      this.updateModel(model, 0, dy);
     });
     return changed;
   }
 
-  private alignLeft(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignLeft(models: Model[], mixedBBox: IBox, bboxes: IBox[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dx = mixedBBox.minX - bboxes[i].minX;
@@ -103,12 +102,12 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
         return;
       }
       changed = true;
-      this.updateModel(model, worldTfs[i], dx, 0);
+      this.updateModel(model, dx, 0);
     });
     return changed;
   }
 
-  private alignRight(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignRight(models: Model[], mixedBBox: IBox, bboxes: IBox[]) {
     let changed = false;
     models.forEach((model, i) => {
       const dx = mixedBBox.maxX - bboxes[i].maxX;
@@ -116,12 +115,12 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
         return;
       }
       changed = true;
-      this.updateModel(model, worldTfs[i], dx, 0);
+      this.updateModel(model, dx, 0);
     });
     return changed;
   }
 
-  private alignVerticalCenter(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignVerticalCenter(models: Model[], mixedBBox: IBox, bboxes: IBox[]) {
     let changed = false;
     const centerY = mixedBBox.minY / 2 + mixedBBox.maxY / 2;
     models.forEach((model, i) => {
@@ -130,12 +129,12 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
         return;
       }
       changed = true;
-      this.updateModel(model, worldTfs[i], 0, dy);
+      this.updateModel(model, 0, dy);
     });
     return changed;
   }
 
-  private alignHorizontalCenter(models: Model[], mixedBBox: IBox, bboxes: IBox[], worldTfs: IMatrixArr[]) {
+  private alignHorizontalCenter(models: Model[], mixedBBox: IBox, bboxes: IBox[]) {
     let changed = false;
     const centerX = mixedBBox.minX / 2 + mixedBBox.maxX / 2;
     models.forEach((model, i) => {
@@ -144,16 +143,14 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
         return;
       }
       changed = true;
-      this.updateModel(model, worldTfs[i], dx, 0);
+      this.updateModel(model, dx, 0);
     });
     return changed;
   }
 
-  private updateModel(model: Model, worldTf: IMatrixArr, dx: number, dy: number) {
-    const newWorldTf = cloneDeep(worldTf);
-    newWorldTf[4] += dx;
-    newWorldTf[5] += dy;
-    model.setPosition(newWorldTf[4], newWorldTf[5]);
+  private updateModel(model: Model, dx: number, dy: number) {
+    const oldPos = model.getPosition();
+    model.setPosition(oldPos.x + dx, oldPos.y + dy);
   }
 
   // todo: 辅助线
