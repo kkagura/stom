@@ -22,6 +22,7 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
     super();
   }
 
+  // todo: 修复因为重构transform导致的对齐问题
   align(models: Model[], alignDir: AlignDir) {
     const bboxes = models.map(item => item.getBoundingBox());
     const worldTfs = models.map(item => item.getWorldTransform());
