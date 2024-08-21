@@ -149,6 +149,7 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
   }
 
   private updateModel(model: Model, dx: number, dy: number) {
+    // 判断是否改变
     const oldPos = model.getPosition();
     model.setPosition(oldPos.x + dx, oldPos.y + dy);
   }
