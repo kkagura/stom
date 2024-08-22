@@ -7,8 +7,17 @@ import { CommonEvents } from './models/common-events';
 import { EditorPlugin } from './plugin';
 import { EventEmitter } from '@stom/shared';
 
+export enum EventManagerEvents {
+  MOVE_ELEMENTS_START = 'moveElementsStart',
+  MOVING_ELEMENTS = 'movingElements',
+  MOVE_ELEMENTS_END = 'moveElementsEnd'
+}
+
 interface Events {
   [CommonEvents.REPAINT](): void;
+  [EventManagerEvents.MOVE_ELEMENTS_END](): void;
+  [EventManagerEvents.MOVING_ELEMENTS](): void;
+  [EventManagerEvents.MOVE_ELEMENTS_START](): void;
 }
 
 export class EventManager extends EventEmitter<Events> implements EditorPlugin<Events> {
@@ -88,10 +97,17 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       lastY = startY;
 
     const selection = selectionManager.getSelectionList().filter(el => el.getMovable());
+    let started = false;
     if (selection.length === 1 && selection[0] instanceof LinkModel) return;
     const onMove = (ev: MouseEvent) => {
       const offsetX = ev.clientX - lastX;
       const offsetY = ev.clientY - lastY;
+      if (started) {
+        this.emit(EventManagerEvents.MOVING_ELEMENTS);
+      } else {
+        started = true;
+        this.emit(EventManagerEvents.MOVE_ELEMENTS_START);
+      }
       lastX = ev.clientX;
       lastY = ev.clientY;
       this.selectionRect = null;
@@ -116,6 +132,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
           }
         };
         this.editor.actionManager.push(action);
+        this.emit(EventManagerEvents.MOVE_ELEMENTS_END);
       }
 
       window.removeEventListener('mousemove', onMove);
