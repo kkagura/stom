@@ -33,6 +33,11 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   private mouseEl: Model | null = null;
 
   /**
+   * 是否正在拖拽元素
+   */
+  private isMovingEls: boolean = false;
+
+  /**
    * 当前鼠标下元素的控制点
    */
   private mouseControl: Control | null = null;
@@ -267,6 +272,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   }
 
   paintTop(ctx: CanvasRenderingContext2D): void {
+    // 绘制框选框
     if (this.selectionRect) {
       ctx.beginPath();
       ctx.roundRect(this.selectionRect.x, this.selectionRect.y, this.selectionRect.width, this.selectionRect.height, 2);

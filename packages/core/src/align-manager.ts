@@ -154,7 +154,6 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
     model.setPosition(oldPos.x + dx, oldPos.y + dy);
   }
 
-  // todo: 辅助线
   paintRoot(ctx: CanvasRenderingContext2D): void {}
 
   paintTop(ctx: CanvasRenderingContext2D): void {}
