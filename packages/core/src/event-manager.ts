@@ -282,6 +282,9 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       ctx.lineWidth = 2;
       ctx.stroke();
     }
+    // 绘制辅助线
+    if (this.isMovingEls) {
+    }
   }
 
   paintRoot(ctx: CanvasRenderingContext2D): void {}
