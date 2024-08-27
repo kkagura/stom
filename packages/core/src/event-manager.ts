@@ -33,11 +33,6 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   private mouseEl: Model | null = null;
 
   /**
-   * 是否正在拖拽元素
-   */
-  private isMovingEls: boolean = false;
-
-  /**
    * 当前鼠标下元素的控制点
    */
   private mouseControl: Control | null = null;
@@ -46,6 +41,16 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
    * 移动元素的缓存
    */
   private positionCache: Map<string, IPoint> | null = null;
+
+  /**
+   * 水平方向的辅助线
+   */
+  private alignLineX: [IPoint, IPoint] | null = null;
+
+  /**
+   * 垂直方向的辅助线
+   */
+  private alignLineY: [IPoint, IPoint] | null = null;
 
   constructor(private editor: Editor) {
     super();
@@ -283,7 +288,9 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       ctx.stroke();
     }
     // 绘制辅助线
-    if (this.isMovingEls) {
+    if (this.alignLineX) {
+    }
+    if (this.alignLineY) {
     }
   }
 

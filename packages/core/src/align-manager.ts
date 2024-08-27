@@ -1,4 +1,4 @@
-import { calcRectBbox, getPointsBbox, getRectByPoints, IBox, IMatrixArr, IPoint, Matrix, mergeBoxes, rectToVertices } from '@stom/geo';
+import { calcRectBbox, getPointsBbox, getRectByPoints, IBox, IMatrixArr, IPoint, IRect, Matrix, mergeBoxes, rectToVertices } from '@stom/geo';
 import { Editor } from './editor';
 import { CommonEvents, Model } from './models';
 import { cloneDeep, EventEmitter } from '@stom/shared';
@@ -153,6 +153,12 @@ export class AlignManager extends EventEmitter<Events> implements EditorPlugin<E
     const oldPos = model.getPosition();
     model.setPosition(oldPos.x + dx, oldPos.y + dy);
   }
+
+  measure(targetRect: IRect, others: IRect[]) {}
+
+  private measureVertical(targetRect: IRect, others: IRect[]) {}
+
+  private measureHorizontal(targetRect: IRect, others: IRect[]) {}
 
   paintRoot(ctx: CanvasRenderingContext2D): void {}
 
