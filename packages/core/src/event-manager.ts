@@ -101,43 +101,42 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     if (el && !selectionManager.isSelected(el)) {
       selectionManager.setSelection([el]);
     }
-    let startX = e.clientX,
-      startY = e.clientY,
-      lastX = startX,
-      lastY = startY;
+
+    const startScenePoint = this.editor.viewportManager.getCursorScenePoint(e);
 
     const selection = selectionManager.getSelectionList().filter(el => el.getMovable());
     let started = false;
+    let lastScenePoint = startScenePoint;
     if (selection.length === 1 && selection[0] instanceof LinkModel) return;
     const onMove = (ev: MouseEvent) => {
-      const offsetX = ev.clientX - lastX;
-      const offsetY = ev.clientY - lastY;
+      const currentScenePoint = this.editor.viewportManager.getCursorScenePoint(ev);
+      const offsetX = currentScenePoint.x - lastScenePoint.x;
+      const offsetY = currentScenePoint.y - lastScenePoint.y;
       if (started) {
         this.emit(EventManagerEvents.MOVING_ELEMENTS);
       } else {
         started = true;
         this.emit(EventManagerEvents.MOVE_ELEMENTS_START);
       }
-      lastX = ev.clientX;
-      lastY = ev.clientY;
       this.selectionRect = null;
       selection.forEach(m => {
-        m.move(offsetX / zoom, offsetY / zoom);
+        m.move(offsetX, offsetY);
       });
+      lastScenePoint = currentScenePoint;
     };
     const onUp = (ev: MouseEvent) => {
-      const offsetX = ev.clientX - startX;
-      const offsetY = ev.clientY - startY;
+      const offsetX = lastScenePoint.x - startScenePoint.x;
+      const offsetY = lastScenePoint.y - startScenePoint.y;
       if (offsetX || offsetY) {
         let action: Action = {
           undo: () => {
             selection.forEach(el => {
-              el.move(-offsetX / zoom, -offsetY / zoom);
+              el.move(-offsetX, -offsetY);
             });
           },
           redo: () => {
             selection.forEach(el => {
-              el.move(offsetX / zoom, offsetY / zoom);
+              el.move(offsetX, offsetY);
             });
           }
         };
