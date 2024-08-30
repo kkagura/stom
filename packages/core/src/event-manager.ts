@@ -1,11 +1,11 @@
-import { IPoint, IRect, Matrix, getRectByPoints, isRectIntersect } from '@stom/geo';
+import { ILineSegment, IPoint, IRect, Matrix, getRectByPoints, isRectIntersect } from '@stom/geo';
 import { Action } from './action-manager';
 import { Editor } from './editor';
 import { LinkModel, Model, ModelEvents } from './models';
 import { Control } from './models/control';
 import { CommonEvents } from './models/common-events';
 import { EditorPlugin } from './plugin';
-import { EventEmitter } from '@stom/shared';
+import { EventEmitter, isEqual } from '@stom/shared';
 
 export enum EventManagerEvents {
   MOVE_ELEMENTS_START = 'moveElementsStart',
@@ -45,12 +45,12 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
   /**
    * 水平方向的辅助线
    */
-  private alignLineX: [IPoint, IPoint] | null = null;
+  private alignLineX: ILineSegment | null = null;
 
   /**
    * 垂直方向的辅助线
    */
-  private alignLineY: [IPoint, IPoint] | null = null;
+  private alignLineY: ILineSegment | null = null;
 
   constructor(private editor: Editor) {
     super();
@@ -97,21 +97,49 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
    */
   handleMoveElement(e: MouseEvent, el: Model) {
     const selectionManager = this.editor.selectionManager;
-    const zoom = this.editor.viewportManager.getZoom();
     if (el && !selectionManager.isSelected(el)) {
       selectionManager.setSelection([el]);
     }
 
     const startScenePoint = this.editor.viewportManager.getCursorScenePoint(e);
 
+    const mouseEl = this.mouseEl!;
     const selection = selectionManager.getSelectionList().filter(el => el.getMovable());
     let started = false;
     let lastScenePoint = startScenePoint;
     if (selection.length === 1 && selection[0] instanceof LinkModel) return;
+    const otherRects = this.editor.box
+      .getModelList()
+      .filter(model => !selection.includes(model) && !(model instanceof LinkModel))
+      .map(el => el.getBoundingRect());
+
     const onMove = (ev: MouseEvent) => {
       const currentScenePoint = this.editor.viewportManager.getCursorScenePoint(ev);
-      const offsetX = currentScenePoint.x - lastScenePoint.x;
-      const offsetY = currentScenePoint.y - lastScenePoint.y;
+      let offsetX = currentScenePoint.x - lastScenePoint.x;
+      let offsetY = currentScenePoint.y - lastScenePoint.y;
+      const targetRect = { ...mouseEl.getBoundingRect() };
+      if (otherRects.length && !(mouseEl instanceof LinkModel)) {
+        targetRect.x += offsetX;
+        targetRect.y += offsetY;
+        const mResult = this.editor.alignManager.measure(targetRect, otherRects);
+        offsetX += mResult.x.offset;
+        currentScenePoint.x += mResult.x.offset;
+
+        offsetY += mResult.y.offset;
+        currentScenePoint.y += mResult.y.offset;
+
+        if (!isEqual(mResult.x.line, this.alignLineX)) {
+          this.alignLineX = mResult.x.line;
+          this.emit(CommonEvents.REPAINT);
+        }
+        if (!isEqual(mResult.y.line, this.alignLineY)) {
+          this.alignLineY = mResult.y.line;
+          this.emit(CommonEvents.REPAINT);
+        }
+      }
+      if (offsetX === 0 && offsetY === 0) {
+        return;
+      }
       if (started) {
         this.emit(EventManagerEvents.MOVING_ELEMENTS);
       } else {
@@ -141,6 +169,16 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
           }
         };
         this.editor.actionManager.push(action);
+        const needRepaint = !!(this.alignLineX || this.alignLineY);
+        if (this.alignLineX) {
+          this.alignLineX = null;
+        }
+        if (this.alignLineY) {
+          this.alignLineY = null;
+        }
+        if (needRepaint) {
+          this.emit(CommonEvents.REPAINT);
+        }
         this.emit(EventManagerEvents.MOVE_ELEMENTS_END);
       }
 
@@ -288,8 +326,24 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
     }
     // 绘制辅助线
     if (this.alignLineX) {
+      const [p1, p2] = this.alignLineX;
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 10]);
+      ctx.strokeStyle = 'red';
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
     }
     if (this.alignLineY) {
+      const [p1, p2] = this.alignLineY;
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 10]);
+      ctx.strokeStyle = 'red';
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
     }
   }
 
