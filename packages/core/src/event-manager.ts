@@ -121,6 +121,7 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       if (otherRects.length && !(mouseEl instanceof LinkModel)) {
         targetRect.x += offsetX;
         targetRect.y += offsetY;
+        // todo: 网格吸附
         const mResult = this.editor.alignManager.measure(targetRect, otherRects);
         offsetX += mResult.x.offset;
         currentScenePoint.x += mResult.x.offset;
