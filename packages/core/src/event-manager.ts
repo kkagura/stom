@@ -154,6 +154,16 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
       lastScenePoint = currentScenePoint;
     };
     const onUp = (ev: MouseEvent) => {
+      const needRepaint = !!(this.alignLineX || this.alignLineY);
+      if (this.alignLineX) {
+        this.alignLineX = null;
+      }
+      if (this.alignLineY) {
+        this.alignLineY = null;
+      }
+      if (needRepaint) {
+        this.emit(CommonEvents.REPAINT);
+      }
       const offsetX = lastScenePoint.x - startScenePoint.x;
       const offsetY = lastScenePoint.y - startScenePoint.y;
       if (offsetX || offsetY) {
@@ -170,16 +180,6 @@ export class EventManager extends EventEmitter<Events> implements EditorPlugin<E
           }
         };
         this.editor.actionManager.push(action);
-        const needRepaint = !!(this.alignLineX || this.alignLineY);
-        if (this.alignLineX) {
-          this.alignLineX = null;
-        }
-        if (this.alignLineY) {
-          this.alignLineY = null;
-        }
-        if (needRepaint) {
-          this.emit(CommonEvents.REPAINT);
-        }
         this.emit(EventManagerEvents.MOVE_ELEMENTS_END);
       }
 
