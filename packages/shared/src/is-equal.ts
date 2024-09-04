@@ -29,6 +29,7 @@ function isEqualDeep(a: any, b: any, map: WeakMap<any, any> = new WeakMap()) {
   return true;
 }
 
+// todo: 考虑直接从lodash.es里引入
 export function isEqual(a: any, b: any) {
   return isEqualDeep(a, b);
 }
