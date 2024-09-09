@@ -5,8 +5,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "dev": "rollup -c --watch",
-    "build": "rollup -c",
+    "dev": "node ../../scripts/build.mjs src/index.ts --dev",
+    "build": "node ../../scripts/build.mjs src/index.ts",
     "build-type": "node scripts/build-type.js"
   },
   "keywords": [],
