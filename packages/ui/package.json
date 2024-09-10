@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build-comp": "node ./scripts/build-component.mjs",
-    "dev": "pnpm run build-comp && rollup -c --watch",
-    "build": "pnpm run build-comp && rollup -c",
+    "dev": "rollup -c --watch",
+    "build": "rollup -c",
     "build-type": "node scripts/build-type.js"
   },
   "files": [

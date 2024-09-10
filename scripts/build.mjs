@@ -6,11 +6,6 @@ import fs from 'node:fs';
 import { typecheckPlugin } from '@jgoz/esbuild-plugin-typecheck';
 import pc from 'picocolors';
 
-const SUCCESS = process.platform === 'win32' ? '√' : '✔';
-const WARNING = process.platform === 'win32' ? '‼' : '⚠';
-const ERROR = process.platform === 'win32' ? '×' : '✖';
-const INFO = process.platform === 'win32' ? 'i' : 'ℹ';
-
 const pkgPath = process.cwd();
 const pkgJson = readJson(path.join(pkgPath, 'package.json'));
 
@@ -38,7 +33,7 @@ async function buildTs(entry) {
       ...pkgJson.peerDependencies,
       ...pkgJson.devDependencies
     }).filter(dep => !dep.startsWith('@stom')),
-    sourcemap: isDev,
+    sourcemap: true,
     format: 'esm',
     platform: 'browser',
     plugins: [
@@ -50,13 +45,13 @@ async function buildTs(entry) {
             // console.info(pc.bold(INFO) + '  ' + message);
           },
           warn(message) {
-            console.warn(pc.bold(pc.yellow(WARNING)) + '  ' + message);
+            console.warn(pc.bold(pc.yellow(message)));
           },
           error(message) {
-            console.error(pc.bold(pc.red(ERROR)) + '  ' + message);
+            console.error(pc.bold(pc.red(message)));
           },
           success(message) {
-            console.info(`${pc.bold(SUCCESS)}  [${pkgJson.name}/${entry}] ${pc.green(message)}`);
+            console.info(`${pc.green(`[${pkgJson.name}] ${message}`)}`);
           }
         }
       }),
