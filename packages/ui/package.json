@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build-comp": "node ./scripts/build-component.mjs",
-    "dev": "rollup -c --watch",
+    "dev1": "rollup -c --watch",
+    "dev": "node ../../scripts/build.mjs src/frameworks/vue/index.ts src/frameworks/vue/style.ts --dev",
     "build": "rollup -c",
     "build-type": "node scripts/build-type.js"
   },
