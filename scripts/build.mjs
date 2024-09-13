@@ -45,6 +45,7 @@ async function buildTs(entry) {
     platform: 'browser',
     plugins: [
       vuePlugin(),
+      // todo: 换成postcss插件
       sassPlugin({
         filter: /.postcss$/,
         async transform(source, resolveDir) {
