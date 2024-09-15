@@ -6,12 +6,7 @@ import fs from 'node:fs';
 import { typecheckPlugin } from '@jgoz/esbuild-plugin-typecheck';
 import pc from 'picocolors';
 import vuePlugin from 'esbuild-plugin-vue3';
-import postcssPresetEnv from 'postcss-preset-env';
-import postcssImport from 'postcss-import';
-import postcssUrl from 'postcss-url';
-import postcssNested from 'postcss-nested';
-import { sassPlugin } from 'esbuild-sass-plugin';
-import postcss from 'postcss';
+import esbuildPostcssPlugin from './esbuild-postcss.mjs';
 
 const pkgPath = process.cwd();
 const pkgJson = readJson(path.join(pkgPath, 'package.json'));
@@ -45,14 +40,7 @@ async function buildTs(entry) {
     platform: 'browser',
     plugins: [
       vuePlugin(),
-      // todo: 换成postcss插件
-      sassPlugin({
-        filter: /.postcss$/,
-        async transform(source, resolveDir) {
-          const { css } = await postcss([postcssPresetEnv(), postcssImport(), postcssUrl(), postcssNested()]).process(source, { from: undefined });
-          return css;
-        }
-      }),
+      esbuildPostcssPlugin(),
       typecheckPlugin({
         watch: isDev,
         omitStartLog: true,

@@ -23,7 +23,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@deanc/esbuild-plugin-postcss": "^1.0.2",
     "@jgoz/esbuild-plugin-typecheck": "^4.0.1",
     "@microsoft/api-extractor": "^7.47.0",
     "@rollup/plugin-commonjs": "^26.0.1",
@@ -32,7 +31,6 @@
     "consola": "^3.2.3",
     "esbuild": "^0.21.5",
     "esbuild-plugin-vue3": "^0.4.2",
-    "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^9.5.0",
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
