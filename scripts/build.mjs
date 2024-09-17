@@ -20,6 +20,7 @@ function readJson(jsonPath) {
 }
 
 async function buildTs(entry) {
+  // todo: 支持打包目标文件配置
   const outfile = path.resolve(pkgPath, `./dist/index.js`);
   const relativeOutputFile = path.relative(pkgPath, outfile);
 
