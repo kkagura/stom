@@ -21,7 +21,7 @@ function readJson(jsonPath) {
 
 async function buildTs(entry) {
   // todo: 支持打包目标文件配置
-  const outfile = path.resolve(pkgPath, `./dist/index.js`);
+  const outfile = path.resolve(pkgPath, entry.replace(/^src/, 'dist'));
   const relativeOutputFile = path.relative(pkgPath, outfile);
 
   /** @type {import('esbuild').BuildOptions} */
@@ -85,9 +85,7 @@ async function buildTs(entry) {
 
 function setup(entrys) {
   entrys.forEach(entry => {
-    if (path.extname(entry) === '.ts') {
-      buildTs(entry);
-    }
+    buildTs(entry);
   });
 }
 
