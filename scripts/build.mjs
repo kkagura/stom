@@ -20,7 +20,7 @@ function readJson(jsonPath) {
 }
 
 async function buildTs(entry) {
-  // todo: 支持打包目标文件配置
+  // 将src替换为dist即为输出路径
   const outfile = path.resolve(pkgPath, entry.replace(/^src/, 'dist'));
   const relativeOutputFile = path.relative(pkgPath, outfile);
 
