@@ -65,7 +65,6 @@ export class Editor {
   // 对齐相关逻辑
   public alignManager: AlignManager;
 
-  // todo: 构建时引入
   private version = '1.0.1';
 
   constructor(public container: HTMLElement) {
