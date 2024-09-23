@@ -73,15 +73,21 @@ export class TextInput {
     this.text = text;
     this.inputDiv.innerText = text;
     this.editor.container.appendChild(this.container);
+    console.log(111);
     setTimeout(() => {
-      this.inputDiv.focus();
+      this.focus();
       this.callbck = cb;
     });
   }
 
   focus() {
-    // todo: 聚焦到最后一个字符
     this.inputDiv.focus();
+    const range = window.getSelection()?.getRangeAt(0);
+    if (!range) return;
+    const len = this.text.length - 1;
+    if (len <= 0) return;
+    range.setStart(this.inputDiv.childNodes[0], len);
+    range.setEnd(this.inputDiv.childNodes[0], len);
   }
 
   remove() {
