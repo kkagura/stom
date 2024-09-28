@@ -45,6 +45,7 @@ async function buildTs(entry) {
       typecheckPlugin({
         watch: isDev,
         omitStartLog: true,
+        // todo: 处理一个包多入口的时候重复log的问题
         logger: {
           info(message) {
             // console.info(pc.bold(INFO) + '  ' + message);
